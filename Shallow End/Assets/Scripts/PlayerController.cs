@@ -6,6 +6,7 @@ using UnityEngine.InputSystem.XR;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController Instance;
     [SerializeField] private float speed = 5f;
     [SerializeField] private float jumpHeight = 2f;
     [SerializeField] private float gravity = -9.8f;
@@ -20,18 +21,26 @@ public class PlayerController : MonoBehaviour
     private Vector3 velocity;
     private Vector2 lookInput;
     private float verticalRotation = 0f;
+    public bool updateingRotation = true;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         Controller = GetComponent<CharacterController>();
+
+        
+
+        
     }
 
     private void Awake()
     {
         Controller = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
+
+        updateingRotation = true;
         Cursor.visible = false;
+       Instance = this;
     }
 
     public void OnMove(InputAction.CallbackContext context)
@@ -64,7 +73,14 @@ public class PlayerController : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         Controller.Move(velocity * Time.deltaTime);
-        HandleLook();
+
+        if (updateingRotation)
+        {
+            HandleLook();
+        }
+     
+
+
     }
 
     public void HandleLook()
