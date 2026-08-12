@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Spear
   m_EditorClassIdentifier: Assembly-CSharp::Items
   itemName: Spear
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: afd9fda13496c3f4cbd57ded67602dcb, type: 3}
   maxStack: 1
-  ItenPrefab: {fileID: 0}
+  ItenPrefab: {fileID: 2173714790193504078, guid: c337e31144ae1584393f7cfbeb962547, type: 3}
   handItemPrefab: {fileID: 0}

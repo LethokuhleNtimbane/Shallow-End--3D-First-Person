@@ -15,5 +15,5 @@ MonoBehaviour:
   itemName: Yellow Mushroom
   icon: {fileID: 21300000, guid: c7d2645b2f3ec4d45823b4f5ed6ff7a2, type: 3}
   maxStack: 16
-  ItenPrefab: {fileID: 0}
+  ItenPrefab: {fileID: 8117569657257714815, guid: ad32a529818d4774199e815938d33f43, type: 3}
   handItemPrefab: {fileID: 0}

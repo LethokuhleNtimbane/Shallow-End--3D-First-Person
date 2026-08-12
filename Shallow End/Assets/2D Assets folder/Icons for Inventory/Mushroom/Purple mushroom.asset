@@ -15,5 +15,5 @@ MonoBehaviour:
   itemName: Purple Mushroom
   icon: {fileID: 21300000, guid: e11e438e727697c45b3307e1b8a38192, type: 3}
   maxStack: 16
-  ItenPrefab: {fileID: 0}
+  ItenPrefab: {fileID: 877468990305962446, guid: a64c5370a28d6f547a58fd968bbe64fe, type: 3}
   handItemPrefab: {fileID: 0}

@@ -6,6 +6,11 @@ using UnityEngine.UI;
 public class Inventory : MonoBehaviour
 {
     public Items WoodItem;
+    public Items Spear;
+    public Items Hammer;
+    public Items RMushroom;
+    public Items YMushroom;
+    public Items PMushroom;
     public Items AxeItem;
     public GameObject hotBrObj;
     public GameObject inventorySlotParent;
@@ -22,7 +27,7 @@ public class Inventory : MonoBehaviour
     public Image DragIcon;
     public float pickupRange = 3f;
     private GroundItem lookedAtItem = null;
-    public Material highlightedMaterial;
+   
     private Material originalmaerial;
     private Renderer lookedAtRender = null;
 
@@ -287,7 +292,7 @@ public class Inventory : MonoBehaviour
                 if (rend != null)
                 {
                     originalmaerial = rend.material;
-                    rend.material = highlightedMaterial;
+                 
                     lookedAtRender = rend;
                 }
             }
