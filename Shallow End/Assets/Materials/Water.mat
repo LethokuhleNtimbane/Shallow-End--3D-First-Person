@@ -40,13 +40,13 @@ Material:
     m_Floats:
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Spec_size: 25.59
+    - _Spec_size: 25.01
     - _Water_depth: 0.5
     - _Wave_Frequency: 0
     - _Wave_amplitude: 0
     - _Wave_speed: 0
     - _spec_speed: 0.84
-    - _spec_thickness: 4.2
+    - _spec_thickness: 7.66
     m_Colors:
     - _Deep_colour: {r: 0.15305951, g: 0.20246667, b: 0.44654083, a: 1}
     - _Shadow_colour: {r: 0.27049944, g: 0.8490677, b: 0.8867924, a: 1}

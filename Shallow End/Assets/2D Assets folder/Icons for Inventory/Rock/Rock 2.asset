@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Rock 2
   m_EditorClassIdentifier: Assembly-CSharp::Items
   itemName: Rock 2
-  icon: {fileID: 21300000, guid: b5a186d5c7c3d0a4da8fa3b68b1ad3fd, type: 3}
+  icon: {fileID: 21300000, guid: d8c51030787f36f46acd06cb33176d9d, type: 3}
   maxStack: 32
-  ItenPrefab: {fileID: 0}
+  ItenPrefab: {fileID: 4199611757167568170, guid: a91cafc455151a24888c690ac95c65a7, type: 3}
   handItemPrefab: {fileID: 0}

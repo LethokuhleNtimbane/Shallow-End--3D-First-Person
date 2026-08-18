@@ -8,6 +8,10 @@ public class Inventory : MonoBehaviour
     public Items WoodItem;
     public Items Spear;
     public Items Hammer;
+    public Items Knife;
+    public Items Vines;
+    public Items WholeCoconut;
+    public Items Coconut;
     public Items RMushroom;
     public Items YMushroom;
     public Items PMushroom;
@@ -16,20 +20,22 @@ public class Inventory : MonoBehaviour
     public GameObject inventorySlotParent;
 
     public GameObject container;
-
+    public CraftinSystem craftingSystem;
 
     [SerializeField] private InputActionReference OpenInventory;
     [SerializeField] private InputActionReference pickupobj;
 
     [SerializeField] private InputActionReference[] hotbarActions;
     [SerializeField] private InputActionReference dropAction;
-    [SerializeField] private InputActionReference hotbarScroll;
+
     public Image DragIcon;
     public float pickupRange = 3f;
     private GroundItem lookedAtItem = null;
    
     private Material originalmaerial;
     private Renderer lookedAtRender = null;
+
+    public GameObject Crafting;
 
     private int equippedHotBarIndex = 0;
 
@@ -41,14 +47,17 @@ public class Inventory : MonoBehaviour
     private List<Slot> InventorySlots = new List<Slot>();
     private List<Slot> hotbarSlots = new List<Slot>();
     private List<Slot> allSlots = new List<Slot>();
+    private List<Slot> craftingSlots = new List<Slot>();
 
     private void Awake()
     {
         InventorySlots.AddRange(inventorySlotParent.GetComponentsInChildren<Slot>());
         hotbarSlots.AddRange(hotBrObj.GetComponentsInChildren<Slot>());
+        craftingSlots.AddRange(Crafting.GetComponentsInChildren<Slot>());
 
         allSlots.AddRange(InventorySlots);
         allSlots.AddRange(hotbarSlots);
+      
     }
     private void OnEnable()
     {
@@ -61,9 +70,54 @@ public class Inventory : MonoBehaviour
         }
 
         dropAction.action.Enable();
-        hotbarScroll.action.Enable();
+     
     }
+    public Items GetHotbarItem()
+    {
+        if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count)
+            return null;
 
+        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
+
+        if (!equippedSlot.Hasitem())
+            return null;
+
+        return equippedSlot.GetItem();
+    }
+    public void RemoveHotbarItem(int amount)
+    {
+        if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count)
+            return;
+
+        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
+
+        if (!equippedSlot.Hasitem())
+            return;
+
+        equippedSlot.RemoveAmount(amount);
+    }
+    public bool IsHammerEquipped()
+    {
+        if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count) return false;
+
+        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
+
+        if (!equippedSlot.Hasitem()) return false;
+
+        return equippedSlot.GetItem() == Hammer;
+    }
+    public bool IsAxeEquipped()
+    {
+        if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count)
+            return false;
+
+        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
+
+        if (!equippedSlot.Hasitem())
+            return false;
+
+        return equippedSlot.GetItem() == AxeItem;
+    }
     private void OnDisable()
     {
         OpenInventory.action.Disable();
@@ -75,7 +129,7 @@ public class Inventory : MonoBehaviour
         }
 
         dropAction.action.Disable();
-        hotbarScroll.action.Disable();
+       
     }
     // Update is called once per frame
     void Update()
@@ -84,9 +138,14 @@ public class Inventory : MonoBehaviour
         if (OpenInventory.action.WasPressedThisFrame())
         {
             container.SetActive(!container.activeInHierarchy);
-            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = !Cursor.visible;
-            PlayerController.Instance.updateingRotation = !container.activeInHierarchy;
+
+            bool inventoryOpen = container.activeInHierarchy;
+
+            Cursor.lockState = inventoryOpen ? CursorLockMode.None : CursorLockMode.Locked;
+
+            Cursor.visible = inventoryOpen;
+
+            UIManager.Instance.SetInventoryOpen(inventoryOpen);
 
         }
         DetectLookedAtItem();
@@ -101,11 +160,11 @@ public class Inventory : MonoBehaviour
         UpdateHotBarOpacity();
     }
 
-    public void AddItem(Items itemToAdd, int amount)
+    public bool AddItem(Items itemToAdd, int amount)
     {
         int remaining = amount;
 
-        foreach (Slot slot in allSlots)
+        foreach (Slot slot in hotbarSlots)
         {
             if (slot.Hasitem() && slot.GetItem() == itemToAdd)
             {
@@ -114,37 +173,76 @@ public class Inventory : MonoBehaviour
 
                 if (currentAmount < maxStack)
                 {
-                    int spaceleft = maxStack - currentAmount;
-                    int amountToAdd = Mathf.Min(spaceleft, remaining);
+                    int spaceLeft = maxStack - currentAmount;
+                    int amountToAdd = Mathf.Min(spaceLeft, remaining);
 
                     slot.SetItem(itemToAdd, currentAmount + amountToAdd);
+
                     remaining -= amountToAdd;
 
                     if (remaining <= 0)
-                    {
-                        return;
-                    }
+                        return true;
                 }
             }
         }
-        foreach (Slot slot in allSlots)
+
+        foreach (Slot slot in hotbarSlots)
         {
             if (!slot.Hasitem())
             {
-                int amountToPlace = Mathf.Min(itemToAdd.maxStack, remaining);
+                int amountToPlace = Mathf.Min(
+                    itemToAdd.maxStack,
+                    remaining
+                );
+
                 slot.SetItem(itemToAdd, amountToPlace);
+
                 remaining -= amountToPlace;
 
                 if (remaining <= 0)
+                    return true;
+            }
+        }
+
+        foreach (Slot slot in InventorySlots)
+        {
+            if (slot.Hasitem() && slot.GetItem() == itemToAdd)
+            {
+                int currentAmount = slot.GetAmount();
+                int maxStack = itemToAdd.maxStack;
+
+                if (currentAmount < maxStack)
                 {
-                    return;
+                    int spaceLeft = maxStack - currentAmount;
+                    int amountToAdd = Mathf.Min(spaceLeft, remaining);
+
+                    slot.SetItem(itemToAdd, currentAmount + amountToAdd);
+
+                    remaining -= amountToAdd;
+
+                    if (remaining <= 0)
+                        return true;
                 }
             }
         }
-        if (remaining > 0)
+        foreach (Slot slot in InventorySlots)
         {
+            if (!slot.Hasitem())
+            {
+                int amountToPlace = Mathf.Min(
+                    itemToAdd.maxStack,
+                    remaining
+                );
 
+                slot.SetItem(itemToAdd, amountToPlace);
+
+                remaining -= amountToPlace;
+
+                if (remaining <= 0)
+                    return true;
+            }
         }
+        return false;
     }
     private void StartDrag()
     {
@@ -173,8 +271,14 @@ public class Inventory : MonoBehaviour
 
             if (hovered != null)
             {
+                Slot originalSlot = dragslot;
                 HandleDrop(dragslot, hovered);
 
+                if (craftingSlots.Contains(hovered) || craftingSlots.Contains(originalSlot))
+                {
+                    Debug.Log("Checking crafting recipe...");
+                    craftingSystem.UpdateCraftingResult();
+                }
                 DragIcon.enabled = false;
 
                 dragslot = null;
@@ -188,10 +292,30 @@ public class Inventory : MonoBehaviour
         {
             if (s.hovering)
             {
+               
                 return s;
             }
-
         }
+
+        foreach (Slot s in craftingSlots)
+        {
+            if (s.hovering)
+            {
+             
+                return s;
+            }
+        }
+
+        if (craftingSystem != null &&
+            craftingSystem.resultSlot != null &&
+            craftingSystem.resultSlot.hovering)
+        {
+        
+            return craftingSystem.resultSlot;
+        }
+
+       
+
         return null;
     }
     private void HandleDrop(Slot from, Slot to)
@@ -199,57 +323,121 @@ public class Inventory : MonoBehaviour
         if (from == to)
             return;
 
-        // Destination is empty
-        if (!to.Hasitem())
+        if (to == craftingSystem.resultSlot)
         {
-            to.SetItem(from.GetItem(), from.GetAmount());
-            from.ClearSlot();
             return;
         }
 
-        // Destination has the same item - stack
-        if (to.GetItem() == from.GetItem())
+        if (from == craftingSystem.resultSlot)
         {
-            int max = to.GetItem().maxStack;
-            int space = max - to.GetAmount();
+            TryTakeCraftedItem(to);
+            return;
+        }
 
-            if (space > 0)
+        if (craftingSlots.Contains(to))
+        {
+
+            if (to.Hasitem())
+                return;
+
+
+            to.SetItem(from.GetItem(), 1);
+
+
+            from.RemoveAmount(1);
+
+            return;
+        }
+        if (craftingSlots.Contains(from))
+        {
+
+            if (!to.Hasitem())
             {
-                int move = Mathf.Min(space, from.GetAmount());
-
                 to.SetItem(
-                    to.GetItem(),
-                    to.GetAmount() + move
-                );
-
-                from.SetItem(
                     from.GetItem(),
-                    from.GetAmount() - move
+                    from.GetAmount()
                 );
 
-                if (from.GetAmount() <= 0)
+                from.ClearSlot();
+
+                return;
+            }
+            if (to.GetItem() == from.GetItem())
+            {
+                int max = to.GetItem().maxStack;
+                int space = max - to.GetAmount();
+
+                if (space > 0)
                 {
-                    from.ClearSlot();
+                    int move = Mathf.Min(
+                        space,
+                        from.GetAmount()
+                    );
+
+                    to.SetItem(
+                        to.GetItem(),
+                        to.GetAmount() + move
+                    );
+
+                    from.RemoveAmount(move);
                 }
 
                 return;
             }
+
+            return;
         }
 
-        // Destination has a different item - swap
-        Items tempItem = to.GetItem();
-        int tempAmount = to.GetAmount();
 
-        to.SetItem(
-            from.GetItem(),
-            from.GetAmount()
-        );
+        if (!to.Hasitem())
+            {
+                to.SetItem(from.GetItem(), from.GetAmount());
+                from.ClearSlot();
+                return;
+            }
 
-        from.SetItem(
-            tempItem,
-            tempAmount
-        );
-    }
+            if (to.GetItem() == from.GetItem())
+            {
+                int max = to.GetItem().maxStack;
+                int space = max - to.GetAmount();
+
+                if (space > 0)
+                {
+                    int move = Mathf.Min(space, from.GetAmount());
+
+                    to.SetItem(
+                        to.GetItem(),
+                        to.GetAmount() + move
+                    );
+
+                    from.SetItem(
+                        from.GetItem(),
+                        from.GetAmount() - move
+                    );
+
+                    if (from.GetAmount() <= 0)
+                    {
+                        from.ClearSlot();
+                    }
+
+                    return;
+                }
+            }
+
+            Items tempItem = to.GetItem();
+            int tempAmount = to.GetAmount();
+
+            to.SetItem(
+                from.GetItem(),
+                from.GetAmount()
+            );
+
+            from.SetItem(
+                tempItem,
+                tempAmount
+            );
+        }
+    
     
     private void UpdateDragItemPosition()
     {
@@ -267,8 +455,12 @@ public class Inventory : MonoBehaviour
             GroundItem item = lookedAtRender.GetComponent<GroundItem>();
             if (item != null)
             {
-                AddItem(item.item, item.amount);
-                Destroy(item.gameObject);
+                bool pickedUp = AddItem(item.item, item.amount);
+
+                if (pickedUp)
+                {
+                    Destroy(item.gameObject);
+                }
             }
         }
     }
@@ -298,6 +490,50 @@ public class Inventory : MonoBehaviour
             }
         }
     }
+    private void TryTakeCraftedItem(Slot destination)
+    {
+        if (craftingSystem == null) return;
+        if (destination == null) return;
+
+        Slot resultSlot = craftingSystem.resultSlot;
+
+        if (resultSlot == null) return;
+
+        Items craftedItem = resultSlot.GetItem();
+        int craftedAmount = resultSlot.GetAmount();
+
+        if (!destination.Hasitem())
+        {
+            destination.SetItem(craftedItem, craftedAmount);
+        }
+
+        else if (destination.GetItem() == craftedItem)
+        {
+            int maxStack = craftedItem.maxStack;
+            int space = maxStack - destination.GetAmount();
+
+            if (space < craftedAmount) return;
+
+            destination.AddAmount(craftedAmount);
+        }
+        else
+        {
+            return;
+        }
+        UseCraftingIngredients();
+        resultSlot.ClearSlot();
+        craftingSystem.UpdateCraftingResult();
+    }
+    private void UseCraftingIngredients()
+    {
+        foreach (Slot slot in craftingSlots)
+        {
+            if (slot.Hasitem())
+            {
+                slot.RemoveAmount(1);
+            }
+        }
+    }
     private void UpdateHotBarOpacity()
     {
         for (int i = 0; i < hotbarSlots.Count; i++)
@@ -320,31 +556,6 @@ public class Inventory : MonoBehaviour
                 equippedHotBarIndex = i;
                 UpdateHotBarOpacity();
             }
- Vector2 scroll = hotbarScroll.action.ReadValue<Vector2>();
-
-    if (scroll.y > 0)
-    {
-        equippedHotBarIndex++;
-
-        if (equippedHotBarIndex >= hotbarSlots.Count)
-        {
-            equippedHotBarIndex = 0;
-        }
-
-        UpdateHotBarOpacity();
-    }
-    else if (scroll.y < 0)
-    {
-        equippedHotBarIndex--;
-
-        if (equippedHotBarIndex < 0)
-        {
-            equippedHotBarIndex = hotbarSlots.Count - 1;
-        }
-
-        UpdateHotBarOpacity();
-    }
-
 
         }
     }

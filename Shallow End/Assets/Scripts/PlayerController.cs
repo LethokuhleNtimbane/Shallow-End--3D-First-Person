@@ -1,8 +1,7 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.XR;
+
 
 public class PlayerController : MonoBehaviour
 {
@@ -46,7 +45,11 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
-        Debug.Log($"Move Input: {moveInput}");
+        
+        if (!updateingRotation)
+        {
+            moveInput = Vector2.zero;
+        }
     }
 
     public void Jump (InputAction.CallbackContext context)
@@ -58,6 +61,16 @@ public class PlayerController : MonoBehaviour
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
     }
+    public void CPlayerControl(bool inControl)
+    {
+        updateingRotation = inControl;
+
+        if (!inControl)
+        {
+            moveInput = Vector2.zero;
+            lookInput = Vector2.zero;
+        }
+    }
 
     public void OnLook(InputAction.CallbackContext context)
     {
@@ -66,20 +79,17 @@ public class PlayerController : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
-        Vector3 move = transform.right * moveInput.x + transform.forward *
-        moveInput.y;
-        Controller.Move(move * speed * Time.deltaTime);
+    { 
+        if (updateingRotation)
+        {
+            Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
+            Controller.Move(move * speed * Time.deltaTime);
+  
+            HandleLook();
+        }
 
         velocity.y += gravity * Time.deltaTime;
         Controller.Move(velocity * Time.deltaTime);
-
-        if (updateingRotation)
-        {
-            HandleLook();
-        }
-     
-
 
     }
 

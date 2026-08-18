@@ -1,5 +1,3 @@
-using System.IO.Enumeration;
-using UnityEditor;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Item", menuName = "NewItem")]
@@ -11,4 +9,7 @@ public class Items : ScriptableObject
     public GameObject ItenPrefab;
 
     public GameObject handItemPrefab;
+
+    public bool isFood;
+    public float healthRegenerate;
 }

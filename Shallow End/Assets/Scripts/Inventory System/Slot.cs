@@ -15,6 +15,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     private TextMeshProUGUI amountTxt;
 
+
     private void Awake()
     {
         iconImage = transform.GetChild(0).GetComponent<Image>();

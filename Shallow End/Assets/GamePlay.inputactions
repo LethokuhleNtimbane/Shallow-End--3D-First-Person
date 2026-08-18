@@ -61,15 +61,6 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Hotbar scroll",
-                    "type": "Value",
-                    "id": "a6776acc-a2fb-4dbc-9f23-67133ffca49d",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
                     "name": "Hotbar 1",
                     "type": "Button",
                     "id": "ab866ae6-bb58-4ae7-aabc-fd63af545820",
@@ -81,7 +72,7 @@
                 {
                     "name": "Hotbar 2",
                     "type": "Button",
-                    "id": "af1024d9-8d37-4d80-a454-8e6c8fdf05f5",
+                    "id": "6a7f7814-eb08-4be3-a61e-04ea6fbabbc4",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -90,7 +81,7 @@
                 {
                     "name": "Hotbar 3",
                     "type": "Button",
-                    "id": "a7b29e55-5d29-4f1a-afcd-a5e1ecc73651",
+                    "id": "7bc35f78-e06f-4c0b-8b1c-685a814d1f9b",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -99,7 +90,7 @@
                 {
                     "name": "Hotbar 4",
                     "type": "Button",
-                    "id": "72ce1cfb-1d6f-4ff6-bda1-db72ca1f0b78",
+                    "id": "2cd146c0-139c-42d7-8bce-0c38d89a23f7",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -108,7 +99,25 @@
                 {
                     "name": "Hotbar 5",
                     "type": "Button",
-                    "id": "98177bd0-684b-4c3a-bd94-27ae98940e72",
+                    "id": "5bf897c8-eb05-4e65-b0ca-676f126e8a78",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Interact",
+                    "type": "Button",
+                    "id": "ef18c148-727c-49f3-81d7-d57f33ac6306",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Craft",
+                    "type": "Button",
+                    "id": "a521c2fb-8988-4cf9-9af4-388969f7f4cd",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -261,17 +270,6 @@
                 },
                 {
                     "name": "",
-                    "id": "6db0e568-a985-46b3-8e49-adf4d50b151a",
-                    "path": "<Mouse>/scroll",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Hotbar scroll",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "5e8c95a1-9d58-4cf5-8cdb-6351eeafd2f0",
                     "path": "<Keyboard>/1",
                     "interactions": "",
@@ -283,7 +281,7 @@
                 },
                 {
                     "name": "",
-                    "id": "3bcfd006-6d48-4748-bd23-d0b5de9bf647",
+                    "id": "ee1278ab-2dd5-412c-840e-8886ecaaf70d",
                     "path": "<Keyboard>/2",
                     "interactions": "",
                     "processors": "",
@@ -294,7 +292,7 @@
                 },
                 {
                     "name": "",
-                    "id": "b5b26865-8d89-4977-a373-eecd9ee929f8",
+                    "id": "fd180c86-9b3e-4d36-95f2-3a0ba397b64d",
                     "path": "<Keyboard>/3",
                     "interactions": "",
                     "processors": "",
@@ -305,7 +303,7 @@
                 },
                 {
                     "name": "",
-                    "id": "0c67f70b-1210-4e2f-98f4-0eca9c8e948a",
+                    "id": "e1e12e87-57c3-433d-8c1b-8f4fa8256b16",
                     "path": "<Keyboard>/4",
                     "interactions": "",
                     "processors": "",
@@ -316,12 +314,34 @@
                 },
                 {
                     "name": "",
-                    "id": "574fdf2a-6d84-4ea7-9d08-122785f2a6b1",
+                    "id": "bc35f778-f86d-41b2-b875-5da4d4a7c636",
                     "path": "<Keyboard>/5",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Hotbar 5",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c462f7aa-0ea6-4221-be87-7b031d0bc2eb",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "949d43ab-a431-4a0b-b182-0464d0b8c3e5",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Craft",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
