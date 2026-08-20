@@ -1,11 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class HealthScript : MonoBehaviour
 {
     public Image image;
     public float health = 100f;
     public float maxHealth = 100f;
+
+    public TextMeshProUGUI healthText;
 
     public void Start()
     {
@@ -35,12 +38,24 @@ public class HealthScript : MonoBehaviour
   
     private void UpdateHealthBar()
     {
-        if (image == null)
+        if (image != null)
         {
-
-            return;
+           image.fillAmount = health / maxHealth;
+          
         }
 
-        image.fillAmount = health / maxHealth;
+        if (healthText != null)
+        {
+            healthText.text =  Mathf.RoundToInt(health).ToString();        
+        }
+
+        
+    }
+
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        health = Mathf.Clamp(health, 0, 100);
+        SetHealth(health);
     }
 }

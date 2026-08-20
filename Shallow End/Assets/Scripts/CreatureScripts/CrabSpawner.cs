@@ -23,36 +23,45 @@ public class CrabSpawner : MonoBehaviour
     public float collisionCheckRadius = 0.5f;
     public LayerMask obstacleLayer;
 
-    private int currentCrabs = 0;
-
-    void Start()
+    IEnumerator Start()
     {
-        StartCoroutine(SpawnCrabs());
-    }
-
-    IEnumerator SpawnCrabs()
-    {
-        while (currentCrabs < maxCrabs)
+        while (true)
         {
-            float waitTime = Random.Range(
-                minSpawnTime,
-                maxSpawnTime
-            );
+            // Count how many crabs currently exist
+            int currentCrabs = GameObject.FindGameObjectsWithTag("Crab").Length;
 
-            yield return new WaitForSeconds(waitTime);
+            // Only spawn if we have fewer than the maximum
+            if (currentCrabs < maxCrabs)
+            {
+                float waitTime = Random.Range(
+                    minSpawnTime,
+                    maxSpawnTime
+                );
 
-            SpawnCrab();
+                yield return new WaitForSeconds(waitTime);
+
+                // Check again after waiting
+                currentCrabs = GameObject.FindGameObjectsWithTag("Crab").Length;
+
+                if (currentCrabs < maxCrabs)
+                {
+                    SpawnCrab();
+                }
+            }
+            else
+            {
+                // Check again shortly
+                yield return new WaitForSeconds(1f);
+            }
         }
     }
 
     void SpawnCrab()
     {
-        
-        for (int i = 0; i < 20; i++)// will spawn crabs in mutiple random places
+        for (int i = 0; i < 20; i++)
         {
-            
             Vector2 randomCircle =
-                Random.insideUnitCircle * spawnRadius;// spawns only in radius tho
+                Random.insideUnitCircle * spawnRadius;
 
             Vector3 rayStart = new Vector3(
                 transform.position.x + randomCircle.x,
@@ -60,8 +69,7 @@ public class CrabSpawner : MonoBehaviour
                 transform.position.z + randomCircle.y
             );
 
-            
-            RaycastHit groundHit; // spawns on ground
+            RaycastHit groundHit;
 
             if (!Physics.Raycast(
                 rayStart,
@@ -74,33 +82,26 @@ public class CrabSpawner : MonoBehaviour
             }
 
             Vector3 spawnPosition =
-                groundHit.point + Vector3.up * groundOffset; // crab still clips into ground when spawned so this makes 
-            // em spawn higher up if we need
+                groundHit.point + Vector3.up * groundOffset;
 
-            
             if (Physics.CheckSphere(
                 spawnPosition,
                 collisionCheckRadius,
                 obstacleLayer))
             {
-                continue; // checks if anything is on the way so crab does not spawn into an object
+                continue;
             }
 
-            
             Instantiate(
                 crabPrefab,
                 spawnPosition,
-                Quaternion.identity // spawn crab
+                Quaternion.identity
             );
-
-            currentCrabs++;
 
             return;
         }
 
-        Debug.LogWarning(
-            "cant find a open place to spawn crab."
-        );
+        Debug.LogWarning("Can't find an open place to spawn crab.");
     }
 
     void OnDrawGizmosSelected()

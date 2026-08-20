@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8401881655966777755}
   - component: {fileID: 4381812250977326892}
   - component: {fileID: 1577073988202510224}
+  - component: {fileID: 438418633240023196}
   m_Layer: 0
   m_Name: WholeCoconutblend
   m_TagString: Whole Coconut
@@ -155,3 +156,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: 01e586cfb4e8495409fd010ea8bcac51, type: 2}
   amount: 1
+  sourcePrefab: {fileID: 0}
+--- !u!114 &438418633240023196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6946419899342493526}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c113d846ee9f765408b3ddf4f3708fdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeSpawnItem
+  lifetime: 30

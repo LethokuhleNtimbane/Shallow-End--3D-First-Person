@@ -9,6 +9,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
       propertyPath: m_LocalPosition.x
       value: 26.57
       objectReference: {fileID: 0}
@@ -51,6 +63,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
       propertyPath: m_Name
       value: 'Crab Design for Game '
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
+      propertyPath: m_TagString
+      value: Crab
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -97,7 +113,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4754680073658377424}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 10
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -114,7 +130,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 4
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!65 &4935201918528946178
 BoxCollider:

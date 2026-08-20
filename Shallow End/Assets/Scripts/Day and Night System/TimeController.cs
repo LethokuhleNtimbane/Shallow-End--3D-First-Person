@@ -29,9 +29,11 @@ public class TimeController : MonoBehaviour
 
     [SerializeField] private Light moonLight;
 
+    [SerializeField] private TextMeshProUGUI daytext;
+
     [SerializeField] private float maxMonnLightIntensity;
 
-  
+    private int Day = 1;
 
     private int previousHour;
     private int previousMinute;
@@ -61,6 +63,17 @@ public class TimeController : MonoBehaviour
         UpdateTimeOfDay();
         RotateSun();
         UpdateLightSetting();
+      
+    }
+    private void DayCount()
+    {
+        if (currentTime.ToString("HH:mm") == "00:00")
+        {
+            Day++;
+        }
+
+        daytext.text = "Day: " + Day.ToString();
+
     }
 
     private void UpdateTimeOfDay()
@@ -69,7 +82,7 @@ public class TimeController : MonoBehaviour
 
         if (TimerText != null)
         {
-            TimerText.text = currentTime.ToString("HH:mm");
+            TimerText.text = "Hour: " + currentTime.ToString("HH");
         }
 
         if (currentTime.Hour != previousHour || currentTime.Minute != previousMinute)
@@ -78,6 +91,7 @@ public class TimeController : MonoBehaviour
             previousMinute = currentTime.Minute;
 
             OnHourChanged?.Invoke();
+            DayCount();
         }
     }
     private void RotateSun()

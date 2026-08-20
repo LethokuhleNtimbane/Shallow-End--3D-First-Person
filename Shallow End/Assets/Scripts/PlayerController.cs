@@ -54,10 +54,10 @@ public class PlayerController : MonoBehaviour
 
     public void Jump (InputAction.CallbackContext context)
     {
-        Debug.Log($"Jumping {context.performed} - Is Grounded: {Controller.isGrounded}");
+       
         if(context.performed && Controller.isGrounded)
         {
-            Debug.Log("We are supposed to Jump");
+            
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
     }
@@ -75,6 +75,16 @@ public class PlayerController : MonoBehaviour
     public void OnLook(InputAction.CallbackContext context)
     {
         lookInput = context.ReadValue<Vector2>();
+    }
+    public void PlayerControl(bool PlayercanControl)
+    {
+        if (!PlayercanControl)
+        {
+            moveInput = Vector2.zero;
+            lookInput = Vector2.zero;
+        }
+
+        updateingRotation = PlayercanControl;
     }
 
     // Update is called once per frame

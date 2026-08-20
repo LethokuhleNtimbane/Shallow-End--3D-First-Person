@@ -11,15 +11,18 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     private int ItemAmount;
 
-    private Image iconImage;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private TextMeshProUGUI amountTxt;
+    [SerializeField] private GameObject selectionFrame;
 
-    private TextMeshProUGUI amountTxt;
 
-
-    private void Awake()
+    public void SelectedFrame(bool selected)
     {
-        iconImage = transform.GetChild(0).GetComponent<Image>();
-        amountTxt = transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+        if (selectionFrame != null)
+        {
+            selectionFrame.SetActive(selected);
+
+        }
     }
 
     public Items GetItem()

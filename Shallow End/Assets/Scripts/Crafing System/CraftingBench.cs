@@ -11,7 +11,7 @@ public class CraftingBench : MonoBehaviour
     {
         if (!playerNearby) return;
 
-        if (UIManager.Instance.IsInventoryOpen) return;
+        if (UIManager.Instance.IsAnyUIOpen()) return;
 
         if (craftAct.action.WasPressedThisFrame())
         {

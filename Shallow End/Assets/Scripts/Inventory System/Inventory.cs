@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -29,9 +29,7 @@ public class Inventory : MonoBehaviour
     [SerializeField] private InputActionReference dropAction;
 
     public Image DragIcon;
-    public float pickupRange = 3f;
-    private GroundItem lookedAtItem = null;
-   
+    public float pickupRange = 3f;   
     private Material originalmaerial;
     private Renderer lookedAtRender = null;
 
@@ -159,7 +157,73 @@ public class Inventory : MonoBehaviour
         HandleDropEquippedItem();
         UpdateHotBarOpacity();
     }
+    public int GetTotalItemAmount(Items itemToCheck)
+    {
+        int total = 0;
 
+     
+        foreach (Slot slot in hotbarSlots)
+        {
+            if (slot.Hasitem() && slot.GetItem() == itemToCheck)
+            {
+                total += slot.GetAmount();
+            }
+        }
+
+     
+        foreach (Slot slot in InventorySlots)
+        {
+            if (slot.Hasitem() && slot.GetItem() == itemToCheck)
+            {
+                total += slot.GetAmount();
+            }
+        }
+
+        return total;
+    }
+    public int RemoveItemAmount(Items itemToRemove, int amount)
+    {
+        int remaining = amount;
+
+      
+        foreach (Slot slot in hotbarSlots)
+        {
+            if (remaining <= 0)
+                break;
+
+            if (slot.Hasitem() && slot.GetItem() == itemToRemove)
+            {
+                int amountInSlot = slot.GetAmount();
+
+                int amountToRemove = Mathf.Min(amountInSlot, remaining);
+
+                slot.RemoveAmount(amountToRemove);
+
+                remaining -= amountToRemove;
+            }
+        }
+
+     
+        foreach (Slot slot in InventorySlots)
+        {
+            if (remaining <= 0)
+                break;
+
+            if (slot.Hasitem() && slot.GetItem() == itemToRemove)
+            {
+                int amountInSlot = slot.GetAmount();
+
+                int amountToRemove = Mathf.Min(amountInSlot, remaining);
+
+                slot.RemoveAmount(amountToRemove);
+
+                remaining -= amountToRemove;
+            }
+        }
+
+       
+        return amount - remaining;
+    }
     public bool AddItem(Items itemToAdd, int amount)
     {
         int remaining = amount;
@@ -453,13 +517,24 @@ public class Inventory : MonoBehaviour
         if (lookedAtRender != null && pickupobj.action.WasPressedThisFrame())
         {
             GroundItem item = lookedAtRender.GetComponent<GroundItem>();
+
             if (item != null)
             {
                 bool pickedUp = AddItem(item.item, item.amount);
 
                 if (pickedUp)
                 {
-                    Destroy(item.gameObject);
+                    ResourceRespawn respawn =
+                        item.GetComponent<ResourceRespawn>();
+
+                    if (respawn != null)
+                    {
+                        respawn.RespawnResource();
+                    }
+                    else
+                    {
+                        Destroy(item.gameObject);
+                    }
                 }
             }
         }
@@ -536,14 +611,10 @@ public class Inventory : MonoBehaviour
     }
     private void UpdateHotBarOpacity()
     {
+
         for (int i = 0; i < hotbarSlots.Count; i++)
         {
-            Image Icon = hotbarSlots[i].GetComponent<Image>();
-            if (Icon != null)
-            {
-                Icon.color = (i == equippedHotBarIndex) ? new Color(1, 1, 1, equippedOpacity) : new Color(1, 1, 1, normalOpacity);
-            }
-
+            hotbarSlots[i].SelectedFrame(i == equippedHotBarIndex);
         }
     }
 
@@ -561,22 +632,51 @@ public class Inventory : MonoBehaviour
     }
     private void HandleDropEquippedItem()
     {
-        if (!dropAction.action.WasPressedThisFrame()) return;
+        if (!dropAction.action.WasPressedThisFrame())
+            return;
 
-            Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
+        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
 
-            if (!equippedSlot.Hasitem()) return;
+        if (!equippedSlot.Hasitem())
+            return;
 
-            Items item = equippedSlot.GetItem();
+        Items item = equippedSlot.GetItem();
         GameObject prefab = item.ItenPrefab;
 
-        if (prefab == null) return;
+        if (prefab == null)
+            return;
 
-        GameObject dropped = Instantiate(prefab, Camera.main.transform.position + Camera.main.transform.forward, Quaternion.identity);
+        // Check the ground-item limit
+        if (GroundItemManager.Instance != null)
+        {
+            if (!GroundItemManager.Instance.CanSpawn(prefab))
+            {
+                Debug.Log(
+                    "Too many " + prefab.name +
+                    " objects are already on the ground."
+                );
+
+                return;
+            }
+        }
+
+        GameObject dropped = Instantiate(
+            prefab,
+            Camera.main.transform.position +
+            Camera.main.transform.forward,
+            Quaternion.identity
+        );
 
         GroundItem item1 = dropped.GetComponent<GroundItem>();
-        item1.item = item;
-        item1.amount = equippedSlot.GetAmount();
+
+        if (item1 != null)
+        {
+            item1.item = item;
+            item1.amount = equippedSlot.GetAmount();
+
+            // Remember exactly which prefab this came from
+            item1.sourcePrefab = prefab;
+        }
 
         equippedSlot.ClearSlot();
     }

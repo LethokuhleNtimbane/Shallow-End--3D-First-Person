@@ -15,7 +15,7 @@ MonoBehaviour:
   itemName: Sharp rock
   icon: {fileID: 21300000, guid: 8458b90950db1694abacba1d05d7678a, type: 3}
   maxStack: 16
-  ItenPrefab: {fileID: 1030404418415796724, guid: 50cfb77219c75b6439eb0ef78d6b527e, type: 3}
+  ItenPrefab: {fileID: 6309655929038704877, guid: 50cfb77219c75b6439eb0ef78d6b527e, type: 3}
   handItemPrefab: {fileID: 0}
   isFood: 0
   healthRegenerate: 0
