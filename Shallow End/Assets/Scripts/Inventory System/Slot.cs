@@ -92,6 +92,8 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void OnPointerEnter(PointerEventData eventData)
     {
         hovering = true;
+
+        Debug.Log("MOUSE ENTERED SLOT: " + gameObject.name);
     }
 
     public void OnPointerExit(PointerEventData eventData)

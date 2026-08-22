@@ -3,7 +3,6 @@ using UnityEngine.InputSystem;
 
 public class Fireplace : MonoBehaviour
 {
-   
     [SerializeField] private GameObject fireMat;
     [SerializeField] private Light fireLight;
     [SerializeField] private FireProtect fireProtection;
@@ -11,6 +10,7 @@ public class Fireplace : MonoBehaviour
     [SerializeField] private Items flint;
     [SerializeField] private InputActionReference interactAction;
     [SerializeField] private float interactionRange = 3f;
+    [SerializeField] private GameObject fireDamageZone;
     [SerializeField] private GameObject protectionZone;
 
     private bool fireIsLit = false;
@@ -33,6 +33,7 @@ public class Fireplace : MonoBehaviour
 
     private void Start()
     {
+        // Make absolutely sure everything starts OFF.
         TurnFireOff();
     }
 
@@ -106,9 +107,16 @@ public class Fireplace : MonoBehaviour
             fireLight.enabled = true;
         }
 
+        // Monster protection ON
         if (protectionZone != null)
         {
             protectionZone.SetActive(true);
+        }
+
+        // Fire damage ON
+        if (fireDamageZone != null)
+        {
+            fireDamageZone.SetActive(true);
         }
 
         if (fireProtection != null)
@@ -116,7 +124,11 @@ public class Fireplace : MonoBehaviour
             fireProtection.SetFire(true);
         }
 
-    
+        // Consume one Flint
+        if (inventory != null)
+        {
+            inventory.RemoveHotbarItem(1);
+        }
     }
 
     private void TurnFireOff()
@@ -133,9 +145,16 @@ public class Fireplace : MonoBehaviour
             fireLight.enabled = false;
         }
 
+        // Monster protection OFF
         if (protectionZone != null)
         {
             protectionZone.SetActive(false);
+        }
+
+        // Fire damage OFF
+        if (fireDamageZone != null)
+        {
+            fireDamageZone.SetActive(false);
         }
 
         if (fireProtection != null)
@@ -154,8 +173,6 @@ public class Fireplace : MonoBehaviour
         if (hour >= 6 && hour < 20)
         {
             TurnFireOff();
-
-        
         }
     }
 }

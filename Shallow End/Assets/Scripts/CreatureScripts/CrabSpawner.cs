@@ -3,23 +3,23 @@ using System.Collections;
 
 public class CrabSpawner : MonoBehaviour
 {
-    [Header("Crab")]
+  
     public GameObject crabPrefab;
 
-    [Header("Spawning")]
+    
     public int maxCrabs = 10;
     public float spawnRadius = 20f;
 
-    [Header("Timing")]
+ 
     public float minSpawnTime = 2f;
     public float maxSpawnTime = 5f;
 
-    [Header("Ground")]
+ 
     public float raycastHeight = 20f;
     public float groundOffset = 0f;
     public LayerMask groundLayer;
 
-    [Header("Collision")]
+   
     public float collisionCheckRadius = 0.5f;
     public LayerMask obstacleLayer;
 
@@ -27,10 +27,10 @@ public class CrabSpawner : MonoBehaviour
     {
         while (true)
         {
-            // Count how many crabs currently exist
+        
             int currentCrabs = GameObject.FindGameObjectsWithTag("Crab").Length;
 
-            // Only spawn if we have fewer than the maximum
+            
             if (currentCrabs < maxCrabs)
             {
                 float waitTime = Random.Range(
@@ -40,7 +40,7 @@ public class CrabSpawner : MonoBehaviour
 
                 yield return new WaitForSeconds(waitTime);
 
-                // Check again after waiting
+           
                 currentCrabs = GameObject.FindGameObjectsWithTag("Crab").Length;
 
                 if (currentCrabs < maxCrabs)
@@ -50,7 +50,7 @@ public class CrabSpawner : MonoBehaviour
             }
             else
             {
-                // Check again shortly
+               
                 yield return new WaitForSeconds(1f);
             }
         }
@@ -101,7 +101,7 @@ public class CrabSpawner : MonoBehaviour
             return;
         }
 
-        Debug.LogWarning("Can't find an open place to spawn crab.");
+    
     }
 
     void OnDrawGizmosSelected()

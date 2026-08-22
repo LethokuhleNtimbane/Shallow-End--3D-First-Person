@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 3469745056739902460}
   - component: {fileID: 6763318661969179457}
   m_Layer: 0
-  m_Name: Rock 6 for Game
+  m_Name: Flint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

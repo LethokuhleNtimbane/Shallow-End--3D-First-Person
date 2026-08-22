@@ -52,12 +52,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void Jump (InputAction.CallbackContext context)
+    public void Jump(InputAction.CallbackContext context)
     {
-       
-        if(context.performed && Controller.isGrounded)
+        if (!updateingRotation)
+            return;
+
+        if (context.performed && Controller.isGrounded)
         {
-            
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
     }

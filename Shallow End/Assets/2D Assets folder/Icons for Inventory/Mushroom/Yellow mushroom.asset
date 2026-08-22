@@ -17,3 +17,5 @@ MonoBehaviour:
   maxStack: 16
   ItenPrefab: {fileID: 8117569657257714815, guid: ad32a529818d4774199e815938d33f43, type: 3}
   handItemPrefab: {fileID: 0}
+  isFood: 1
+  healthRegenerate: 5

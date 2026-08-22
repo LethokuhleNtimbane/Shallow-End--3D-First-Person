@@ -152,6 +152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: 470dd5c8eb95a294899fbd08233024e0, type: 2}
   amount: 1
+  sourcePrefab: {fileID: 0}
 --- !u!114 &-2237206306429440921
 MonoBehaviour:
   m_ObjectHideFlags: 0

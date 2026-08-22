@@ -12,6 +12,7 @@ public class Inventory : MonoBehaviour
     public Items Vines;
     public Items WholeCoconut;
     public Items Coconut;
+    [SerializeField] private Camera playerCamera;
     public Items RMushroom;
     public Items YMushroom;
     public Items PMushroom;
@@ -49,12 +50,22 @@ public class Inventory : MonoBehaviour
 
     private void Awake()
     {
-        InventorySlots.AddRange(inventorySlotParent.GetComponentsInChildren<Slot>());
-        hotbarSlots.AddRange(hotBrObj.GetComponentsInChildren<Slot>());
-        craftingSlots.AddRange(Crafting.GetComponentsInChildren<Slot>());
+        InventorySlots.AddRange(
+     inventorySlotParent.GetComponentsInChildren<Slot>(true));
 
+        hotbarSlots.AddRange(
+            hotBrObj.GetComponentsInChildren<Slot>(true));
+
+        craftingSlots.AddRange(
+     Crafting.GetComponentsInChildren<Slot>(true)
+ );
+
+       
+
+        
         allSlots.AddRange(InventorySlots);
         allSlots.AddRange(hotbarSlots);
+     
       
     }
     private void OnEnable()
@@ -73,12 +84,19 @@ public class Inventory : MonoBehaviour
     public Items GetHotbarItem()
     {
         if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count)
+        {
+            
             return null;
+        }
 
         Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
 
+ 
+
         if (!equippedSlot.Hasitem())
             return null;
+
+     
 
         return equippedSlot.GetItem();
     }
@@ -116,6 +134,38 @@ public class Inventory : MonoBehaviour
 
         return equippedSlot.GetItem() == AxeItem;
     }
+    public bool IsKnifeEquipped()
+    {
+        Items equippedItem = GetHotbarItem();
+
+        if (equippedItem == null)
+        {
+     
+            return false;
+        }
+
+    
+
+        if (Knife == null)
+        {
+          
+            return false;
+        }
+
+       
+
+        return equippedItem == Knife;
+    }
+
+    public bool IsSpearEquipped()
+    {
+        Items equippedItem = GetHotbarItem();
+
+        if (equippedItem == null)
+            return false;
+
+        return equippedItem == Spear;
+    }
     private void OnDisable()
     {
         OpenInventory.action.Disable();
@@ -135,16 +185,9 @@ public class Inventory : MonoBehaviour
 
         if (OpenInventory.action.WasPressedThisFrame())
         {
-            container.SetActive(!container.activeInHierarchy);
-
-            bool inventoryOpen = container.activeInHierarchy;
-
-            Cursor.lockState = inventoryOpen ? CursorLockMode.None : CursorLockMode.Locked;
-
-            Cursor.visible = inventoryOpen;
+            bool inventoryOpen = !UIManager.Instance.IsInventoryOpen();
 
             UIManager.Instance.SetInventoryOpen(inventoryOpen);
-
         }
         DetectLookedAtItem();
         Pickup();
@@ -157,6 +200,7 @@ public class Inventory : MonoBehaviour
         HandleDropEquippedItem();
         UpdateHotBarOpacity();
     }
+
     public int GetTotalItemAmount(Items itemToCheck)
     {
         int total = 0;
@@ -340,7 +384,7 @@ public class Inventory : MonoBehaviour
 
                 if (craftingSlots.Contains(hovered) || craftingSlots.Contains(originalSlot))
                 {
-                    Debug.Log("Checking crafting recipe...");
+                   
                     craftingSystem.UpdateCraftingResult();
                 }
                 DragIcon.enabled = false;
@@ -365,7 +409,7 @@ public class Inventory : MonoBehaviour
         {
             if (s.hovering)
             {
-             
+            
                 return s;
             }
         }
@@ -374,11 +418,9 @@ public class Inventory : MonoBehaviour
             craftingSystem.resultSlot != null &&
             craftingSystem.resultSlot.hovering)
         {
-        
+         
             return craftingSystem.resultSlot;
         }
-
-       
 
         return null;
     }
@@ -549,7 +591,7 @@ public class Inventory : MonoBehaviour
 
         }
 
-        Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
         if (Physics.Raycast(ray, out RaycastHit hit, pickupRange))
         {
             GroundItem item = hit.collider.GetComponent<GroundItem>();
@@ -625,9 +667,11 @@ public class Inventory : MonoBehaviour
             if (hotbarActions[i].action.WasPressedThisFrame())
             {
                 equippedHotBarIndex = i;
+
+             
+
                 UpdateHotBarOpacity();
             }
-
         }
     }
     private void HandleDropEquippedItem()
@@ -651,11 +695,7 @@ public class Inventory : MonoBehaviour
         {
             if (!GroundItemManager.Instance.CanSpawn(prefab))
             {
-                Debug.Log(
-                    "Too many " + prefab.name +
-                    " objects are already on the ground."
-                );
-
+               
                 return;
             }
         }

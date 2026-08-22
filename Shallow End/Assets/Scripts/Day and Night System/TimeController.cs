@@ -56,7 +56,35 @@ public class TimeController : MonoBehaviour
         previousHour = currentTime.Hour;
         previousMinute = currentTime.Minute;
     }
+    public bool IsNight
+    {
+        get
+        {
+            return currentTime.TimeOfDay >= TimeSpan.FromHours(21) ||
+                   currentTime.TimeOfDay < TimeSpan.FromHours(6);
+        }
+    }
 
+    public bool CanSleep
+    {
+        get
+        {
+            return currentTime.TimeOfDay >= TimeSpan.FromHours(21);
+        }
+    }
+
+    public void WakeUp()
+    {
+        previousHour = currentTime.Hour;
+        previousMinute = currentTime.Minute;
+
+        Day++;
+
+        if (daytext != null)
+        {
+            daytext.text = "Day: " + Day;
+        }
+    }
     // Update is called once per frame
     void Update()
     {
@@ -65,15 +93,21 @@ public class TimeController : MonoBehaviour
         UpdateLightSetting();
       
     }
+    public void SetTimeMultiplier(float multiplier)
+    {
+        TimeMultiplier = multiplier;
+    }
     private void DayCount()
     {
-        if (currentTime.ToString("HH:mm") == "00:00")
+        if (currentTime.Hour == 0 && previousHour == 23)
         {
             Day++;
         }
 
-        daytext.text = "Day: " + Day.ToString();
-
+        if (daytext != null)
+        {
+            daytext.text = "Day: " + Day;
+        }
     }
 
     private void UpdateTimeOfDay()

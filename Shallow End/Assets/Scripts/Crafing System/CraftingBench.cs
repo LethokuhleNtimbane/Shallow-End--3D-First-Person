@@ -3,36 +3,60 @@ using UnityEngine.InputSystem;
 
 public class CraftingBench : MonoBehaviour
 {
+    [Header("Input")]
     [SerializeField] private InputActionReference craftAct;
-    public GameObject GcraftingSystem;
+
+    [Header("UI")]
+    [SerializeField] private GameObject GcraftingSystem;
+    [SerializeField] private GameObject inventoryUI;
+
+
+    [SerializeField] private GameObject inventoryContainer;
+
     private bool playerNearby = false;
 
     private void Update()
     {
-        if (!playerNearby) return;
-
-        if (UIManager.Instance.IsAnyUIOpen()) return;
+        if (!playerNearby)
+            return;
 
         if (craftAct.action.WasPressedThisFrame())
         {
-            TCrafting();
+            ToggleCrafting();
         }
     }
-    private void TCrafting()
+
+    private void ToggleCrafting()
     {
-        if (GcraftingSystem == null) return;
+        if (GcraftingSystem == null)
+            return;
 
-        bool isOpen = GcraftingSystem.activeSelf;
+        bool shouldOpen = !GcraftingSystem.activeSelf;
 
-        GcraftingSystem.SetActive(!isOpen);
+        GcraftingSystem.SetActive(shouldOpen);
 
-        Cursor.visible = !isOpen;
+        if (inventoryUI != null)
+        {
+            inventoryUI.SetActive(shouldOpen);
+        }
 
-        Cursor.lockState = isOpen ? CursorLockMode.None : CursorLockMode.Locked;
+        if (inventoryContainer != null)
+        {
+            inventoryContainer.SetActive(shouldOpen);
+        }
 
-        
-            UIManager.Instance.SetCraftingOpen(isOpen);
-       
+        UIManager.Instance.SetCraftingOpen(shouldOpen);
+
+        if (shouldOpen)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -43,26 +67,32 @@ public class CraftingBench : MonoBehaviour
         }
     }
 
-     private void OnTriggerExit(Collider other)
+    private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-         playerNearby = false;
+            playerNearby = false;
 
-          if (GcraftingSystem != null) 
-            { 
-
-            {
-             GcraftingSystem.SetActive(false);
-            }
-                Cursor.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
-
-                UIManager.Instance.SetCraftingOpen(false);
-             
-            }
-             
+            CloseCrafting();
         }
+    }
+
+    private void CloseCrafting()
+    {
+        if (GcraftingSystem != null)
+        {
+            GcraftingSystem.SetActive(false);
+        }
+
+        if (inventoryUI != null)
+        {
+            inventoryUI.SetActive(false);
+        }
+
+        UIManager.Instance.SetCraftingOpen(false);
+
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 }
 

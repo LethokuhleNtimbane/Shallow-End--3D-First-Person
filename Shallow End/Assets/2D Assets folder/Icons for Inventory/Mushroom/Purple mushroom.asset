@@ -18,4 +18,4 @@ MonoBehaviour:
   ItenPrefab: {fileID: 877468990305962446, guid: a64c5370a28d6f547a58fd968bbe64fe, type: 3}
   handItemPrefab: {fileID: 0}
   isFood: 1
-  healthRegenerate: 10
+  healthRegenerate: 5

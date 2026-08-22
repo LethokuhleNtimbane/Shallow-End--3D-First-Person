@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class CrabMovement : MonoBehaviour
 {
-    [Header("Movement")]
+   
     public float moveSpeed = 2f;
     public float rotationSpeed = 5f;
 
-    [Header("Wandering")]
+
     public float minMoveTime = 1f;
     public float maxMoveTime = 4f;
     public float minWaitTime = 0.5f;

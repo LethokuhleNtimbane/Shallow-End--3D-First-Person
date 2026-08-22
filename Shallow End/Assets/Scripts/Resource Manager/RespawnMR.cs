@@ -39,17 +39,17 @@ public class ResourceRespawn : MonoBehaviour
     {
         respawning = true;
 
-        Debug.Log("1. Resource is respawning in " + respawnTime + " seconds.");
+       
 
         // Hide the resource
         SetResourceVisible(false);
 
-        Debug.Log("2. Resource has been hidden.");
+     
 
         // Wait for respawn time
         yield return new WaitForSeconds(respawnTime);
 
-        Debug.Log("3. Respawn timer finished.");
+  
 
         // Restore position
         transform.position = originalPosition;
@@ -58,7 +58,7 @@ public class ResourceRespawn : MonoBehaviour
         // Show resource
         SetResourceVisible(true);
 
-        Debug.Log("4. Resource has respawned!");
+       
 
         respawning = false;
     }

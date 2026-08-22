@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e90402f69b9d3a948927d065e761d3db, type: 3}
   m_Name: Sharp rock
   m_EditorClassIdentifier: Assembly-CSharp::Items
-  itemName: Sharp rock
+  itemName: Flint
   icon: {fileID: 21300000, guid: 8458b90950db1694abacba1d05d7678a, type: 3}
   maxStack: 16
   ItenPrefab: {fileID: 6309655929038704877, guid: 50cfb77219c75b6439eb0ef78d6b527e, type: 3}
