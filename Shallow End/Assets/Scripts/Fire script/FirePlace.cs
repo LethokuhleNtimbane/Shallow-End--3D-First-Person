@@ -33,7 +33,7 @@ public class Fireplace : MonoBehaviour
 
     private void Start()
     {
-        // Make absolutely sure everything starts OFF.
+   
         TurnFireOff();
     }
 
@@ -107,13 +107,13 @@ public class Fireplace : MonoBehaviour
             fireLight.enabled = true;
         }
 
-        // Monster protection ON
+       
         if (protectionZone != null)
         {
             protectionZone.SetActive(true);
         }
 
-        // Fire damage ON
+     
         if (fireDamageZone != null)
         {
             fireDamageZone.SetActive(true);
@@ -124,7 +124,7 @@ public class Fireplace : MonoBehaviour
             fireProtection.SetFire(true);
         }
 
-        // Consume one Flint
+    
         if (inventory != null)
         {
             inventory.RemoveHotbarItem(1);
@@ -145,13 +145,12 @@ public class Fireplace : MonoBehaviour
             fireLight.enabled = false;
         }
 
-        // Monster protection OFF
+        
         if (protectionZone != null)
         {
             protectionZone.SetActive(false);
         }
 
-        // Fire damage OFF
         if (fireDamageZone != null)
         {
             fireDamageZone.SetActive(false);

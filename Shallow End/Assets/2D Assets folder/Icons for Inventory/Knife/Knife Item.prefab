@@ -104,6 +104,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5ca9e8be4709fa243b87d1037e7030ce, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5328811679753791122}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5ca9e8be4709fa243b87d1037e7030ce, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5836198844584771494}
   m_SourcePrefab: {fileID: 100100000, guid: 5ca9e8be4709fa243b87d1037e7030ce, type: 3}
 --- !u!1 &5482990409878403042 stripped
 GameObject:
@@ -172,6 +175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: e4d027702d57f3f4b90da5a71645be9f, type: 2}
   amount: 1
+  sourcePrefab: {fileID: 0}
 --- !u!23 &5328811679753791122
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -221,3 +225,16 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &5836198844584771494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5482990409878403042}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c113d846ee9f765408b3ddf4f3708fdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeSpawnItem
+  lifetime: 30

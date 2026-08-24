@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e90402f69b9d3a948927d065e761d3db, type: 3}
+  m_Name: Book
+  m_EditorClassIdentifier: Assembly-CSharp::Items
+  itemName: Book
+  icon: {fileID: 21300000, guid: 5c0eea50b781d49499c593c04b075e0c, type: 3}
+  maxStack: 1
+  ItenPrefab: {fileID: 8771672130407418300, guid: 15e939f1f68bfa5499ec8374f3efe8eb, type: 3}
+  handItemPrefab: {fileID: 0}
+  isFood: 0
+  healthRegenerate: 0

@@ -193,6 +193,7 @@ GameObject:
   - component: {fileID: 2734993013699809423}
   - component: {fileID: 8370811082874668184}
   - component: {fileID: 6123921558193323214}
+  - component: {fileID: 4869004277651935808}
   m_Layer: 0
   m_Name: Spear Item
   m_TagString: Untagged
@@ -236,6 +237,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: ab1074ca19454e14fb479db6169d24d0, type: 2}
   amount: 1
+  sourcePrefab: {fileID: 0}
 --- !u!23 &2734993013699809423
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -333,6 +335,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.3427932, y: 22.679237, z: 3.1357036}
   m_Center: {x: -0.7912994, y: -8.577917, z: -0.015939515}
+--- !u!114 &4869004277651935808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2173714790193504078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c113d846ee9f765408b3ddf4f3708fdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeSpawnItem
+  lifetime: 30
 --- !u!1 &2329157453980707871
 GameObject:
   m_ObjectHideFlags: 0

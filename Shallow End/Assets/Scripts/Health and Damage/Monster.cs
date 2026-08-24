@@ -14,7 +14,7 @@ public class Monster : MonoBehaviour
 
     [SerializeField] private float moveSpeed = 2f;
 
- 
+    [SerializeField] private float attackDistance = 1.5f;
     [SerializeField] private GameObject attackHitbox;
 
 
@@ -38,7 +38,7 @@ public class Monster : MonoBehaviour
 
         if (sleeping)
         {
-            // Hide monster while player is sleeping
+        
             monsterAwake = false;
 
             if (monsterVisual != null)
@@ -53,9 +53,7 @@ public class Monster : MonoBehaviour
         }
         else
         {
-            // Player woke up.
-            // Check the current time and bring the monster back
-            // if it is still monster time.
+            
             UpdateMonster();
         }
     }
@@ -122,8 +120,13 @@ public class Monster : MonoBehaviour
 
         direction.y = 0f;
 
-        if (direction.sqrMagnitude <= 0.01f)
+        float distance = direction.magnitude;
+
+      
+        if (distance <= attackDistance)
+        {
             return;
+        }
 
         direction.Normalize();
 
@@ -134,7 +137,7 @@ public class Monster : MonoBehaviour
             Quaternion.LookRotation(direction);
     }
 
-   
+
 
     public void Stun(float duration)
     {

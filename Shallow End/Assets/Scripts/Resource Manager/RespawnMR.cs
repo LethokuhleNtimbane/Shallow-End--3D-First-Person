@@ -41,21 +41,21 @@ public class ResourceRespawn : MonoBehaviour
 
        
 
-        // Hide the resource
+
         SetResourceVisible(false);
 
      
 
-        // Wait for respawn time
+
         yield return new WaitForSeconds(respawnTime);
 
   
 
-        // Restore position
+    
         transform.position = originalPosition;
         transform.rotation = originalRotation;
 
-        // Show resource
+ 
         SetResourceVisible(true);
 
        
@@ -65,13 +65,13 @@ public class ResourceRespawn : MonoBehaviour
 
     private void SetResourceVisible(bool visible)
     {
-        // Turn collider on/off
+       
         if (resourceCollider != null)
         {
             resourceCollider.enabled = visible;
         }
 
-        // Turn mesh/renderers on/off
+
         foreach (Renderer renderer in renderers)
         {
             renderer.enabled = visible;

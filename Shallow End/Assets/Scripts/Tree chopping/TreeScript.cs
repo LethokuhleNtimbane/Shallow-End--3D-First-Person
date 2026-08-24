@@ -4,11 +4,16 @@ using UnityEngine.InputSystem;
 
 public class TreeScript : MonoBehaviour
 {
+  
     [SerializeField] private Inventory inventory;
     [SerializeField] private TimeController timeController;
+
+  
     [SerializeField] private GameObject tree;
 
+  
     [SerializeField] private InputActionReference interactAction;
+
 
     [SerializeField] private Items woodItem;
     [SerializeField] private Items coconutItem;
@@ -17,6 +22,7 @@ public class TreeScript : MonoBehaviour
     [SerializeField] private int minimumDrop = 1;
     [SerializeField] private int maximumDrop = 4;
     [SerializeField] private float dropRange = 2f;
+
 
     [SerializeField] private int ReGrow = 6;
 
@@ -27,23 +33,26 @@ public class TreeScript : MonoBehaviour
     {
         if (interactAction != null)
         {
-         interactAction.action.Enable();
+            interactAction.action.Enable();
         }
-       
     }
+
     private void OnDisable()
     {
         if (interactAction != null)
         {
             interactAction.action.Disable();
         }
-       
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+
+    private void Start()
     {
-        timeController.OnHourChanged += CheckRegrowth;
+        if (timeController != null)
+        {
+            timeController.OnHourChanged += CheckRegrowth;
+        }
     }
+
     private void OnDestroy()
     {
         if (timeController != null)
@@ -52,70 +61,72 @@ public class TreeScript : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (interactAction == null)return;
-      
+        if (interactAction == null)
+            return;
 
         if (interactAction.action.WasPressedThisFrame())
         {
-     
             TryInteract();
         }
     }
+
     private void TryInteract()
     {
-  
-
         if (isChopped)
-        {
-          
             return;
+
+        if (inventory == null)
+        {
+            inventory = FindFirstObjectByType<Inventory>();
         }
 
-        if (!inventory.IsAxeEquipped())
-        {
-           
+        if (inventory == null)
             return;
-        }
 
-     
+        if (Camera.main == null)
+            return;
 
         Ray ray = new Ray(
             Camera.main.transform.position,
             Camera.main.transform.forward
         );
 
-        if (Physics.Raycast(ray, out RaycastHit hit, 3f))
-        {
-         
+        if (!Physics.Raycast(ray, out RaycastHit hit, 3f))
+            return;
 
-            if (hit.transform == transform ||
-                hit.transform.IsChildOf(transform))
-            {
-         
-                ChopTree();
-            }
-            else
-            {
-            
-            }
-        }
-        else
-        {
        
+        if (hit.transform == transform ||
+            hit.transform.IsChildOf(transform))
+        {
+           
+            if (!inventory.IsAxeEquipped())
+            {
+                inventory.ShowInteractionMessage("I need an axe");
+                return;
+            }
+
+        
+            ChopTree();
         }
     }
+
     private void ChopTree()
     {
         isChopped = true;
 
-        choppedTime = timeController.CurrentTime;
+        if (timeController != null)
+        {
+            choppedTime = timeController.CurrentTime;
+        }
 
         SpawnDrops();
 
-        tree.SetActive(false);
+        if (tree != null)
+        {
+            tree.SetActive(false);
+        }
     }
 
     private void SpawnDrops()
@@ -127,43 +138,74 @@ public class TreeScript : MonoBehaviour
 
     private void SpawnDrop(Items item)
     {
-        if (item == null) return;
+        if (item == null)
+            return;
 
-        if (item.ItenPrefab == null) return;
+        if (item.ItenPrefab == null)
+            return;
 
-        int amount = UnityEngine.Random.Range(minimumDrop, maximumDrop + 1);
+        int amount = UnityEngine.Random.Range(
+            minimumDrop,
+            maximumDrop + 1
+        );
 
-        for (int i = 0; i< amount; i++)
+        for (int i = 0; i < amount; i++)
         {
-            Vector3 randomPosition = transform.position + new Vector3(UnityEngine.Random.Range(-dropRange, dropRange), 0.5f, UnityEngine.Random.Range(-dropRange, dropRange));
-            GameObject droppedObject = Instantiate(item.ItenPrefab, randomPosition, Quaternion.identity);
+            Vector3 randomPosition =
+                transform.position +
+                new Vector3(
+                    UnityEngine.Random.Range(
+                        -dropRange,
+                        dropRange
+                    ),
+                    0.5f,
+                    UnityEngine.Random.Range(
+                        -dropRange,
+                        dropRange
+                    )
+                );
 
-            GroundItem groundItem = droppedObject.GetComponent<GroundItem>();
+            GameObject droppedObject = Instantiate(
+                item.ItenPrefab,
+                randomPosition,
+                Quaternion.identity
+            );
+
+            GroundItem groundItem =
+                droppedObject.GetComponent<GroundItem>();
 
             if (groundItem != null)
             {
                 groundItem.item = item;
                 groundItem.amount = 1;
             }
-
         }
     }
+
     private void CheckRegrowth()
     {
-        if (!isChopped) return;
+        if (!isChopped)
+            return;
 
-        TimeSpan timepassed = timeController.CurrentTime - choppedTime;
+        if (timeController == null)
+            return;
+
+        TimeSpan timepassed =
+            timeController.CurrentTime - choppedTime;
 
         if (timepassed.TotalHours >= ReGrow)
         {
             RegrowTree();
-
         }
     }
+
     private void RegrowTree()
     {
         isChopped = false;
 
-        tree.SetActive(true);
+        if (tree != null)
+        {
+            tree.SetActive(true);
+        }
     }
 }

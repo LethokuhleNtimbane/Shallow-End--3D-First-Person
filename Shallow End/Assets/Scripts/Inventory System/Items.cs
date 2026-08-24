@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Item", menuName = "NewItem")]
 public class Items : ScriptableObject
 {
+   
     public string itemName;
     public Sprite icon;
     public int maxStack;
@@ -11,5 +12,6 @@ public class Items : ScriptableObject
     public GameObject handItemPrefab;
 
     public bool isFood;
-    public float healthRegenerate;
+    public float healthRegenerate; 
+
 }

@@ -4,14 +4,13 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
 
-    [Header("HUD")]
+
     [SerializeField] private GameObject inGameHUD;
 
-    [Header("Inventory")]
     [SerializeField] private GameObject inventoryUI;
     [SerializeField] private GameObject inventoryContainer;
 
-    [Header("Crafting")]
+
     [SerializeField] private GameObject craftingUI;
 
     private bool inventoryOpen;
@@ -24,7 +23,7 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        // Start with both interfaces closed
+    
         inventoryOpen = false;
         craftingOpen = false;
 
@@ -64,9 +63,7 @@ public class UIManager : MonoBehaviour
     {
         bool anyUIOpen = inventoryOpen || craftingOpen;
 
-        // -------------------------
-        // INVENTORY
-        // -------------------------
+
 
         if (inventoryUI != null)
         {
@@ -78,36 +75,28 @@ public class UIManager : MonoBehaviour
             inventoryContainer.SetActive(inventoryOpen || craftingOpen);
         }
 
-        // -------------------------
-        // CRAFTING
-        // -------------------------
+
 
         if (craftingUI != null)
         {
             craftingUI.SetActive(craftingOpen);
         }
 
-        // -------------------------
-        // NORMAL HUD
-        // -------------------------
+       
 
         if (inGameHUD != null)
         {
             inGameHUD.SetActive(!anyUIOpen);
         }
 
-        // -------------------------
-        // PLAYER CONTROL
-        // -------------------------
+    
 
         if (PlayerController.Instance != null)
         {
             PlayerController.Instance.PlayerControl(!anyUIOpen);
         }
 
-        // -------------------------
-        // CURSOR
-        // -------------------------
+
 
         Cursor.visible = anyUIOpen;
 

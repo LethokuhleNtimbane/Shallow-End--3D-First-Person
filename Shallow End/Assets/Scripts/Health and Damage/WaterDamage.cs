@@ -16,7 +16,7 @@ public class WaterDamage : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             InWater = true;
-            Debug.Log("Player in Water");
+          
 
             damageCoroutine = StartCoroutine(WaitAndDamage());
         }

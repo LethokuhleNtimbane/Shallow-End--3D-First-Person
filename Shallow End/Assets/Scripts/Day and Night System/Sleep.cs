@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
+using System.Collections;
 
 public class SleepManager : MonoBehaviour
 {
@@ -7,16 +9,23 @@ public class SleepManager : MonoBehaviour
 
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Camera sleepCamera;
-    [SerializeField] private Monster monster;
-    [SerializeField] private float sleepTimeMultiplier = 120f;
 
-    [SerializeField] private InputActionReference interactAction;
+    [SerializeField] private Monster monster;
+    [SerializeField] private MonsterAttack monsterattack;
+
+    [SerializeField] private GameObject sleepObject;
+
+    [SerializeField] private TextMeshProUGUI sleepWarningText;
+    [SerializeField] private float warningDuration = 2f;
+
+    [SerializeField] private float sleepTimeMultiplier = 120f;
+    [SerializeField] private float normalTimeMultiplier = 1f;
 
     private bool sleeping = false;
 
-    public bool IsSleeping => sleeping;
+    private Coroutine warningCoroutine;
 
-    private float normalTimeMultiplier;
+    public bool IsSleeping => sleeping;
 
     private void Awake()
     {
@@ -25,13 +34,19 @@ public class SleepManager : MonoBehaviour
 
     private void Start()
     {
-        sleepCamera.gameObject.SetActive(false);
-
-        normalTimeMultiplier = GetTimeMultiplier();
-
-        if (SleepManager.Instance != null && SleepManager.Instance.IsSleeping)
+        if (sleepCamera != null)
         {
-            return;
+            sleepCamera.gameObject.SetActive(false);
+        }
+
+        if (sleepObject != null)
+        {
+            sleepObject.SetActive(false);
+        }
+
+        if (sleepWarningText != null)
+        {
+            sleepWarningText.gameObject.SetActive(false);
         }
     }
 
@@ -40,7 +55,7 @@ public class SleepManager : MonoBehaviour
         if (!sleeping)
             return;
 
-        // Wake up by pressing Space
+       
         if (Keyboard.current != null &&
             Keyboard.current.spaceKey.wasPressedThisFrame)
         {
@@ -48,8 +63,15 @@ public class SleepManager : MonoBehaviour
             return;
         }
 
-        // Automatically wake up at 6 AM
-        CheckWakeUp();
+       
+        TimeController time = TimeController.instance;
+
+        if (time != null &&
+            time.CurrentTime.Hour >= 6 &&
+            time.CurrentTime.Hour < 21)
+        {
+            WakeUp();
+        }
     }
 
     public void TrySleep()
@@ -64,45 +86,89 @@ public class SleepManager : MonoBehaviour
 
         int hour = time.CurrentTime.Hour;
 
-        // Can sleep from 21:00 until 05:59
-        if (hour < 21 && hour >= 6)
+        if (hour >= 6 && hour < 21)
         {
-            Debug.Log("You can only sleep between 21:00 and 06:00.");
+            ShowSleepWarning();
             return;
         }
 
         StartSleeping();
     }
 
+    private void ShowSleepWarning()
+    {
+        if (sleepWarningText == null)
+            return;
+
+        sleepWarningText.text = "I can only sleep at 21:00";
+        sleepWarningText.gameObject.SetActive(true);
+
+        if (warningCoroutine != null)
+        {
+            StopCoroutine(warningCoroutine);
+        }
+
+        warningCoroutine = StartCoroutine(HideSleepWarning());
+    }
+
+    private IEnumerator HideSleepWarning()
+    {
+        yield return new WaitForSeconds(warningDuration);
+
+        if (sleepWarningText != null)
+        {
+            sleepWarningText.gameObject.SetActive(false);
+        }
+
+        warningCoroutine = null;
+    }
+
     private void StartSleeping()
     {
         sleeping = true;
 
-        // Disable monster
+       
+
+   
+        if (sleepObject != null)
+        {
+            sleepObject.SetActive(true);
+        }
+
+       
         if (monster != null)
         {
             monster.SetPlayerSleeping(true);
+
+            if (monsterattack != null)
+            {
+                monsterattack.enabled = false;
+            }
         }
 
-        // Disable player movement and camera look
-        PlayerController.Instance.PlayerControl(false);
-
-        // Switch cameras
-        playerCamera.gameObject.SetActive(false);
-        sleepCamera.gameObject.SetActive(true);
-
-        // Speed up time
-        TimeController.instance.SetTimeMultiplier(sleepTimeMultiplier);
-    }
-
-    private void CheckWakeUp()
-    {
-        TimeController time = TimeController.instance;
-
-        if (time.CurrentTime.Hour >= 6 &&
-            time.CurrentTime.Hour < 21)
+    
+        if (PlayerController.Instance != null)
         {
-            WakeUp();
+            PlayerController.Instance.PlayerControl(false);
+        }
+
+    
+        if (playerCamera != null)
+        {
+            playerCamera.gameObject.SetActive(false);
+        }
+
+        if (sleepCamera != null)
+        {
+            sleepCamera.gameObject.SetActive(true);
+        }
+
+ 
+        if (TimeController.instance != null)
+        {
+            TimeController.instance.SetTimeMultiplier(
+                sleepTimeMultiplier
+            );
         }
     }
 
@@ -113,36 +179,47 @@ public class SleepManager : MonoBehaviour
 
         sleeping = false;
 
-        // Restore normal time speed
-        TimeController.instance.SetTimeMultiplier(normalTimeMultiplier);
+ 
+        if (sleepObject != null)
+        {
+            sleepObject.SetActive(false);
+        }
 
-        // Switch cameras back
-        sleepCamera.gameObject.SetActive(false);
-        playerCamera.gameObject.SetActive(true);
+        TimeController time = TimeController.instance;
 
-        // Give player control back
-        PlayerController.Instance.PlayerControl(true);
+        if (time != null)
+        {
+            time.SetTimeMultiplier(normalTimeMultiplier);
+        }
 
-        // Tell monster player is awake
+ 
+        if (sleepCamera != null)
+        {
+            sleepCamera.gameObject.SetActive(false);
+        }
+
+        if (playerCamera != null)
+        {
+            playerCamera.gameObject.SetActive(true);
+        }
+
+
+        if (PlayerController.Instance != null)
+        {
+            PlayerController.Instance.PlayerControl(true);
+        }
+
+
         if (monster != null)
         {
             monster.SetPlayerSleeping(false);
+
+            if (monsterattack != null)
+            {
+                monsterattack.enabled = true;
+            }
         }
-    }
-    private float GetTimeMultiplier()
-    {
-        return TimeController.instance != null
-            ? GetPrivateTimeMultiplier()
-            : 1f;
-    }
 
-    private float GetPrivateTimeMultiplier()
-    {
-        return 1f;
-    }
-
-    private void SetTimeMultiplier(float value)
-    {
-        TimeController.instance.SetTimeMultiplier(value);
+     
     }
 }

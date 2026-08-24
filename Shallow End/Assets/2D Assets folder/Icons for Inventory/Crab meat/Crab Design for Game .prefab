@@ -78,6 +78,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4935201918528946178}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8448363670954100728}
   m_SourcePrefab: {fileID: 100100000, guid: 063d9f2d6f5a7164ebfb49c56894df59, type: 3}
 --- !u!1 &4754680073658377424 stripped
 GameObject:
@@ -132,3 +135,16 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: -0.03, y: 0.04, z: -0.16}
+--- !u!114 &8448363670954100728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4754680073658377424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c113d846ee9f765408b3ddf4f3708fdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeSpawnItem
+  lifetime: 120

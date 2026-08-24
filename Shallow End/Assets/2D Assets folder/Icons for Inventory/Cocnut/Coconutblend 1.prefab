@@ -92,6 +92,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4552d669a1c8b3a4b8b43c2f818deea8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7404805836331570800}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4552d669a1c8b3a4b8b43c2f818deea8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7748874032111233736}
   m_SourcePrefab: {fileID: 100100000, guid: 4552d669a1c8b3a4b8b43c2f818deea8, type: 3}
 --- !u!1 &1639474992836956422 stripped
 GameObject:
@@ -182,6 +185,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: f28768b0266533f469b03410375f4840, type: 2}
   amount: 1
+  sourcePrefab: {fileID: 0}
 --- !u!54 &7404805836331570800
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -209,3 +213,16 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &7748874032111233736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1639474992836956422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c113d846ee9f765408b3ddf4f3708fdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeSpawnItem
+  lifetime: 120

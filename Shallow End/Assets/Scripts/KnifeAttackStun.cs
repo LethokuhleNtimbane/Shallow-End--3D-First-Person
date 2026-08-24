@@ -1,18 +1,27 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
+using System.Collections;
 
 public class KnifeAttack : MonoBehaviour
 {
-
+ 
     [SerializeField] private Inventory inventory;
+
+
     [SerializeField] private InputActionReference attackAction;
+
+
     [SerializeField] private Camera playerCamera;
 
- 
+
     [SerializeField] private float attackRange = 3f;
-
-
     [SerializeField] private float stunDuration = 3f;
+
+    [SerializeField] private TextMeshProUGUI messageText;
+    [SerializeField] private float messageDuration = 2f;
+
+    private Coroutine messageCoroutine;
 
     private void OnEnable()
     {
@@ -41,7 +50,7 @@ public class KnifeAttack : MonoBehaviour
    
         if (inventory == null || !inventory.IsKnifeEquipped())
         {
-      
+            ShowMessage("I need a Knife");
             return;
         }
 
@@ -63,7 +72,6 @@ public class KnifeAttack : MonoBehaviour
             out RaycastHit hit,
             attackRange))
         {
-           
             return;
         }
 
@@ -71,13 +79,37 @@ public class KnifeAttack : MonoBehaviour
             hit.collider.GetComponentInParent<Monster>();
 
         if (monster == null)
-        {
-          
             return;
-        }
-
-        
 
         monster.Stun(stunDuration);
+    }
+
+    private void ShowMessage(string message)
+    {
+        if (messageText == null)
+            return;
+
+        messageText.text = message;
+        messageText.gameObject.SetActive(true);
+
+      
+        if (messageCoroutine != null)
+        {
+            StopCoroutine(messageCoroutine);
+        }
+
+        messageCoroutine = StartCoroutine(HideMessage());
+    }
+
+    private IEnumerator HideMessage()
+    {
+        yield return new WaitForSeconds(messageDuration);
+
+        if (messageText != null)
+        {
+            messageText.gameObject.SetActive(false);
+        }
+
+        messageCoroutine = null;
     }
 }

@@ -26,16 +26,13 @@ public class GroundItemManager : MonoBehaviour
             {
                 int currentAmount = CountObjectsOfPrefab(prefab);
 
-                Debug.Log(
-                    prefab.name + " currently has " +
-                    currentAmount + " objects on the ground."
-                );
+              
+
 
                 if (currentAmount >= limit.maximumAmount)
                 {
-                    Debug.Log(
-                        "Maximum amount reached for " + prefab.name
-                    );
+               
+                
 
                     return false;
                 }
@@ -44,7 +41,7 @@ public class GroundItemManager : MonoBehaviour
             }
         }
 
-        // No limit has been assigned to this prefab
+      
         return true;
     }
 
@@ -53,9 +50,7 @@ public class GroundItemManager : MonoBehaviour
         int count = 0;
 
         GroundItem[] groundItems =
-            FindObjectsByType<GroundItem>(
-                FindObjectsSortMode.None
-            );
+            FindObjectsByType<GroundItem>(FindObjectsSortMode.None);
 
         foreach (GroundItem groundItem in groundItems)
         {

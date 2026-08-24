@@ -28,10 +28,10 @@ public class CrabMovement : MonoBehaviour
         if (moving)
         {
             
-            transform.position += moveDirection * moveSpeed * Time.deltaTime; // crab moves forward for now till
-            // i find a better way to make the side to side movement cause navmesh movement was not working out
+            transform.position += moveDirection * moveSpeed * Time.deltaTime; 
+
            
-            if (moveDirection != Vector3.zero) // rotates towards new the movement direction 
+            if (moveDirection != Vector3.zero) 
             {
                 Quaternion targetRotation =
                     Quaternion.LookRotation(moveDirection, Vector3.up);
@@ -47,7 +47,7 @@ public class CrabMovement : MonoBehaviour
             if (timer <= 0f)
             {
                 moving = false;
-                timer = Random.Range(minWaitTime, maxWaitTime); // once timer ends changes to a new direction after a bit
+                timer = Random.Range(minWaitTime, maxWaitTime); 
             }
         }
         else
@@ -55,7 +55,7 @@ public class CrabMovement : MonoBehaviour
             
             if (timer <= 0f)
             {
-                ChooseNewDirection(); // waits a bit then chooses a new direction
+                ChooseNewDirection(); 
             }
         }
     }

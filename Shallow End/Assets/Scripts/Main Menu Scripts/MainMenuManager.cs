@@ -1,14 +1,30 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 public class MainMenuManager : MonoBehaviour
 {
-   public void LoadScene(string Island)
+    public Animator transition;
+
+    public void LoadScene()
     {
-        SceneManager.LoadScene(Island);
+        StartCoroutine(LoadLevel(SceneManager.GetActiveScene().buildIndex + 1));
     }
 
     public void QuitGame()
     {
         Application.Quit();
+    }
+
+    IEnumerator LoadLevel(int LevelIndex)
+    {
+        // Play transition animation
+        transition.SetTrigger("start");
+
+        // Wait for animation
+        yield return new WaitForSeconds(1);
+
+        // Load next scene
+        SceneManager.LoadScene(LevelIndex);
     }
 }
