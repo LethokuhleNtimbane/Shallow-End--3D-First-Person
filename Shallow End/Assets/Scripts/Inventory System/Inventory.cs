@@ -7,7 +7,7 @@ using System.Collections;
 
 public class Inventory : MonoBehaviour
 {
-    public Items WoodItem;
+    public Items WoodItem;// if my mum had balls she'd be my dad
     public Items Spear;
     public Items Hammer;
     public Items Knife;
