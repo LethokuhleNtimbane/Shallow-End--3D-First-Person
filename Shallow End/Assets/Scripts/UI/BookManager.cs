@@ -62,27 +62,12 @@ public class BookController : MonoBehaviour
         }
 
 
-        if (!IsBookEquipped())
-        {
-          
-            return;
-        }
+       
 
         OpenBook();
     }
 
-    private bool IsBookEquipped()
-    {
-        if (inventory == null)
-            return false;
 
-        Items equippedItem = inventory.GetHotbarItem();
-
-        if (equippedItem == null)
-            return false;
-
-        return equippedItem == bookItem;
-    }
 
     private void OpenBook()
     {
