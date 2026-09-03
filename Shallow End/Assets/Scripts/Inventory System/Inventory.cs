@@ -7,7 +7,7 @@ using System.Collections;
 
 public class Inventory : MonoBehaviour
 {
-    public Items WoodItem;// if my mum had balls she'd be my dad
+    public Items WoodItem;
     public Items Spear;
     public Items Hammer;
     public Items Knife;
@@ -15,12 +15,13 @@ public class Inventory : MonoBehaviour
     public Items WholeCoconut;
     public Items Coconut;
 
-    [SerializeField] private Camera playerCamera;
+    
 
     public Items RMushroom;
     public Items YMushroom;
     public Items PMushroom;
-    public Items AxeItem;
+    public Items AxeItem;    
+    [SerializeField] private Camera playerCamera;
 
     public GameObject hotBrObj;
     public GameObject inventorySlotParent;
@@ -52,7 +53,26 @@ public class Inventory : MonoBehaviour
     private bool isDraggin = false;
 
     public Transform hand;
-    private GameObject HandItem;
+
+    [SerializeField] private GameObject axeHandItem;
+    [SerializeField] private GameObject spearHandItem;
+    [SerializeField] private GameObject hammerHandItem;
+    [SerializeField] private GameObject knifeHandItem;
+    [SerializeField] private GameObject FlintHandItem;
+    [SerializeField] private GameObject RockHandItem;
+    [SerializeField] private Items CrabItem;
+    [SerializeField] private Items FlintItem;
+    [SerializeField] private GameObject YellowMushroomHandItem;
+    [SerializeField] private GameObject PurpleMushroomHandItem;
+    [SerializeField] private GameObject RedMushroomHandItem;
+    [SerializeField] private GameObject CrabHandItem;
+    [SerializeField] private GameObject WoodHandItem;
+    [SerializeField] private GameObject VineHandItem;
+    [SerializeField] private GameObject WholeCoconutHandItem;
+    [SerializeField] private GameObject CoconutHandItem;
+
+    [SerializeField] private Items RockItem;
+    private GameObject currentHandItem;
 
     private List<Slot> InventorySlots = new List<Slot>();
     private List<Slot> hotbarSlots = new List<Slot>();
@@ -123,12 +143,27 @@ public class Inventory : MonoBehaviour
 
 
 
-    private void EquippedHandItem()
+   
+private void EquippedHandItem()
     {
-        if (HandItem != null)
-        {
-            Destroy(HandItem);
-        }
+
+
+   
+        axeHandItem.SetActive(false);
+        spearHandItem.SetActive(false);
+        hammerHandItem.SetActive(false);
+        knifeHandItem.SetActive(false);
+        FlintHandItem.SetActive(false);
+        RockHandItem.SetActive(false);
+        YellowMushroomHandItem.SetActive(false);
+        PurpleMushroomHandItem.SetActive(false);
+        RedMushroomHandItem.SetActive (false);
+        CrabHandItem.SetActive(false);
+        WoodHandItem.SetActive(false);
+        VineHandItem.SetActive(false);
+        WholeCoconutHandItem.SetActive(false);
+        CoconutHandItem.SetActive(false);
+
 
         if (equippedHotBarIndex < 0 ||
             equippedHotBarIndex >= hotbarSlots.Count)
@@ -136,27 +171,104 @@ public class Inventory : MonoBehaviour
             return;
         }
 
-        Slot currentSlot = hotbarSlots[equippedHotBarIndex];
+        Slot currentSlot =
+            hotbarSlots[equippedHotBarIndex];
 
+       
         if (!currentSlot.Hasitem())
         {
+       
             return;
         }
 
-        Items item = currentSlot.GetItem();
+        Items item =
+            currentSlot.GetItem();
 
-        if (item == null || item.handItemPrefab == null)
+        if (item == null)
+            return;
+
+        if (item == AxeItem)
         {
-            return;
+            axeHandItem.SetActive(true);
+    
         }
 
-        HandItem = Instantiate(
-            item.handItemPrefab,
-            hand
-        );
+        
+        else if (item == Spear)
+        {
+            spearHandItem.SetActive(true);
+   
+        }
+
+     
+        else if (item == Hammer)
+        {
+            hammerHandItem.SetActive(true);
+          
+        }
+
+ 
+        else if (item == Knife)
+        {
+            knifeHandItem.SetActive(true);
+           
+        }
+        else if (item == FlintItem)
+        {
+            FlintHandItem.SetActive(true);
+
+        }
+        else if (item == RockItem)
+        {
+            RockHandItem.SetActive(true);
+
+        }
+        else if (item == YMushroom)
+        {
+            YellowMushroomHandItem.SetActive(true);
+
+        }
+        else if (item == PMushroom)
+        {
+            PurpleMushroomHandItem.SetActive(true);
+
+        }
+        else if (item == RMushroom)
+        {
+            RedMushroomHandItem.SetActive(true);
+
+        }
+        else if (item == CrabItem)
+        {
+            CrabHandItem.SetActive(true);
+
+        }
+        else if (item == WoodItem)
+        {
+            WoodHandItem.SetActive(true);
+
+        }
+        else if (item == Vines)
+        {
+            VineHandItem.SetActive(true);
+
+        }
+        else if (item == WholeCoconut)
+        {
+            WholeCoconutHandItem.SetActive(true);
+
+        }
+        else if (item == Coconut)
+        {
+            CoconutHandItem.SetActive(true);
+
+        }
+       
+
     }
 
-  
+
+
 
     private void OnEnable()
     {
@@ -388,12 +500,12 @@ public class Inventory : MonoBehaviour
 
 
     public bool AddItem(
-        Items itemToAdd,
-        int amount)
+     Items itemToAdd,
+     int amount)
     {
         int remaining = amount;
 
-     
+   
         foreach (Slot slot in hotbarSlots)
         {
             if (slot.Hasitem() &&
@@ -404,8 +516,7 @@ public class Inventory : MonoBehaviour
 
                 if (currentAmount < maxStack)
                 {
-                    int spaceLeft =
-                        maxStack - currentAmount;
+                    int spaceLeft = maxStack - currentAmount;
 
                     int amountToAdd =
                         Mathf.Min(spaceLeft, remaining);
@@ -418,7 +529,10 @@ public class Inventory : MonoBehaviour
                     remaining -= amountToAdd;
 
                     if (remaining <= 0)
+                    {
+                        EquippedHandItem();
                         return true;
+                    }
                 }
             }
         }
@@ -439,12 +553,20 @@ public class Inventory : MonoBehaviour
                     amountToPlace
                 );
 
+               
+                equippedHotBarIndex = hotbarSlots.IndexOf(slot);
+
                 remaining -= amountToPlace;
 
+                EquippedHandItem();
+
                 if (remaining <= 0)
+                {
                     return true;
+                }
             }
         }
+
 
         foreach (Slot slot in InventorySlots)
         {
@@ -456,8 +578,7 @@ public class Inventory : MonoBehaviour
 
                 if (currentAmount < maxStack)
                 {
-                    int spaceLeft =
-                        maxStack - currentAmount;
+                    int spaceLeft = maxStack - currentAmount;
 
                     int amountToAdd =
                         Mathf.Min(spaceLeft, remaining);
@@ -470,12 +591,15 @@ public class Inventory : MonoBehaviour
                     remaining -= amountToAdd;
 
                     if (remaining <= 0)
+                    {
+                        EquippedHandItem();
                         return true;
+                    }
                 }
             }
         }
 
-  
+
         foreach (Slot slot in InventorySlots)
         {
             if (!slot.Hasitem())
@@ -494,13 +618,16 @@ public class Inventory : MonoBehaviour
                 remaining -= amountToPlace;
 
                 if (remaining <= 0)
+                {
+                    EquippedHandItem();
                     return true;
+                }
             }
         }
 
+        EquippedHandItem();
         return false;
     }
-
 
 
     private void StartDrag()

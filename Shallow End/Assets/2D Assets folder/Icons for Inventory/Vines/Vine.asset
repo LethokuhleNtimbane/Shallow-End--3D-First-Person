@@ -16,4 +16,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 399842864c7b4944a8e51c98f55c1e32, type: 3}
   maxStack: 32
   ItenPrefab: {fileID: 1917634187772673558, guid: eb74c259ce0b519419cfae09d58196ad, type: 3}
-  handItemPrefab: {fileID: 0}
+  handItem: {fileID: 7805741792537490860, guid: 0ba314099b45e444bb8539748f142d1a, type: 3}
+  isFood: 0
+  healthRegenerate: 0

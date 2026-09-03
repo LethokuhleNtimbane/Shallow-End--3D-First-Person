@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Items
   itemName: Whole Coconut
   icon: {fileID: 21300000, guid: 6007af8d79b461c45bf6165c35197c7e, type: 3}
-  maxStack: 1
+  maxStack: 3
   ItenPrefab: {fileID: 6946419899342493526, guid: 49823e76768b9ef45bf926ef7b4f1207, type: 3}
-  handItemPrefab: {fileID: 0}
+  handItem: {fileID: 4028598237470094046, guid: 0c55d5f7e21efed4680aa52016cf63ea, type: 3}
+  isFood: 0
+  healthRegenerate: 0

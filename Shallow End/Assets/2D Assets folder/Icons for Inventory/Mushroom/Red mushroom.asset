@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Items
   itemName: Red Mushroom
   icon: {fileID: 21300000, guid: 682fc55ba32e33d4fa03e8eab3ea870b, type: 3}
-  maxStack: 16
+  maxStack: 2
   ItenPrefab: {fileID: 987299170866890881, guid: 9d487abf4746a0048bdf102ff87ea319, type: 3}
-  handItemPrefab: {fileID: 0}
+  handItem: {fileID: 1006022750220318218, guid: 8bc97bab131739b4ea5494c67a4a9cb6, type: 3}
   isFood: 1
   healthRegenerate: 5

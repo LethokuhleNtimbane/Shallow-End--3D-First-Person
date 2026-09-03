@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class DashScript : MonoBehaviour
 {
@@ -11,25 +12,58 @@ public class DashScript : MonoBehaviour
 
     // dash direction 
     [SerializeField] private bool allowAirDash = true;// can dash and jump at the same time just so theres no
-    // issues when accidentally doing both but we could remove this if we choose to remove the jump mehanic 
+                                                      // issues when accidentally doing both but we could remove this if we choose to remove the jump mehanic 
+    [SerializeField] private float maxStamina = 100f;
+    [SerializeField] private float dashStaminaCost = 25f;
+    [SerializeField] private float staminaRegenRate = 15f;
+    [SerializeField] private float staminaRegenDelay = 1f;
 
+    [SerializeField] private Image staminaBar;
+    [SerializeField] private Image background;
     private CharacterController controller;
     private PlayerController playerController;
 
     private bool isDashing;
     private float cooldownTimer;
 
+    private float currentStamina;
+    private float staminaRegenTimer;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         playerController = GetComponent<PlayerController>();
+
+        currentStamina = maxStamina;
+
+        UpdateStaminaBar();
     }
 
     private void Update()
     {
+
         if (cooldownTimer > 0f)
         {
             cooldownTimer -= Time.deltaTime;
+        }
+
+       
+        if (currentStamina < maxStamina)
+        {
+            staminaRegenTimer -= Time.deltaTime;
+
+            if (staminaRegenTimer <= 0f)
+            {
+                currentStamina += staminaRegenRate * Time.deltaTime;
+
+                currentStamina = Mathf.Clamp(
+                    currentStamina,
+                    0f,
+                    maxStamina
+                );
+
+                UpdateStaminaBar();
+            }
         }
     }
 
@@ -46,6 +80,18 @@ public class DashScript : MonoBehaviour
 
         if (!allowAirDash && !controller.isGrounded)
             return;
+
+      
+        if (currentStamina < dashStaminaCost)
+            return;
+
+       
+        currentStamina -= dashStaminaCost;
+
+       
+        staminaRegenTimer = staminaRegenDelay;
+
+        UpdateStaminaBar();
 
         StartCoroutine(PerformDash());
     }
@@ -92,5 +138,17 @@ public class DashScript : MonoBehaviour
         }
 
         isDashing = false;
+    }
+    private void UpdateStaminaBar()
+    {
+        if (staminaBar == null)
+            return;
+
+        
+        staminaBar.fillAmount = currentStamina / maxStamina;
+
+        
+        staminaBar.gameObject.SetActive(currentStamina < maxStamina);
+        background.gameObject.SetActive(currentStamina < maxStamina);
     }
 }

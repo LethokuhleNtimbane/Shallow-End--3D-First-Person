@@ -9,7 +9,7 @@ public class Items : ScriptableObject
     public int maxStack;
     public GameObject ItenPrefab;
 
-    public GameObject handItemPrefab;
+    public GameObject handItem;
 
     public bool isFood;
     public float healthRegenerate; 

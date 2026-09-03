@@ -16,9 +16,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: d4e01f49a369ee4498748072fd75f7d6, type: 3}
   maxStack: 1
   ItenPrefab: {fileID: 2105178043615314671, guid: 041e70b088d19ac458c7a5e406277f36, type: 3}
-  handItemPrefab: {fileID: 3379569483660343367, guid: 2b27e50a3274f0a47a08dd4be6d517f4, type: 3}
+  handItem: {fileID: 2800009004811309490, guid: 947465dfa2020ac40ab8c308ef22154e, type: 3}
   isFood: 0
   healthRegenerate: 0
-  handPosition: {x: 3.94, y: 56.07, z: 0}
-  handRotation: {x: 0, y: 0, z: 0}
-  handScale: {x: 1, y: 1, z: 1}
