@@ -18,7 +18,7 @@ public class SpearAttack : MonoBehaviour
     [SerializeField] private float attackRange = 4f;
     [SerializeField] private float damage = 10f;
 
-  
+
     [SerializeField] private Items crabMeat;
 
 

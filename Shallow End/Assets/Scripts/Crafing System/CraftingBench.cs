@@ -8,7 +8,7 @@ public class CraftingInteraction : MonoBehaviour
     [SerializeField] private InputActionReference interactAction;
 
 
-    [SerializeField] private GameObject inventoryContainer;
+  
     [SerializeField] private GameObject craftingSystem;
     [SerializeField] private GameObject background;
 
@@ -43,8 +43,7 @@ public class CraftingInteraction : MonoBehaviour
     {
         craftingOpen = false;
 
-        if (inventoryContainer != null)
-            inventoryContainer.SetActive(false);
+   
 
         if (craftingSystem != null)
             craftingSystem.SetActive(false);
@@ -101,8 +100,7 @@ public class CraftingInteraction : MonoBehaviour
             timeController.enabled = false;
 
       
-        if (inventoryContainer != null)
-            inventoryContainer.SetActive(true);
+  
 
     
         if (craftingSystem != null)
@@ -138,8 +136,7 @@ public class CraftingInteraction : MonoBehaviour
         craftingOpen = false;
 
         
-        if (inventoryContainer != null)
-            inventoryContainer.SetActive(false);
+      
 
  
         if (craftingSystem != null)

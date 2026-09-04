@@ -24,12 +24,12 @@ public class Inventory : MonoBehaviour
     [SerializeField] private Camera playerCamera;
 
     public GameObject hotBrObj;
-    public GameObject inventorySlotParent;
 
-    public GameObject container;
+
+
     public CraftinSystem craftingSystem;
 
-    [SerializeField] private InputActionReference OpenInventory;
+  
     [SerializeField] private InputActionReference pickupobj;
 
     [SerializeField] private InputActionReference[] hotbarActions;
@@ -74,7 +74,7 @@ public class Inventory : MonoBehaviour
     [SerializeField] private Items RockItem;
     private GameObject currentHandItem;
 
-    private List<Slot> InventorySlots = new List<Slot>();
+   
     private List<Slot> hotbarSlots = new List<Slot>();
     private List<Slot> allSlots = new List<Slot>();
     private List<Slot> craftingSlots = new List<Slot>();
@@ -92,9 +92,7 @@ public class Inventory : MonoBehaviour
 
     private void Awake()
     {
-        InventorySlots.AddRange(
-            inventorySlotParent.GetComponentsInChildren<Slot>(true)
-        );
+       
 
         hotbarSlots.AddRange(
             hotBrObj.GetComponentsInChildren<Slot>(true)
@@ -104,7 +102,7 @@ public class Inventory : MonoBehaviour
             Crafting.GetComponentsInChildren<Slot>(true)
         );
 
-        allSlots.AddRange(InventorySlots);
+    
         allSlots.AddRange(hotbarSlots);
 
     }
@@ -272,7 +270,7 @@ private void EquippedHandItem()
 
     private void OnEnable()
     {
-        OpenInventory.action.Enable();
+       
         pickupobj.action.Enable();
 
         foreach (InputActionReference action in hotbarActions)
@@ -285,7 +283,7 @@ private void EquippedHandItem()
 
     private void OnDisable()
     {
-        OpenInventory.action.Disable();
+
         pickupobj.action.Disable();
 
         foreach (InputActionReference action in hotbarActions)
@@ -401,13 +399,7 @@ private void EquippedHandItem()
 
     private void Update()
     {
-        if (OpenInventory.action.WasPressedThisFrame())
-        {
-            bool inventoryOpen =
-                !UIManager.Instance.IsInventoryOpen();
-
-            UIManager.Instance.SetInventoryOpen(inventoryOpen);
-        }
+   
 
         DetectLookedAtItem();
         Pickup();
@@ -436,14 +428,7 @@ private void EquippedHandItem()
             }
         }
 
-        foreach (Slot slot in InventorySlots)
-        {
-            if (slot.Hasitem() &&
-                slot.GetItem() == itemToCheck)
-            {
-                total += slot.GetAmount();
-            }
-        }
+    
 
         return total;
     }
@@ -474,24 +459,7 @@ private void EquippedHandItem()
             }
         }
 
-        foreach (Slot slot in InventorySlots)
-        {
-            if (remaining <= 0)
-                break;
 
-            if (slot.Hasitem() &&
-                slot.GetItem() == itemToRemove)
-            {
-                int amountInSlot = slot.GetAmount();
-
-                int amountToRemove =
-                    Mathf.Min(amountInSlot, remaining);
-
-                slot.RemoveAmount(amountToRemove);
-
-                remaining -= amountToRemove;
-            }
-        }
 
         EquippedHandItem();
 
@@ -499,13 +467,10 @@ private void EquippedHandItem()
     }
 
 
-    public bool AddItem(
-     Items itemToAdd,
-     int amount)
+    public bool AddItem(Items itemToAdd, int amount)
     {
         int remaining = amount;
 
-   
         foreach (Slot slot in hotbarSlots)
         {
             if (slot.Hasitem() &&
@@ -553,8 +518,8 @@ private void EquippedHandItem()
                     amountToPlace
                 );
 
-               
-                equippedHotBarIndex = hotbarSlots.IndexOf(slot);
+                equippedHotBarIndex =
+                    hotbarSlots.IndexOf(slot);
 
                 remaining -= amountToPlace;
 
@@ -567,68 +532,9 @@ private void EquippedHandItem()
             }
         }
 
-
-        foreach (Slot slot in InventorySlots)
-        {
-            if (slot.Hasitem() &&
-                slot.GetItem() == itemToAdd)
-            {
-                int currentAmount = slot.GetAmount();
-                int maxStack = itemToAdd.maxStack;
-
-                if (currentAmount < maxStack)
-                {
-                    int spaceLeft = maxStack - currentAmount;
-
-                    int amountToAdd =
-                        Mathf.Min(spaceLeft, remaining);
-
-                    slot.SetItem(
-                        itemToAdd,
-                        currentAmount + amountToAdd
-                    );
-
-                    remaining -= amountToAdd;
-
-                    if (remaining <= 0)
-                    {
-                        EquippedHandItem();
-                        return true;
-                    }
-                }
-            }
-        }
-
-
-        foreach (Slot slot in InventorySlots)
-        {
-            if (!slot.Hasitem())
-            {
-                int amountToPlace =
-                    Mathf.Min(
-                        itemToAdd.maxStack,
-                        remaining
-                    );
-
-                slot.SetItem(
-                    itemToAdd,
-                    amountToPlace
-                );
-
-                remaining -= amountToPlace;
-
-                if (remaining <= 0)
-                {
-                    EquippedHandItem();
-                    return true;
-                }
-            }
-        }
-
         EquippedHandItem();
         return false;
     }
-
 
     private void StartDrag()
     {
