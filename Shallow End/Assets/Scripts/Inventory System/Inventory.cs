@@ -98,8 +98,8 @@ public class Inventory : MonoBehaviour
             hotBrObj.GetComponentsInChildren<Slot>(true)
         );
 
-        craftingSlots.AddRange(
-            Crafting.GetComponentsInChildren<Slot>(true)
+        craftingSlots.AddRange(    Crafting.GetComponentsInChildren<Slot>(true)
+        
         );
 
     
@@ -467,10 +467,12 @@ private void EquippedHandItem()
     }
 
 
-    public bool AddItem(Items itemToAdd, int amount)
+  
+public bool AddItem(Items itemToAdd, int amount)
     {
         int remaining = amount;
 
+       
         foreach (Slot slot in hotbarSlots)
         {
             if (slot.Hasitem() &&
@@ -495,6 +497,7 @@ private void EquippedHandItem()
 
                     if (remaining <= 0)
                     {
+                       
                         EquippedHandItem();
                         return true;
                     }
@@ -502,7 +505,7 @@ private void EquippedHandItem()
             }
         }
 
-
+      
         foreach (Slot slot in hotbarSlots)
         {
             if (!slot.Hasitem())
@@ -518,15 +521,11 @@ private void EquippedHandItem()
                     amountToPlace
                 );
 
-                equippedHotBarIndex =
-                    hotbarSlots.IndexOf(slot);
-
                 remaining -= amountToPlace;
-
-                EquippedHandItem();
 
                 if (remaining <= 0)
                 {
+                    EquippedHandItem();
                     return true;
                 }
             }
