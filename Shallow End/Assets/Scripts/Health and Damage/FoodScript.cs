@@ -14,41 +14,45 @@ public class FoodScript : MonoBehaviour
     {
         eatAct.action.Enable();
     }
+
     private void OnDisable()
     {
         eatAct.action.Disable();
     }
+
     private void Update()
     {
         if (!eatAct.action.WasPressedThisFrame()) return;
 
-        eatFood();
+        EatFood();
     }
-    private void eatFood()
+
+    private void EatFood()
     {
         if (inventory == null) return;
 
         if (healthScript == null) return;
 
-        if (healthScript.playerIsFullHealth())return;
-        
+        if (healthScript.PlayerIsFullHealth()) return;
 
         Items hotbarItem = inventory.GetHotbarItem();
 
         if (hotbarItem == null) return;
 
-        if (!isItFood(hotbarItem)) return;
+        if (!IsItFood(hotbarItem)) return;
 
-        healthScript.Addhealth(foodIncrease);
+        healthScript.AddHealth(foodIncrease);
+
         inventory.RemoveHotbarItem(1);
     }
 
-    private bool isItFood(Items item)
+    private bool IsItFood(Items item)
     {
         foreach (Items food in foodItems)
         {
             if (item == food) return true;
         }
+
         return false;
     }
 }
