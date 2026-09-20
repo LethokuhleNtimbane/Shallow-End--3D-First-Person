@@ -9,19 +9,26 @@ public class WaterDamage : MonoBehaviour
     [SerializeField] private HealthScript health;
 
     private bool InWater;
+    AudioManager audioManager;
     private Coroutine damageCoroutine;
 
     private void OnTriggerEnter(Collider other)
     {
+
         if (other.CompareTag("Player"))
         {
             InWater = true;
-          
+            audioManager.PlaySfx(audioManager.IntoWater);
 
             damageCoroutine = StartCoroutine(WaitAndDamage());
+            audioManager.PlaySfx(audioManager.LowHealth);
         }
 
      
+    }
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
     }
 
     private void OnTriggerExit(Collider other)

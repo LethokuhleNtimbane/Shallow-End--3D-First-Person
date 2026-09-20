@@ -71,7 +71,7 @@ PrefabInstance:
     - target: {fileID: 6317578925029434746, guid: 4552d669a1c8b3a4b8b43c2f818deea8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 45aac90d27d4bbe47880f79cc6da1934, type: 2}
+      objectReference: {fileID: 2100000, guid: 8ed544796bd3bd24a8a3a6cd0a865772, type: 2}
     - target: {fileID: 8100320773420232829, guid: 4552d669a1c8b3a4b8b43c2f818deea8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -185,6 +185,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: f28768b0266533f469b03410375f4840, type: 2}
   amount: 1
+  currentDurability: -1
   sourcePrefab: {fileID: 0}
 --- !u!54 &7404805836331570800
 Rigidbody:

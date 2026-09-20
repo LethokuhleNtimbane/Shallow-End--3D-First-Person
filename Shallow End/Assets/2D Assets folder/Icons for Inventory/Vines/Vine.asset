@@ -19,3 +19,6 @@ MonoBehaviour:
   handItem: {fileID: 7805741792537490860, guid: 0ba314099b45e444bb8539748f142d1a, type: 3}
   isFood: 0
   healthRegenerate: 0
+  hasDurability: 0
+  infiniteDurability: 1
+  maxDurability: 1

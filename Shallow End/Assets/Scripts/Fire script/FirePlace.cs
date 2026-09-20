@@ -15,6 +15,15 @@ public class Fireplace : MonoBehaviour
 
     private bool fireIsLit = false;
 
+    AudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager =
+            GameObject.FindGameObjectWithTag("Audio")
+                .GetComponent<AudioManager>();
+    }
+
     private void OnEnable()
     {
         if (interactAction != null)
@@ -33,7 +42,6 @@ public class Fireplace : MonoBehaviour
 
     private void Start()
     {
-   
         TurnFireOff();
     }
 
@@ -55,10 +63,11 @@ public class Fireplace : MonoBehaviour
         if (PlayerController.Instance == null)
             return;
 
-        float distance = Vector3.Distance(
-            transform.position,
-            PlayerController.Instance.transform.position
-        );
+        float distance =
+            Vector3.Distance(
+                transform.position,
+                PlayerController.Instance.transform.position
+            );
 
         if (distance > interactionRange)
             return;
@@ -73,6 +82,10 @@ public class Fireplace : MonoBehaviour
             interactAction.action.IsPressed())
         {
             LightFire();
+
+            audioManager.PlaySfx(
+                audioManager.FlintLight
+            );
         }
     }
 
@@ -81,14 +94,16 @@ public class Fireplace : MonoBehaviour
         if (inventory == null)
             return false;
 
-        Items equippedItem = inventory.GetHotbarItem();
+        Items equippedItem =
+            inventory.GetHotbarItem();
 
         return equippedItem == flint;
     }
 
     private bool IsNightTime()
     {
-        int hour = TimeController.instance.CurrentTime.Hour;
+        int hour =
+            TimeController.instance.CurrentTime.Hour;
 
         return hour >= 20 || hour < 6;
     }
@@ -107,13 +122,11 @@ public class Fireplace : MonoBehaviour
             fireLight.enabled = true;
         }
 
-       
         if (protectionZone != null)
         {
             protectionZone.SetActive(true);
         }
 
-     
         if (fireDamageZone != null)
         {
             fireDamageZone.SetActive(true);
@@ -124,10 +137,10 @@ public class Fireplace : MonoBehaviour
             fireProtection.SetFire(true);
         }
 
-    
+        // Use one flint durability.
         if (inventory != null)
         {
-            inventory.RemoveHotbarItem(1);
+            inventory.UseEquippedDurability();
         }
     }
 
@@ -145,7 +158,6 @@ public class Fireplace : MonoBehaviour
             fireLight.enabled = false;
         }
 
-        
         if (protectionZone != null)
         {
             protectionZone.SetActive(false);
@@ -167,7 +179,8 @@ public class Fireplace : MonoBehaviour
         if (!fireIsLit)
             return;
 
-        int hour = TimeController.instance.CurrentTime.Hour;
+        int hour =
+            TimeController.instance.CurrentTime.Hour;
 
         if (hour >= 6 && hour < 20)
         {

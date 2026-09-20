@@ -10,6 +10,12 @@ public class FireHurts : MonoBehaviour
  
     [SerializeField] private TextMeshProUGUI ouchText;
     [SerializeField] private float messageDuration = 1f;
+    AudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
 
     private Coroutine messageCoroutine;
 
@@ -28,7 +34,7 @@ public class FireHurts : MonoBehaviour
         }
 
         health.TakeDamage(damage);
-
+        audioManager.PlaySfx(audioManager.LowHealth);
         ShowOuch();
     }
 

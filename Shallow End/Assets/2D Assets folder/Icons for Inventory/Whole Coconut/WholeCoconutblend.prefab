@@ -70,7 +70,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 45aac90d27d4bbe47880f79cc6da1934, type: 2}
+  - {fileID: 2100000, guid: 8ed544796bd3bd24a8a3a6cd0a865772, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -156,6 +156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: 01e586cfb4e8495409fd010ea8bcac51, type: 2}
   amount: 1
+  currentDurability: -1
   sourcePrefab: {fileID: 0}
 --- !u!114 &438418633240023196
 MonoBehaviour:

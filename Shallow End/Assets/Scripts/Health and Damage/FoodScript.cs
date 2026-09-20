@@ -7,52 +7,94 @@ public class FoodScript : MonoBehaviour
     [SerializeField] private Inventory inventory;
     [SerializeField] private HealthScript healthScript;
 
-    [SerializeField] private Items[] foodItems;
-    [SerializeField] private float foodIncrease = 20f;
+    [System.Serializable]
+    public class FoodItem
+    {
+        public Items item;
+
+        [Header("Food Values")]
+        public float hungerIncrease;
+        public float thirstIncrease;
+    }
+
+    [SerializeField] private FoodItem[] foodItems;
 
     private void OnEnable()
     {
-        eatAct.action.Enable();
+        if (eatAct != null)
+        {
+            eatAct.action.Enable();
+        }
     }
 
     private void OnDisable()
     {
-        eatAct.action.Disable();
+        if (eatAct != null)
+        {
+            eatAct.action.Disable();
+        }
     }
 
     private void Update()
     {
-        if (!eatAct.action.WasPressedThisFrame()) return;
+        if (!eatAct.action.WasPressedThisFrame())
+            return;
 
         EatFood();
     }
 
     private void EatFood()
     {
-        if (inventory == null) return;
+        if (inventory == null)
+            return;
 
-        if (healthScript == null) return;
-
-        if (healthScript.PlayerIsFullHealth()) return;
+        if (healthScript == null)
+            return;
 
         Items hotbarItem = inventory.GetHotbarItem();
 
-        if (hotbarItem == null) return;
+        if (hotbarItem == null)
+            return;
 
-        if (!IsItFood(hotbarItem)) return;
+        FoodItem food = GetFoodData(hotbarItem);
 
-        healthScript.AddHealth(foodIncrease);
+        if (food == null)
+            return;
 
+        // If the food increases hunger and hunger is already full,
+        // do not allow the player to eat it.
+        if (food.hungerIncrease > 0 &&
+            healthScript.PlayerIsFullHunger())
+        {
+            return;
+        }
+
+        // If the food increases thirst and thirst is already full,
+        // do not allow the player to consume it.
+        if (food.thirstIncrease > 0 &&
+            healthScript.PlayerIsFullThirst())
+        {
+            return;
+        }
+
+        // Add the food's hunger and thirst values.
+        healthScript.AddHunger(food.hungerIncrease);
+        healthScript.AddThirst(food.thirstIncrease);
+
+        // Remove one item from the hotbar.
         inventory.RemoveHotbarItem(1);
     }
 
-    private bool IsItFood(Items item)
+    private FoodItem GetFoodData(Items item)
     {
-        foreach (Items food in foodItems)
+        foreach (FoodItem food in foodItems)
         {
-            if (item == food) return true;
+            if (food.item == item)
+            {
+                return food;
+            }
         }
 
-        return false;
+        return null;
     }
 }

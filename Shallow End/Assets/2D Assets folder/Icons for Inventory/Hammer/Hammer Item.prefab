@@ -63,15 +63,15 @@ PrefabInstance:
     - target: {fileID: -4683669308469848369, guid: dbad05f794cfa624a91ae47e6da86ba8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 2f2790c5fc4330f49a38d49016ed4223, type: 2}
+      objectReference: {fileID: 2100000, guid: fb8a8972f55596d48b688bebfc9c8dce, type: 2}
     - target: {fileID: -1461304994638716399, guid: dbad05f794cfa624a91ae47e6da86ba8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: b7b5e98fb6f281e41bd496647b8c2c23, type: 2}
+      objectReference: {fileID: 2100000, guid: f268348c5226b694cad26dae71f7d2c5, type: 2}
     - target: {fileID: -1439730007547781893, guid: dbad05f794cfa624a91ae47e6da86ba8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: d67e23e463597fb4cba4e4be3c1c3434, type: 2}
+      objectReference: {fileID: 2100000, guid: fb8a8972f55596d48b688bebfc9c8dce, type: 2}
     - target: {fileID: 919132149155446097, guid: dbad05f794cfa624a91ae47e6da86ba8, type: 3}
       propertyPath: m_Name
       value: Hammer Item
@@ -79,15 +79,15 @@ PrefabInstance:
     - target: {fileID: 6317578925029434746, guid: dbad05f794cfa624a91ae47e6da86ba8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 45aac90d27d4bbe47880f79cc6da1934, type: 2}
+      objectReference: {fileID: 2100000, guid: 2fee5b6a90cccda499fb6324c6195132, type: 2}
     - target: {fileID: 7071182760956848314, guid: dbad05f794cfa624a91ae47e6da86ba8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: d67e23e463597fb4cba4e4be3c1c3434, type: 2}
+      objectReference: {fileID: 2100000, guid: fb8a8972f55596d48b688bebfc9c8dce, type: 2}
     - target: {fileID: 7202271454713460447, guid: dbad05f794cfa624a91ae47e6da86ba8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 45aac90d27d4bbe47880f79cc6da1934, type: 2}
+      objectReference: {fileID: 2100000, guid: 2fee5b6a90cccda499fb6324c6195132, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -127,6 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: b2d732275b316c945aec8cfa5064d445, type: 2}
   amount: 1
+  currentDurability: -1
   sourcePrefab: {fileID: 0}
 --- !u!23 &1448332926589064355
 MeshRenderer:

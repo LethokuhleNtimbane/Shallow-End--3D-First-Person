@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-6715351191162375801
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Editor::UnityEditor.Rendering.Universal.AssetVersion
+  version: 10
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SkyBox Day
+  m_Shader: {fileID: -6465566751694194690, guid: bb858c98622abda4e93a7f7649dafaf1, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses:
+  - MOTIONVECTORS
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Aurarora_Strength: 0.25
+    - _Aurora_Power: 2.4
+    - _Aurora_blend: 5
+    - _Blend: 0.1
+    - _Blend_2: 1
+    - _Blend_3: 30
+    - _DayNight_Slider: 0.0006743749
+    - _Distortion_speed: 0.64
+    - _Gradient_Offset: -1
+    - _Intensity: 0
+    - _Noise_scale: 43.88
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _Star_Height: 231.3
+    - _Star_Power: 33
+    - _Sunsize: 0.03
+    m_Colors:
+    - _Aurora_scroll_speed: {r: 0.05, g: 0.02, b: 0, a: 0}
+    - _Distortion_min_max: {r: 12.54, g: 15.74, b: 0, a: 0}
+    - _Ground_Colour: {r: 0.36078426, g: 0.76470596, b: 0.86666673, a: 1}
+    - _Horizon_colour: {r: 0.31446534, g: 0.31446534, b: 0.31446534, a: 0}
+    - _MainLight_Direction: {r: -0.19270194, g: -0.5134163, b: 0.8362235, a: 0}
+    - _Night_Sky: {r: 0.104559705, g: 0, b: 0.17610055, a: 1}
+    - _Sky_Colour: {r: 0.09411765, g: 0.61960787, b: 0.8039216, a: 1}
+    - _Sun_colour: {r: 1, g: 0.7843138, b: 0, a: 1}
+    - _Tiling: {r: 32.07, g: 8.53, b: 0, a: 0}
+    - _Twirl_Offset: {r: 1.83, g: 0.75, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -15,6 +15,14 @@ public class MonsterAttack : MonoBehaviour
     private float damageTimer = 0f;
     private Coroutine messageCoroutine;
 
+    AudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
+
+
     private void OnTriggerStay(Collider other)
     {
         if (!other.CompareTag("Player"))
@@ -30,8 +38,8 @@ public class MonsterAttack : MonoBehaviour
         if (damageTimer <= 0f)
         {
             health.TakeDamage(damage);
+            audioManager.PlaySfx(audioManager.LowHealth);
 
-      
 
             ShowMonsterMessage();
 

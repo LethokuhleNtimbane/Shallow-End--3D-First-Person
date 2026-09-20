@@ -26,6 +26,12 @@ public class CraftingInteraction : MonoBehaviour
 
     private bool playerInRange = false;
     private bool craftingOpen = false;
+    AudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
 
     private void OnEnable()
     {
@@ -126,7 +132,7 @@ public class CraftingInteraction : MonoBehaviour
         if (playerHUD != null)
             playerHUD.SetActive(false);
 
-    
+        audioManager.PlaySfx(audioManager.FlintLight);
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }

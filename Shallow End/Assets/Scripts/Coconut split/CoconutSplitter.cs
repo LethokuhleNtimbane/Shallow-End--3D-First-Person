@@ -4,24 +4,18 @@ using TMPro;
 
 public class CoconutSplitter : MonoBehaviour
 {
- 
     [SerializeField] private InputActionReference LeftClickSplit;
 
-   
     [SerializeField] private Inventory inventory;
 
     [SerializeField] private Camera playerCamera;
 
-  
     [SerializeField] private Items wholeCoconut;
-
 
     [SerializeField] private GameObject coconut;
 
- 
     [SerializeField] private float splitRange = 3f;
 
-  
     [SerializeField] private TextMeshProUGUI messageText;
 
     private void OnEnable()
@@ -49,13 +43,12 @@ public class CoconutSplitter : MonoBehaviour
 
     private void TrySplitCoconut()
     {
-        if (inventory == null)
+        if (inventory == null ||
+            playerCamera == null)
+        {
             return;
+        }
 
-        if (playerCamera == null)
-            return;
-
-     
         if (!inventory.IsHammerEquipped())
         {
             ShowMessage("I need a hammer");
@@ -81,11 +74,17 @@ public class CoconutSplitter : MonoBehaviour
             if (groundItem.item != wholeCoconut)
                 return;
 
-            SplitCoconut(groundItem.gameObject);
+            SplitCoconut(
+                groundItem.gameObject
+            );
+
+            // Successful hammer use.
+            inventory.UseEquippedDurability();
         }
     }
 
-    private void SplitCoconut(GameObject wholeCoconutObject)
+    private void SplitCoconut(
+        GameObject wholeCoconutObject)
     {
         if (coconut == null)
             return;
@@ -95,13 +94,11 @@ public class CoconutSplitter : MonoBehaviour
 
         Destroy(wholeCoconutObject);
 
-  
         Instantiate(
             coconut,
             position + Vector3.right * 0.3f,
             Quaternion.identity
         );
-
 
         Instantiate(
             coconut,
@@ -116,8 +113,6 @@ public class CoconutSplitter : MonoBehaviour
             return;
 
         messageText.text = message;
-
-   
         messageText.gameObject.SetActive(true);
     }
 }

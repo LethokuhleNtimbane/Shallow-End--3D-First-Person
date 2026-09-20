@@ -5,27 +5,30 @@ using System.Collections;
 
 public class SpearAttack : MonoBehaviour
 {
- 
     [SerializeField] private Inventory inventory;
-
 
     [SerializeField] private InputActionReference interactAction;
 
-
     [SerializeField] private Camera playerCamera;
 
-    
     [SerializeField] private float attackRange = 4f;
     [SerializeField] private float damage = 10f;
 
-
     [SerializeField] private Items crabMeat;
-
 
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private float messageDuration = 2f;
 
     private Coroutine messageCoroutine;
+
+    AudioManager audioManager;
+
+    private void Awake()
+    {
+        audioManager =
+            GameObject.FindGameObjectWithTag("Audio")
+                .GetComponent<AudioManager>();
+    }
 
     private void OnEnable()
     {
@@ -72,10 +75,11 @@ public class SpearAttack : MonoBehaviour
             return;
         }
 
-        Transform crab = hit.collider.transform;
+        Transform crab =
+            hit.collider.transform;
 
-        // Find the parent with the Crab tag
-        while (crab != null && !crab.CompareTag("Crab"))
+        while (crab != null &&
+               !crab.CompareTag("Crab"))
         {
             crab = crab.parent;
         }
@@ -83,15 +87,20 @@ public class SpearAttack : MonoBehaviour
         if (crab == null)
             return;
 
-        // Player has spear
-        if (inventory != null && inventory.IsSpearEquipped())
+        if (inventory != null &&
+            inventory.IsSpearEquipped())
         {
             KillCrab(crab);
             return;
         }
 
-        // Player does not have spear
-        ShowMessage("Ouch! I need a spear");
+        ShowMessage(
+            "Ouch! I need a spear"
+        );
+
+        audioManager.PlaySfx(
+            audioManager.LowHealth
+        );
 
         HurtPlayer();
     }
@@ -101,7 +110,11 @@ public class SpearAttack : MonoBehaviour
         if (inventory == null)
             return;
 
-        bool receivedMeat = inventory.AddItem(crabMeat, 1);
+        bool receivedMeat =
+            inventory.AddItem(
+                crabMeat,
+                1
+            );
 
         if (!receivedMeat)
         {
@@ -109,6 +122,9 @@ public class SpearAttack : MonoBehaviour
         }
 
         Destroy(crab.gameObject);
+
+        // Successful spear use.
+        inventory.UseEquippedDurability();
     }
 
     private void HurtPlayer()
@@ -117,7 +133,8 @@ public class SpearAttack : MonoBehaviour
             return;
 
         HealthScript health =
-            PlayerController.Instance.GetComponent<HealthScript>();
+            PlayerController.Instance
+                .GetComponent<HealthScript>();
 
         if (health == null)
             return;
@@ -131,22 +148,22 @@ public class SpearAttack : MonoBehaviour
             return;
 
         messageText.text = message;
-
-        
         messageText.gameObject.SetActive(true);
 
-      
         if (messageCoroutine != null)
         {
             StopCoroutine(messageCoroutine);
         }
 
-        messageCoroutine = StartCoroutine(HideMessage());
+        messageCoroutine =
+            StartCoroutine(HideMessage());
     }
 
     private IEnumerator HideMessage()
     {
-        yield return new WaitForSeconds(messageDuration);
+        yield return new WaitForSeconds(
+            messageDuration
+        );
 
         if (messageText != null)
         {

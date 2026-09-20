@@ -8,6 +8,13 @@ TagManager:
   - Whole Coconut
   - Food Item
   - Crab
+  - Audio
+  - Rocks
+  - Fireplace
+  - Chest
+  - T.M
+  - Blue print
+  - Axe
   layers:
   - Default
   - TransparentFX
@@ -18,8 +25,8 @@ TagManager:
   - Obstacles
   - Grass
   - post-processing
-  - 
-  - 
+  - Outline
+  - Player
   - 
   - 
   - 

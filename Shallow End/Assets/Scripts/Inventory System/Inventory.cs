@@ -15,25 +15,20 @@ public class Inventory : MonoBehaviour
     public Items WholeCoconut;
     public Items Coconut;
 
-    
 
-    public Items RMushroom;
-    public Items YMushroom;
-    public Items PMushroom;
-    public Items AxeItem;    
+    public Items AxeItem;
+
     [SerializeField] private Camera playerCamera;
 
     public GameObject hotBrObj;
 
-
-
     public CraftinSystem craftingSystem;
 
-  
     [SerializeField] private InputActionReference pickupobj;
 
     [SerializeField] private InputActionReference[] hotbarActions;
     [SerializeField] private InputActionReference dropAction;
+    [SerializeField] private InputActionReference hotbarScroll;
 
     public Image DragIcon;
 
@@ -60,11 +55,11 @@ public class Inventory : MonoBehaviour
     [SerializeField] private GameObject knifeHandItem;
     [SerializeField] private GameObject FlintHandItem;
     [SerializeField] private GameObject RockHandItem;
+
     [SerializeField] private Items CrabItem;
     [SerializeField] private Items FlintItem;
-    [SerializeField] private GameObject YellowMushroomHandItem;
-    [SerializeField] private GameObject PurpleMushroomHandItem;
-    [SerializeField] private GameObject RedMushroomHandItem;
+
+   
     [SerializeField] private GameObject CrabHandItem;
     [SerializeField] private GameObject WoodHandItem;
     [SerializeField] private GameObject VineHandItem;
@@ -72,41 +67,37 @@ public class Inventory : MonoBehaviour
     [SerializeField] private GameObject CoconutHandItem;
 
     [SerializeField] private Items RockItem;
+
     private GameObject currentHandItem;
 
-   
+    AudioManager audioManager;
+
     private List<Slot> hotbarSlots = new List<Slot>();
     private List<Slot> allSlots = new List<Slot>();
     private List<Slot> craftingSlots = new List<Slot>();
 
-  
-
-   
     [SerializeField] private TextMeshProUGUI interactionMessage;
 
     [SerializeField] private float messageDuration = 2f;
 
     private Coroutine messageCoroutine;
 
-
-
     private void Awake()
     {
-       
+        audioManager =
+            GameObject.FindGameObjectWithTag("Audio")
+                .GetComponent<AudioManager>();
 
         hotbarSlots.AddRange(
             hotBrObj.GetComponentsInChildren<Slot>(true)
         );
 
-        craftingSlots.AddRange(    Crafting.GetComponentsInChildren<Slot>(true)
-        
+        craftingSlots.AddRange(
+            Crafting.GetComponentsInChildren<Slot>(true)
         );
 
-    
         allSlots.AddRange(hotbarSlots);
-
     }
-
 
     public void ShowInteractionMessage(string message)
     {
@@ -114,8 +105,6 @@ public class Inventory : MonoBehaviour
             return;
 
         interactionMessage.text = message;
-
-  
         interactionMessage.gameObject.SetActive(true);
 
         if (messageCoroutine != null)
@@ -123,7 +112,8 @@ public class Inventory : MonoBehaviour
             StopCoroutine(messageCoroutine);
         }
 
-        messageCoroutine = StartCoroutine(HideInteractionMessage());
+        messageCoroutine =
+            StartCoroutine(HideInteractionMessage());
     }
 
     private IEnumerator HideInteractionMessage()
@@ -132,36 +122,26 @@ public class Inventory : MonoBehaviour
 
         if (interactionMessage != null)
         {
-      
             interactionMessage.text = "";
         }
 
         messageCoroutine = null;
     }
 
-
-
-   
-private void EquippedHandItem()
+    private void EquippedHandItem()
     {
-
-
-   
         axeHandItem.SetActive(false);
         spearHandItem.SetActive(false);
         hammerHandItem.SetActive(false);
         knifeHandItem.SetActive(false);
         FlintHandItem.SetActive(false);
         RockHandItem.SetActive(false);
-        YellowMushroomHandItem.SetActive(false);
-        PurpleMushroomHandItem.SetActive(false);
-        RedMushroomHandItem.SetActive (false);
+     
         CrabHandItem.SetActive(false);
         WoodHandItem.SetActive(false);
         VineHandItem.SetActive(false);
         WholeCoconutHandItem.SetActive(false);
         CoconutHandItem.SetActive(false);
-
 
         if (equippedHotBarIndex < 0 ||
             equippedHotBarIndex >= hotbarSlots.Count)
@@ -172,12 +152,8 @@ private void EquippedHandItem()
         Slot currentSlot =
             hotbarSlots[equippedHotBarIndex];
 
-       
         if (!currentSlot.Hasitem())
-        {
-       
             return;
-        }
 
         Items item =
             currentSlot.GetItem();
@@ -188,113 +164,117 @@ private void EquippedHandItem()
         if (item == AxeItem)
         {
             axeHandItem.SetActive(true);
-    
         }
-
-        
         else if (item == Spear)
         {
             spearHandItem.SetActive(true);
-   
         }
-
-     
         else if (item == Hammer)
         {
             hammerHandItem.SetActive(true);
-          
         }
-
- 
         else if (item == Knife)
         {
             knifeHandItem.SetActive(true);
-           
         }
         else if (item == FlintItem)
         {
             FlintHandItem.SetActive(true);
-
         }
         else if (item == RockItem)
         {
             RockHandItem.SetActive(true);
-
         }
-        else if (item == YMushroom)
-        {
-            YellowMushroomHandItem.SetActive(true);
-
-        }
-        else if (item == PMushroom)
-        {
-            PurpleMushroomHandItem.SetActive(true);
-
-        }
-        else if (item == RMushroom)
-        {
-            RedMushroomHandItem.SetActive(true);
-
-        }
+    
         else if (item == CrabItem)
         {
             CrabHandItem.SetActive(true);
-
         }
         else if (item == WoodItem)
         {
             WoodHandItem.SetActive(true);
-
         }
         else if (item == Vines)
         {
             VineHandItem.SetActive(true);
-
         }
         else if (item == WholeCoconut)
         {
             WholeCoconutHandItem.SetActive(true);
-
         }
         else if (item == Coconut)
         {
             CoconutHandItem.SetActive(true);
-
         }
-       
-
     }
 
+    private void HandleHotBarScroll()
+    {
+        if (hotbarScroll == null)
+            return;
 
+        Vector2 scrollValue =
+            hotbarScroll.action.ReadValue<Vector2>();
 
+        if (scrollValue.y > 0)
+        {
+          
+            if (equippedHotBarIndex > 0)
+            {
+                equippedHotBarIndex--;
+
+                UpdateHotBarOpacity();
+                EquippedHandItem();
+            }
+        }
+        else if (scrollValue.y < 0)
+        {
+          
+            if (equippedHotBarIndex < hotbarSlots.Count - 1)
+            {
+                equippedHotBarIndex++;
+
+                UpdateHotBarOpacity();
+                EquippedHandItem();
+            }
+        }
+    }
 
     private void OnEnable()
     {
-       
-        pickupobj.action.Enable();
+        if (pickupobj != null)
+            pickupobj.action.Enable();
 
         foreach (InputActionReference action in hotbarActions)
         {
-            action.action.Enable();
+            if (action != null)
+                action.action.Enable();
         }
 
-        dropAction.action.Enable();
+        if (dropAction != null)
+            dropAction.action.Enable();
+
+        if (hotbarScroll != null)
+            hotbarScroll.action.Enable();
     }
 
     private void OnDisable()
     {
-
-        pickupobj.action.Disable();
+        if (pickupobj != null)
+            pickupobj.action.Disable();
 
         foreach (InputActionReference action in hotbarActions)
         {
-            action.action.Disable();
+            if (action != null)
+                action.action.Disable();
         }
 
-        dropAction.action.Disable();
-    }
+        if (dropAction != null)
+            dropAction.action.Disable();
 
-    
+        if (hotbarScroll != null)
+            hotbarScroll.action.Disable();
+    }
 
     public Items GetHotbarItem()
     {
@@ -304,7 +284,8 @@ private void EquippedHandItem()
             return null;
         }
 
-        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
+        Slot equippedSlot =
+            hotbarSlots[equippedHotBarIndex];
 
         if (!equippedSlot.Hasitem())
             return null;
@@ -312,7 +293,44 @@ private void EquippedHandItem()
         return equippedSlot.GetItem();
     }
 
- 
+    public int GetEquippedDurability()
+    {
+        if (equippedHotBarIndex < 0 ||
+            equippedHotBarIndex >= hotbarSlots.Count)
+        {
+            return -1;
+        }
+
+        Slot slot =
+            hotbarSlots[equippedHotBarIndex];
+
+        if (!slot.Hasitem())
+            return -1;
+
+        return slot.GetDurability();
+    }
+
+    public bool UseEquippedDurability()
+    {
+        if (equippedHotBarIndex < 0 ||
+            equippedHotBarIndex >= hotbarSlots.Count)
+        {
+            return false;
+        }
+
+        Slot equippedSlot =
+            hotbarSlots[equippedHotBarIndex];
+
+        if (!equippedSlot.Hasitem())
+            return false;
+
+        bool broke =
+            equippedSlot.UseDurability(1);
+
+        EquippedHandItem();
+
+        return broke;
+    }
 
     public void RemoveHotbarItem(int amount)
     {
@@ -322,7 +340,8 @@ private void EquippedHandItem()
             return;
         }
 
-        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
+        Slot equippedSlot =
+            hotbarSlots[equippedHotBarIndex];
 
         if (!equippedSlot.Hasitem())
             return;
@@ -332,75 +351,48 @@ private void EquippedHandItem()
         EquippedHandItem();
     }
 
- 
-
     public bool IsHammerEquipped()
     {
-        if (equippedHotBarIndex < 0 ||
-            equippedHotBarIndex >= hotbarSlots.Count)
-            return false;
+        Items item = GetHotbarItem();
 
-        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
-
-        if (!equippedSlot.Hasitem())
-            return false;
-
-        return equippedSlot.GetItem() == Hammer;
+        return item != null &&
+               item == Hammer;
     }
 
     public bool IsAxeEquipped()
     {
-        if (equippedHotBarIndex < 0 ||
-            equippedHotBarIndex >= hotbarSlots.Count)
-            return false;
+        Items item = GetHotbarItem();
 
-        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
-
-        if (!equippedSlot.Hasitem())
-            return false;
-
-        return equippedSlot.GetItem() == AxeItem;
+        return item != null &&
+               item == AxeItem;
     }
 
     public bool IsKnifeEquipped()
     {
-        Items equippedItem = GetHotbarItem();
+        Items item = GetHotbarItem();
 
-        if (equippedItem == null)
-            return false;
-
-        if (Knife == null)
-            return false;
-
-        return equippedItem == Knife;
+        return item != null &&
+               item == Knife;
     }
 
     public bool IsSpearEquipped()
     {
-        Items equippedItem = GetHotbarItem();
+        Items item = GetHotbarItem();
 
-        if (equippedItem == null)
-            return false;
-
-        return equippedItem == Spear;
+        return item != null &&
+               item == Spear;
     }
 
     public bool IsFlintEquipped(Items flintItem)
     {
-        Items equippedItem = GetHotbarItem();
+        Items item = GetHotbarItem();
 
-        if (equippedItem == null)
-            return false;
-
-        return equippedItem == flintItem;
+        return item != null &&
+               item == flintItem;
     }
-
-
 
     private void Update()
     {
-   
-
         DetectLookedAtItem();
         Pickup();
 
@@ -409,11 +401,11 @@ private void EquippedHandItem()
         EndDrag();
 
         HandleHotBarSelection();
+        HandleHotBarScroll();
         HandleDropEquippedItem();
+
         UpdateHotBarOpacity();
     }
-
-
 
     public int GetTotalItemAmount(Items itemToCheck)
     {
@@ -428,11 +420,8 @@ private void EquippedHandItem()
             }
         }
 
-    
-
         return total;
     }
-
 
     public int RemoveItemAmount(
         Items itemToRemove,
@@ -448,10 +437,14 @@ private void EquippedHandItem()
             if (slot.Hasitem() &&
                 slot.GetItem() == itemToRemove)
             {
-                int amountInSlot = slot.GetAmount();
+                int amountInSlot =
+                    slot.GetAmount();
 
                 int amountToRemove =
-                    Mathf.Min(amountInSlot, remaining);
+                    Mathf.Min(
+                        amountInSlot,
+                        remaining
+                    );
 
                 slot.RemoveAmount(amountToRemove);
 
@@ -459,80 +452,136 @@ private void EquippedHandItem()
             }
         }
 
-
-
         EquippedHandItem();
 
         return amount - remaining;
     }
 
-
-  
-public bool AddItem(Items itemToAdd, int amount)
+    public bool AddItem(
+        Items itemToAdd,
+        int amount,
+        int durability = -1)
     {
-        int remaining = amount;
-
-       
-        foreach (Slot slot in hotbarSlots)
+        if (itemToAdd == null ||
+            amount <= 0)
         {
-            if (slot.Hasitem() &&
-                slot.GetItem() == itemToAdd)
-            {
-                int currentAmount = slot.GetAmount();
-                int maxStack = itemToAdd.maxStack;
-
-                if (currentAmount < maxStack)
-                {
-                    int spaceLeft = maxStack - currentAmount;
-
-                    int amountToAdd =
-                        Mathf.Min(spaceLeft, remaining);
-
-                    slot.SetItem(
-                        itemToAdd,
-                        currentAmount + amountToAdd
-                    );
-
-                    remaining -= amountToAdd;
-
-                    if (remaining <= 0)
-                    {
-                       
-                        EquippedHandItem();
-                        return true;
-                    }
-                }
-            }
+            return false;
         }
 
-      
+     
+        if (itemToAdd.hasDurability)
+        {
+            for (int i = 0; i < amount; i++)
+            {
+                Slot emptySlot = null;
+
+                foreach (Slot slot in hotbarSlots)
+                {
+                    if (!slot.Hasitem())
+                    {
+                        emptySlot = slot;
+                        break;
+                    }
+                }
+
+                if (emptySlot == null)
+                {
+                    EquippedHandItem();
+                    return false;
+                }
+
+                int durabilityToUse =
+                    durability;
+
+                
+                if (durabilityToUse < 0)
+                {
+                    durabilityToUse =
+                        itemToAdd.maxDurability;
+                }
+
+                emptySlot.SetItem(
+                    itemToAdd,
+                    1,
+                    durabilityToUse
+                );
+
+              
+                durability = -1;
+            }
+
+            EquippedHandItem();
+            return true;
+        }
+
+        
+        int remaining = amount;
+
         foreach (Slot slot in hotbarSlots)
         {
             if (!slot.Hasitem())
-            {
-                int amountToPlace =
-                    Mathf.Min(
-                        itemToAdd.maxStack,
-                        remaining
-                    );
+                continue;
 
-                slot.SetItem(
-                    itemToAdd,
-                    amountToPlace
+            if (slot.GetItem() != itemToAdd)
+                continue;
+
+            int currentAmount =
+                slot.GetAmount();
+
+            int maxStack =
+                itemToAdd.maxStack;
+
+            if (currentAmount >= maxStack)
+                continue;
+
+            int spaceLeft =
+                maxStack - currentAmount;
+
+            int amountToAdd =
+                Mathf.Min(
+                    spaceLeft,
+                    remaining
                 );
 
-                remaining -= amountToPlace;
+            slot.SetItem(
+                itemToAdd,
+                currentAmount + amountToAdd
+            );
 
-                if (remaining <= 0)
-                {
-                    EquippedHandItem();
-                    return true;
-                }
+            remaining -= amountToAdd;
+
+            if (remaining <= 0)
+            {
+                EquippedHandItem();
+                return true;
             }
         }
 
+        foreach (Slot slot in hotbarSlots)
+        {
+            if (remaining <= 0)
+                break;
+
+            if (slot.Hasitem())
+                continue;
+
+            int amountToPlace =
+                Mathf.Min(
+                    itemToAdd.maxStack,
+                    remaining
+                );
+
+            slot.SetItem(
+                itemToAdd,
+                amountToPlace
+            );
+
+            remaining -= amountToPlace;
+        }
+
         EquippedHandItem();
-        return false;
+
+        return remaining <= 0;
     }
 
     private void StartDrag()
@@ -586,6 +635,8 @@ public bool AddItem(Items itemToAdd, int amount)
 
                 dragslot = null;
                 isDraggin = false;
+
+                EquippedHandItem();
             }
         }
     }
@@ -614,8 +665,6 @@ public bool AddItem(Items itemToAdd, int amount)
         return null;
     }
 
-   
-
     private void HandleDrop(Slot from, Slot to)
     {
         if (from == to)
@@ -630,6 +679,7 @@ public bool AddItem(Items itemToAdd, int amount)
             return;
         }
 
+      
         if (craftingSlots.Contains(to))
         {
             if (to.Hasitem())
@@ -637,7 +687,8 @@ public bool AddItem(Items itemToAdd, int amount)
 
             to.SetItem(
                 from.GetItem(),
-                1
+                1,
+                from.GetDurability()
             );
 
             from.RemoveAmount(1);
@@ -645,13 +696,15 @@ public bool AddItem(Items itemToAdd, int amount)
             return;
         }
 
+       
         if (craftingSlots.Contains(from))
         {
             if (!to.Hasitem())
             {
                 to.SetItem(
                     from.GetItem(),
-                    from.GetAmount()
+                    from.GetAmount(),
+                    from.GetDurability()
                 );
 
                 from.ClearSlot();
@@ -659,10 +712,14 @@ public bool AddItem(Items itemToAdd, int amount)
                 return;
             }
 
-            if (to.GetItem() == from.GetItem())
+            if (to.GetItem() == from.GetItem() &&
+                !from.GetItem().hasDurability)
             {
-                int max = to.GetItem().maxStack;
-                int space = max - to.GetAmount();
+                int max =
+                    to.GetItem().maxStack;
+
+                int space =
+                    max - to.GetAmount();
 
                 if (space > 0)
                 {
@@ -686,11 +743,13 @@ public bool AddItem(Items itemToAdd, int amount)
             return;
         }
 
+        
         if (!to.Hasitem())
         {
             to.SetItem(
                 from.GetItem(),
-                from.GetAmount()
+                from.GetAmount(),
+                from.GetDurability()
             );
 
             from.ClearSlot();
@@ -698,10 +757,15 @@ public bool AddItem(Items itemToAdd, int amount)
             return;
         }
 
-        if (to.GetItem() == from.GetItem())
+       
+        if (to.GetItem() == from.GetItem() &&
+            !from.GetItem().hasDurability)
         {
-            int max = to.GetItem().maxStack;
-            int space = max - to.GetAmount();
+            int max =
+                to.GetItem().maxStack;
+
+            int space =
+                max - to.GetAmount();
 
             if (space > 0)
             {
@@ -718,7 +782,8 @@ public bool AddItem(Items itemToAdd, int amount)
 
                 from.SetItem(
                     from.GetItem(),
-                    from.GetAmount() - move
+                    from.GetAmount() - move,
+                    from.GetDurability()
                 );
 
                 if (from.GetAmount() <= 0)
@@ -728,20 +793,28 @@ public bool AddItem(Items itemToAdd, int amount)
             }
         }
 
-        Items tempItem = to.GetItem();
-        int tempAmount = to.GetAmount();
+   
+        Items tempItem =
+            to.GetItem();
+
+        int tempAmount =
+            to.GetAmount();
+
+        int tempDurability =
+            to.GetDurability();
 
         to.SetItem(
             from.GetItem(),
-            from.GetAmount()
+            from.GetAmount(),
+            from.GetDurability()
         );
 
         from.SetItem(
             tempItem,
-            tempAmount
+            tempAmount,
+            tempDurability
         );
     }
-
 
     private void UpdateDragItemPosition()
     {
@@ -752,8 +825,6 @@ public bool AddItem(Items itemToAdd, int amount)
                 Mouse.current.position.ReadValue();
         }
     }
-
-    
 
     private void Pickup()
     {
@@ -768,11 +839,16 @@ public bool AddItem(Items itemToAdd, int amount)
                 bool pickedUp =
                     AddItem(
                         item.item,
-                        item.amount
+                        item.amount,
+                        item.currentDurability
                     );
 
                 if (pickedUp)
                 {
+                    audioManager.PlaySfx(
+                        audioManager.PickupItem
+                    );
+
                     ResourceRespawn respawn =
                         item.GetComponent<ResourceRespawn>();
 
@@ -783,14 +859,13 @@ public bool AddItem(Items itemToAdd, int amount)
                     else
                     {
                         Destroy(item.gameObject);
-                        EquippedHandItem();
                     }
+
+                    EquippedHandItem();
                 }
             }
         }
     }
-
-
 
     private void DetectLookedAtItem()
     {
@@ -832,8 +907,6 @@ public bool AddItem(Items itemToAdd, int amount)
         }
     }
 
- 
-
     private void TryTakeCraftedItem(Slot destination)
     {
         if (craftingSystem == null)
@@ -861,7 +934,8 @@ public bool AddItem(Items itemToAdd, int amount)
                 craftedAmount
             );
         }
-        else if (destination.GetItem() == craftedItem)
+        else if (destination.GetItem() == craftedItem &&
+                 !craftedItem.hasDurability)
         {
             int max =
                 craftedItem.maxStack;
@@ -899,8 +973,6 @@ public bool AddItem(Items itemToAdd, int amount)
         }
     }
 
-
-
     private void UpdateHotBarOpacity()
     {
         for (int i = 0;
@@ -923,6 +995,9 @@ public bool AddItem(Items itemToAdd, int amount)
                 .action
                 .WasPressedThisFrame())
             {
+                if (i >= hotbarSlots.Count)
+                    continue;
+
                 equippedHotBarIndex = i;
 
                 UpdateHotBarOpacity();
@@ -931,12 +1006,19 @@ public bool AddItem(Items itemToAdd, int amount)
         }
     }
 
-
-
     private void HandleDropEquippedItem()
     {
-        if (!dropAction.action.WasPressedThisFrame())
+        if (dropAction == null ||
+            !dropAction.action.WasPressedThisFrame())
+        {
             return;
+        }
+
+        if (equippedHotBarIndex < 0 ||
+            equippedHotBarIndex >= hotbarSlots.Count)
+        {
+            return;
+        }
 
         Slot equippedSlot =
             hotbarSlots[equippedHotBarIndex];
@@ -973,10 +1055,16 @@ public bool AddItem(Items itemToAdd, int amount)
         if (item1 != null)
         {
             item1.item = item;
+
             item1.amount =
                 equippedSlot.GetAmount();
 
-            item1.sourcePrefab = prefab;
+         
+            item1.currentDurability =
+                equippedSlot.GetDurability();
+
+            item1.sourcePrefab =
+                prefab;
         }
 
         equippedSlot.ClearSlot();

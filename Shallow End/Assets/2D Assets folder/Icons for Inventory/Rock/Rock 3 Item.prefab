@@ -63,10 +63,14 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 7511431044ea82c4dac5db820791e040, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: d67e23e463597fb4cba4e4be3c1c3434, type: 2}
+      objectReference: {fileID: 2100000, guid: 172c35a63e80cc74f990ceaa189e1543, type: 2}
     - target: {fileID: 919132149155446097, guid: 7511431044ea82c4dac5db820791e040, type: 3}
       propertyPath: m_Name
       value: Rock 3 Item
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7511431044ea82c4dac5db820791e040, type: 3}
+      propertyPath: m_TagString
+      value: Rocks
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -152,6 +156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: 470dd5c8eb95a294899fbd08233024e0, type: 2}
   amount: 1
+  currentDurability: -1
   sourcePrefab: {fileID: 0}
 --- !u!114 &-2237206306429440921
 MonoBehaviour:
