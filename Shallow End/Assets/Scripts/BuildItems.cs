@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class BuildableObject : MonoBehaviour
+public class BuildItems : MonoBehaviour
 {
 
     [SerializeField] private GameObject blueprintObject;
@@ -24,7 +24,7 @@ public class BuildableObject : MonoBehaviour
     [SerializeField] private int vinesRequired = 15;
 
  
-    [SerializeField] private BuildableObject requiredBuildable;
+    [SerializeField] private BuildItems requiredBuildable;
 
     
     [SerializeField] private TextMeshProUGUI taskText;
@@ -242,12 +242,12 @@ public class BuildableObject : MonoBehaviour
 
     private void NotifyNextBuildable()
     {
-        BuildableObject[] allBuildables =
-            FindObjectsByType<BuildableObject>(
+        BuildItems[] allBuildables =
+            FindObjectsByType<BuildItems>(
                 FindObjectsSortMode.None
             );
 
-        foreach (BuildableObject buildable in allBuildables)
+        foreach (BuildItems buildable in allBuildables)
         {
             if (buildable.requiredBuildable == this)
             {

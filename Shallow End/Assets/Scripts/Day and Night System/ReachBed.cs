@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Bed : MonoBehaviour
+public class ReachBed : MonoBehaviour
 {
     [SerializeField] private SleepManager sleepManager;
     [SerializeField] private InputActionReference interactAction;

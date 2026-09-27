@@ -18,13 +18,12 @@ public class MainMenuManager : MonoBehaviour
 
     IEnumerator LoadLevel(int LevelIndex)
     {
-        // Play transition animation
+
         transition.SetTrigger("start");
 
-        // Wait for animation
         yield return new WaitForSeconds(1);
 
-        // Load next scene
+
         SceneManager.LoadScene(LevelIndex);
     }
 }

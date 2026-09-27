@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2921483167276442411
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8532329896206331091}
+  - component: {fileID: 7540008872613661402}
+  m_Layer: 0
+  m_Name: TimeController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8532329896206331091
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2921483167276442411}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 294.5502, y: 178.5069, z: 16.22563}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7540008872613661402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2921483167276442411}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a300c5c545ea14e4784ff252a2d877f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TimeController
+  TimeMultiplier: 210
+  StartHour: 22
+  sunriseHour: 6
+  sunsetHour: 21
+  TimerText: {fileID: 0}
+  daytext: {fileID: 0}
+  sunLight: {fileID: 0}
+  sunriseRotation: 0
+  sunsetRotation: 180
+  sunRotationOffset: 0
+  sunsetStartHour: 20
+  sunsetEndHour: 21
+  dayAmbientLight: {r: 1, g: 1, b: 1, a: 1}
+  nightAmbientLight: {r: 0, g: 0, b: 0, a: 1}
+  MaxSunLightIntensity: 1
+  horizonFadeAngle: 20
+  moonLight: {fileID: 0}
+  maxMoonLightIntensity: 0.5
+  skyboxMaterial: {fileID: 2100000, guid: 8da82d5425015634ea55ee0ca4fec657, type: 2}
+  dayNightSliderProperty: _DayNight_Slider
+  nightBlendProperty: _Night_Blend
+  daySkyColour: {r: 0.09411765, g: 0.61960787, b: 0.8039216, a: 1}
+  sunsetSkyColour: {r: 1, g: 0.70528185, b: 0.26100624, a: 1}
+  nightSkyColour: {r: 0.07450981, g: 0, b: 0.1254902, a: 1}
+  dayHorizonColour: {r: 0.6, g: 0.85, b: 1, a: 1}
+  sunsetHorizonColour: {r: 1, g: 0.7911236, b: 0.2295596, a: 1}
+  nightHorizonColour: {r: 0.02, g: 0.03, b: 0.08, a: 1}
+  dayGroundColour: {r: 0.36078432, g: 0.7647059, b: 0.8666667, a: 1}
+  sunsetGroundColour: {r: 0.8000001, g: 0.7176471, b: 0.7490196, a: 1}
+  nightGroundColour: {r: 0.01, g: 0.01, b: 0.025, a: 1}
+  skyColourProperty: _Sky_Colour
+  nightSkyColourProperty: _Night_Sky
+  horizonColourProperty: _Horizon_colour
+  groundColourProperty: _Ground_Colour
+  sunsetColourPeakHour: 20.5
+  sunriseColourStartHour: 5
+  auroraStartHour: 20
+  auroraFullHour: 23
+  auroraFadeStartHour: 3
+  auroraEndHour: 5
+  maxAuroraStrength: 1
+  auroraStrengthProperty: _AuroraStrength
+  dayStarPower: 100
+  nightStarPower: 32
+  starsFadeInStartHour: 18
+  starsFadeInEndHour: 21
+  starsFadeOutStartHour: 5
+  starsFadeOutEndHour: 7
+  starPowerProperty: _Star_Power
+  cloudMaterial: {fileID: 2100000, guid: 165a142d1d3e3ef4e8c15ce1adefd2fb, type: 2}
+  cloudAlphaProperty: _Clouds_Alpha
+  dayCloudAlpha: 1
+  nightCloudAlpha: 0.2

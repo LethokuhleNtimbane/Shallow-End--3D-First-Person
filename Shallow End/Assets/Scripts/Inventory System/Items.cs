@@ -13,7 +13,6 @@ public class Items : ScriptableObject
     public bool isFood;
     public float healthRegenerate;
 
-    [Header("Durability")]
     public bool hasDurability;
     public bool infiniteDurability;
     public int maxDurability = 1;

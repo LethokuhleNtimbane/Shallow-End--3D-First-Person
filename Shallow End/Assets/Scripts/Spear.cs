@@ -16,10 +16,6 @@ public class SpearAttack : MonoBehaviour
 
     [SerializeField] private Items crabMeat;
 
-    [SerializeField] private TextMeshProUGUI messageText;
-    [SerializeField] private float messageDuration = 2f;
-
-    private Coroutine messageCoroutine;
 
     AudioManager audioManager;
 
@@ -94,9 +90,6 @@ public class SpearAttack : MonoBehaviour
             return;
         }
 
-        ShowMessage(
-            "Ouch! I need a spear"
-        );
 
         audioManager.PlaySfx(
             audioManager.LowHealth
@@ -123,7 +116,6 @@ public class SpearAttack : MonoBehaviour
 
         Destroy(crab.gameObject);
 
-        // Successful spear use.
         inventory.UseEquippedDurability();
     }
 
@@ -142,34 +134,5 @@ public class SpearAttack : MonoBehaviour
         health.TakeDamage(damage);
     }
 
-    private void ShowMessage(string message)
-    {
-        if (messageText == null)
-            return;
-
-        messageText.text = message;
-        messageText.gameObject.SetActive(true);
-
-        if (messageCoroutine != null)
-        {
-            StopCoroutine(messageCoroutine);
-        }
-
-        messageCoroutine =
-            StartCoroutine(HideMessage());
-    }
-
-    private IEnumerator HideMessage()
-    {
-        yield return new WaitForSeconds(
-            messageDuration
-        );
-
-        if (messageText != null)
-        {
-            messageText.gameObject.SetActive(false);
-        }
-
-        messageCoroutine = null;
-    }
+   
 }

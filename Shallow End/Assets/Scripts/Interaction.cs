@@ -4,29 +4,53 @@ using TMPro;
 
 public class ThomasInteraction : MonoBehaviour
 {
-   
+  
     [SerializeField] private InputActionReference interactAction;
 
-   
+
     [SerializeField] private GameObject thomas;
 
 
-    [SerializeField] private TextMeshProUGUI interactionText;
-
-   
-    [SerializeField] private TextMeshProUGUI dialogueText;
+    [SerializeField] private GameObject board;
 
   
-    [SerializeField] private string randomLine1 = "What you leave behind... the crabs shall find";
-    [SerializeField] private string randomLine2 = "Do not believe what your eyes see in the dark";
-    [SerializeField] private string randomLine3 = "The light only scares it away but the darkness will always remain";
-    [SerializeField] private string randomLine4 = "The sea is a hunting ground, it is not a place of freedom";
-    [SerializeField] private string randomLine5 = "The Island is beyond cruelty";
+    [SerializeField] private TextMeshProUGUI interactionText;
+    [SerializeField] private GameObject interactionImage;
 
+
+    [SerializeField] private ForDialog dialogueManager;
+
+
+    [SerializeField] private TaskManager taskManager;
 
     [SerializeField] private TimeController timeController;
+    [SerializeField] private Monster monster;
+    [SerializeField] private HealthScript healthScript;
+    [SerializeField] private DashScript dash;
+    [SerializeField] private PlayerController playerController;
+
+    [SerializeField]
+    private string randomLine1 =
+        "What you leave behind... the crabs shall find";
+
+    [SerializeField]
+    private string randomLine2 =
+        "Do not believe what your eyes see in the dark";
+
+    [SerializeField]
+    private string randomLine3 =
+        "The light only scares it away but the darkness will always remain";
+
+    [SerializeField]
+    private string randomLine4 =
+        "The sea is a hunting ground, it is not a place of freedom";
+
+    [SerializeField]
+    private string randomLine5 =
+        "The Island is beyond cruelty";
 
     private bool playerInRange = false;
+    private bool dialogueIsPlaying = false;
 
     private void OnEnable()
     {
@@ -42,20 +66,20 @@ public class ThomasInteraction : MonoBehaviour
 
     private void Start()
     {
-        if (interactionText != null)
-            interactionText.gameObject.SetActive(false);
-
-        if (dialogueText != null)
-            dialogueText.gameObject.SetActive(false);
-
-        UpdateThomasVisibility();
+        HideInteractionUI();
     }
 
     private void Update()
     {
-        UpdateThomasVisibility();
+        if (playerInRange && !dialogueIsPlaying)
+        {
+            UpdateInteractionUI();
+        }
 
         if (!playerInRange)
+            return;
+
+        if (dialogueIsPlaying)
             return;
 
         if (interactAction == null)
@@ -64,41 +88,317 @@ public class ThomasInteraction : MonoBehaviour
         if (!interactAction.action.WasPressedThisFrame())
             return;
 
+        if (dialogueManager != null &&
+            dialogueManager.IsDialogueActive())
+            return;
+
         InteractWithThomas();
     }
 
     private void InteractWithThomas()
     {
-        float currentHour = GetCurrentHour();
+        if (taskManager == null || dialogueManager == null)
+            return;
 
-      
+        if (!CanInteractAtCurrentTime())
+            return;
 
-        if (currentHour >= 21f || currentHour < 6f)
+        if (taskManager.IsCurrentTask(
+            TaskManager.TaskID.SpeakToThomasFirst))
         {
-            if (interactionText != null)
-                interactionText.gameObject.SetActive(false);
-
-            if (dialogueText != null)
-            {
-                dialogueText.text = "He is probably asleep";
-                dialogueText.gameObject.SetActive(true);
-            }
-
+            StartFirstDialogue();
             return;
         }
 
-      
-
-        if (currentHour >= 6f && currentHour < 21f)
+        if (taskManager.IsCurrentTask(
+            TaskManager.TaskID.SpeakToThomasSecond))
         {
-            ShowRandomDialogue();
+            StartSecondDialogue();
+            return;
         }
+
+        ShowRandomDialogue();
     }
+
+
+
+    private void DisableGameplay()
+    {
+        if (timeController != null)
+            timeController.enabled = false;
+
+        if (monster != null)
+            monster.enabled = false;
+
+        if (healthScript != null)
+            healthScript.enabled = false;
+
+        if (dash != null)
+            dash.enabled = false;
+
+        if (playerController != null)
+            playerController.enabled = false;
+    }
+
+    private void EnableGameplay()
+    {
+        if (timeController != null)
+            timeController.enabled = true;
+
+        if (monster != null)
+            monster.enabled = true;
+
+        if (healthScript != null)
+            healthScript.enabled = true;
+
+        if (dash != null)
+            dash.enabled = true;
+
+        if (playerController != null)
+            playerController.enabled = true;
+    }
+
+
+
+    private void HideBoard()
+    {
+        if (board != null)
+            board.SetActive(false);
+    }
+
+    private void ShowBoard()
+    {
+        if (board != null)
+            board.SetActive(true);
+    }
+
+
+
+    private void StartFirstDialogue()
+    {
+        dialogueIsPlaying = true;
+
+        DisableGameplay();
+        HideInteractionUI();
+        HideBoard();
+
+        ForDialog.DialogueLine[] dialogue =
+        {
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Hello stranger",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "Who are you?",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "My name is Thomas Montgomery. Pleased to meet you",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "I just got here. I was shipwrecked a few hours ago.",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Ahh I suffered a similar fate",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "How long have you been here?",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Long enough to forget what a face looks like.",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "How have you survived this long",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Crabs.",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "Really? That's it",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "I have written a journal describing my time here. It has all you need to survive.",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "It is in the wooden box. You can take anything you like.",
+                isThomas = true
+            }
+        };
+
+        dialogueManager.StartDialogue(
+            dialogue,
+            FirstDialogueFinished
+        );
+    }
+
+    private void FirstDialogueFinished()
+    {
+        dialogueIsPlaying = false;
+
+        ShowBoard();
+        EnableGameplay();
+
+        taskManager.CompleteTask(
+            TaskManager.TaskID.SpeakToThomasFirst
+        );
+
+        UpdateInteractionUI();
+    }
+
+    private void StartSecondDialogue()
+    {
+        dialogueIsPlaying = true;
+
+        DisableGameplay();
+        HideInteractionUI();
+        HideBoard();
+
+        ForDialog.DialogueLine[] dialogue =
+        {
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "I see you have built yourself a shelter",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "I don't plan to stay here for long though",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "I used to have the same thoughts",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "What changed?",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Life is simple here.",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "There are monsters here!",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "When you have lived with them for so long, you don't see them that way",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "You're crazy!",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Please. Let this place become your home. We could all be friends forever",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "You're insane. I'm getting off this island.",
+                isThomas = false
+            }
+        };
+
+        dialogueManager.StartDialogue(
+            dialogue,
+            SecondDialogueFinished
+        );
+    }
+
+    private void SecondDialogueFinished()
+    {
+        dialogueIsPlaying = false;
+
+        ShowBoard();
+        EnableGameplay();
+
+        taskManager.CompleteTask(
+            TaskManager.TaskID.SpeakToThomasSecond
+        );
+
+        UpdateInteractionUI();
+    }
+
+
 
     private void ShowRandomDialogue()
     {
-        if (dialogueText == null)
-            return;
+        dialogueIsPlaying = true;
+
+        DisableGameplay();
+        HideInteractionUI();
+        HideBoard();
 
         string[] dialogueLines =
         {
@@ -109,38 +409,56 @@ public class ThomasInteraction : MonoBehaviour
             randomLine5
         };
 
-        int randomIndex = Random.Range(0, dialogueLines.Length);
+        int randomIndex =
+            Random.Range(0, dialogueLines.Length);
 
-        dialogueText.text = dialogueLines[randomIndex];
-        dialogueText.gameObject.SetActive(true);
+        ForDialog.DialogueLine[] dialogue =
+        {
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = dialogueLines[randomIndex],
+                isThomas = true
+            }
+        };
+
+        dialogueManager.StartDialogue(
+            dialogue,
+            RandomDialogueFinished
+        );
     }
 
-    private void UpdateThomasVisibility()
+    private void RandomDialogueFinished()
     {
-        if (thomas == null)
-            return;
+        dialogueIsPlaying = false;
 
-        float currentHour = GetCurrentHour();
+        ShowBoard();
+        EnableGameplay();
 
-        
-        if (currentHour >= 21f || currentHour < 6f)
-        {
-            thomas.SetActive(false);
-        }
-       
-        else
-        {
-            thomas.SetActive(true);
-        }
+        UpdateInteractionUI();
     }
+
+
 
     private float GetCurrentHour()
     {
         if (timeController == null)
             return 12f;
 
-        return (float)timeController.CurrentTime.TimeOfDay.TotalHours;
+        return (float)
+            timeController.CurrentTime.TimeOfDay.TotalHours;
     }
+
+    private bool CanInteractAtCurrentTime()
+    {
+        float currentHour = GetCurrentHour();
+
+        if (currentHour >= 21f || currentHour < 6f)
+            return false;
+
+        return true;
+    }
+
 
     private void OnTriggerEnter(Collider other)
     {
@@ -149,17 +467,7 @@ public class ThomasInteraction : MonoBehaviour
 
         playerInRange = true;
 
-        float currentHour = GetCurrentHour();
-
- 
-        if (interactionText != null)
-        {
-            interactionText.text = "Press E to interact with Thomas";
-            interactionText.gameObject.SetActive(true);
-        }
-
-        if (dialogueText != null)
-            dialogueText.gameObject.SetActive(false);
+        UpdateInteractionUI();
     }
 
     private void OnTriggerExit(Collider other)
@@ -169,8 +477,51 @@ public class ThomasInteraction : MonoBehaviour
 
         playerInRange = false;
 
-     
+        HideInteractionUI();
+    }
 
-     
+
+    private void UpdateInteractionUI()
+    {
+        if (!playerInRange || dialogueIsPlaying)
+        {
+            HideInteractionUI();
+            return;
+        }
+
+        if (!CanInteractAtCurrentTime())
+        {
+            HideInteractionUI();
+            return;
+        }
+
+        ShowInteractionUI();
+    }
+
+    private void ShowInteractionUI()
+    {
+        if (interactionText != null)
+        {
+            interactionText.text = "interact with Thomas";
+            interactionText.gameObject.SetActive(true);
+        }
+
+        if (interactionImage != null)
+        {
+            interactionImage.SetActive(true);
+        }
+    }
+
+    private void HideInteractionUI()
+    {
+        if (interactionText != null)
+        {
+            interactionText.gameObject.SetActive(false);
+        }
+
+        if (interactionImage != null)
+        {
+            interactionImage.SetActive(false);
+        }
     }
 }

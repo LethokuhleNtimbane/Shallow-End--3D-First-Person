@@ -1,427 +1,239 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class EnemyAI : MonoBehaviour
 {
-    [Header("Enemy")]
-    public float EnemyHealth = 100f;
+    [SerializeField] private Transform player;
+    [SerializeField] private HealthScript playerHealth;
+    [SerializeField] private float detectionRange = 30f;
+    [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] private float rotationSpeed = 5f;
+    [SerializeField] private float attackDistance = 3f;
+    [SerializeField] private float chargeTime = 2f;
+    [SerializeField] private float explosionRadius = 4f;
+    [SerializeField] private float explosionDamage = 50f;
+    [SerializeField] private ParticleSystem explosionParticle;
+    [SerializeField] private float maxHealth = 100f;
 
-    [SerializeField] private Image healthFill;
+    private float currentHealth;
+    private float chargeTimer;
 
-    [Header("Movement")]
-    public float moveSpeed = 2f;
-    public float rotationSpeed = 5f;
-
-    [Header("Wandering")]
-    public float minMoveTime = 1f;
-    public float maxMoveTime = 4f;
-    public float minWaitTime = 0.5f;
-    public float maxWaitTime = 2f;
-
-    private Vector3 moveDirection;
-    private float timer;
-    private bool moving;
-
-    [Header("Player Detection")]
-    public LayerMask whatIsPlayer;
-    public float sightRange = 15f;
-    public float AttackRange = 5f;
-
-    public bool playerInSightRange;
-    public bool playerInAttackRange;
-
-    [Header("Attack")]
-    public GameObject projectile;
-    public float timeBetweenAttacks = 2f;
-
-    private bool alreadyAttacked;
-
-    public Transform player;
-
-    [Header("Knife Attack")]
-    [SerializeField] private Inventory inventory;
-    [SerializeField] private Camera playerCamera;
-    [SerializeField] private InputActionReference knifeAttackAction;
-    [SerializeField] private float knifeAttackRange = 4f;
-    [SerializeField] private int knifeDamage = 20;
-
-    private bool enemyDead;
-
-    private void Awake()
-    {
-        GameObject playerObject =
-            GameObject.Find("Player");
-
-        if (playerObject != null)
-        {
-            player =
-                playerObject.transform;
-        }
-        else
-        {
-          
-        }
-
-        if (inventory == null &&
-            playerObject != null)
-        {
-            inventory =
-                playerObject.GetComponent<Inventory>();
-        }
-
-        if (playerCamera == null &&
-            playerObject != null)
-        {
-            playerCamera =
-                playerObject.GetComponentInChildren<Camera>();
-        }
-    }
+    private bool isCharging;
+    private bool hasExploded;
+    private bool isDead;
 
     private void Start()
     {
-        ChooseNewDirection();
+        currentHealth = maxHealth;
 
-        UpdateHealthUI();
-    }
 
-    private void OnEnable()
-    {
-        if (knifeAttackAction != null)
+        if (player == null)
         {
-            knifeAttackAction.action.Enable();
+            GameObject playerObject =
+                GameObject.FindGameObjectWithTag("Player");
+
+            if (playerObject != null)
+            {
+                player = playerObject.transform;
+            }
         }
-    }
 
-    private void OnDisable()
-    {
-        if (knifeAttackAction != null)
+
+        if (player != null && playerHealth == null)
         {
-            knifeAttackAction.action.Disable();
+            playerHealth =
+                player.GetComponent<HealthScript>();
         }
     }
 
     private void Update()
     {
-        if (enemyDead)
+        if (isDead)
             return;
-
-        HandleKnifeAttack();
 
         if (player == null)
             return;
 
-        playerInSightRange =
-            Physics.CheckSphere(
+        float distanceToPlayer =
+            Vector3.Distance(
                 transform.position,
-                sightRange,
-                whatIsPlayer
+                player.position
             );
 
-        playerInAttackRange =
-            Physics.CheckSphere(
-                transform.position,
-                AttackRange,
-                whatIsPlayer
+
+        if (distanceToPlayer > detectionRange)
+        {
+            return;
+        }
+
+   
+        if (hasExploded)
+        {
+            return;
+        }
+
+    
+        if (isCharging)
+        {
+            HandleCharge();
+            return;
+        }
+
+
+        if (distanceToPlayer <= attackDistance)
+        {
+            StartCharge();
+            return;
+        }
+
+        ChasePlayer();
+    }
+
+    private void ChasePlayer()
+    {
+        if (player == null)
+            return;
+
+        Vector3 direction =
+            player.position - transform.position;
+
+
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude <= 0.01f)
+            return;
+
+        direction.Normalize();
+
+
+        Quaternion targetRotation =
+            Quaternion.LookRotation(direction);
+
+        transform.rotation =
+            Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                rotationSpeed * Time.deltaTime
             );
 
-        if (!playerInSightRange &&
-            !playerInAttackRange)
-        {
-            Wander();
-        }
-
-        if (playerInSightRange &&
-            !playerInAttackRange)
-        {
-            ChasePlayer();
-        }
-
-        if (playerInSightRange &&
-            playerInAttackRange)
-        {
-            AttackPlayer();
-        }
+  
+        transform.position +=
+            direction * moveSpeed * Time.deltaTime;
     }
 
-    private void HandleKnifeAttack()
+    private void StartCharge()
     {
-        if (knifeAttackAction == null)
+        if (isCharging)
             return;
 
-        if (!knifeAttackAction.action.WasPressedThisFrame())
+        if (hasExploded)
             return;
 
-        if (inventory == null)
-            return;
+        isCharging = true;
+        chargeTimer = 0f;
 
-        if (!inventory.IsKnifeEquipped())
-            return;
-
-        if (playerCamera == null)
-            return;
-
-        Ray ray = new Ray(
-            playerCamera.transform.position,
-            playerCamera.transform.forward
-        );
-
-        if (!Physics.Raycast(
-            ray,
-            out RaycastHit hit,
-            knifeAttackRange))
-        {
-            return;
-        }
-
-        EnemyAI enemy =
-            hit.collider.GetComponentInParent<EnemyAI>();
-
-        if (enemy == null)
-            return;
-
-        enemy.TakeDamage(knifeDamage);
-
-       
-        inventory.UseEquippedDurability();
+        
     }
 
-    private void Wander()
+    private void HandleCharge()
     {
-        timer -= Time.deltaTime;
+        chargeTimer += Time.deltaTime;
 
-        if (moving)
+
+        if (player != null)
         {
-            transform.position +=
-                moveDirection *
-                moveSpeed *
-                Time.deltaTime;
+            Vector3 direction =
+                player.position - transform.position;
 
-            if (moveDirection != Vector3.zero)
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude > 0.01f)
             {
                 Quaternion targetRotation =
-                    Quaternion.LookRotation(
-                        moveDirection,
-                        Vector3.up
-                    );
+                    Quaternion.LookRotation(direction);
 
                 transform.rotation =
                     Quaternion.Slerp(
                         transform.rotation,
                         targetRotation,
-                        rotationSpeed *
-                        Time.deltaTime
-                    );
-            }
-
-            if (timer <= 0f)
-            {
-                moving = false;
-
-                timer =
-                    Random.Range(
-                        minWaitTime,
-                        maxWaitTime
+                        rotationSpeed * Time.deltaTime
                     );
             }
         }
-        else
+
+        if (chargeTimer >= chargeTime)
         {
-            if (timer <= 0f)
-            {
-                ChooseNewDirection();
-            }
+            Explode();
         }
     }
 
-    private void ChooseNewDirection()
+    private void Explode()
     {
-        moveDirection =
-            new Vector3(
-                Random.Range(-1f, 1f),
-                0f,
-                Random.Range(-1f, 1f)
-            ).normalized;
-
-        moving = true;
-
-        timer =
-            Random.Range(
-                minMoveTime,
-                maxMoveTime
-            );
-    }
-
-    private void ChasePlayer()
-    {
-        Vector3 direction =
-            player.position -
-            transform.position;
-
-        direction.y = 0f;
-
-        direction.Normalize();
-
-        transform.position +=
-            direction *
-            moveSpeed *
-            Time.deltaTime;
-
-        if (direction != Vector3.zero)
-        {
-            Quaternion targetRotation =
-                Quaternion.LookRotation(
-                    direction,
-                    Vector3.up
-                );
-
-            transform.rotation =
-                Quaternion.Slerp(
-                    transform.rotation,
-                    targetRotation,
-                    rotationSpeed *
-                    Time.deltaTime
-                );
-        }
-    }
-
-    private void AttackPlayer()
-    {
-        Vector3 direction =
-            player.position -
-            transform.position;
-
-        direction.y = 0f;
-
-        if (direction != Vector3.zero)
-        {
-            Quaternion targetRotation =
-                Quaternion.LookRotation(
-                    direction,
-                    Vector3.up
-                );
-
-            transform.rotation =
-                Quaternion.Slerp(
-                    transform.rotation,
-                    targetRotation,
-                    rotationSpeed *
-                    Time.deltaTime
-                );
-        }
-
-        if (!alreadyAttacked)
-        {
-            GameObject newProjectile =
-                Instantiate(
-                    projectile,
-                    transform.position,
-                    Quaternion.identity
-                );
-
-            Rigidbody rb =
-                newProjectile
-                    .GetComponent<Rigidbody>();
-
-            if (rb != null)
-            {
-                rb.AddForce(
-                    transform.forward *
-                    32f,
-                    ForceMode.Impulse
-                );
-
-                rb.AddForce(
-                    transform.up *
-                    8f,
-                    ForceMode.Impulse
-                );
-            }
-
-            alreadyAttacked = true;
-
-            Invoke(
-                nameof(ResetAttack),
-                timeBetweenAttacks
-            );
-        }
-    }
-
-    private void ResetAttack()
-    {
-        alreadyAttacked = false;
-    }
-
-    public void TakeDamage(int damage)
-    {
-        if (enemyDead)
+        if (isDead)
             return;
 
-        EnemyHealth -= damage;
+        if (hasExploded)
+            return;
 
-        if (EnemyHealth < 0f)
+        hasExploded = true;
+        isCharging = false;
+        chargeTimer = 0f;
+
+ 
+
+        if (explosionParticle != null)
         {
-            EnemyHealth = 0f;
+            explosionParticle.Play();
         }
 
-        UpdateHealthUI();
+        if (player == null || playerHealth == null)
+            return;
 
-        if (EnemyHealth <= 0f)
+        float distanceToPlayer =
+            Vector3.Distance(
+                transform.position,
+                player.position
+            );
+
+        if (distanceToPlayer <= explosionRadius)
         {
-            enemyDead = true;
+            playerHealth.TakeDamage(explosionDamage);
 
-            CancelInvoke(
-                nameof(ResetAttack)
-            );
-
-            Invoke(
-                nameof(DestroyEnemy),
-                0.5f
-            );
         }
     }
 
-    private void UpdateHealthUI()
+    public void TakeDamage(float damage)
     {
-        if (healthFill == null)
+        if (isDead)
             return;
 
-        if (EnemyHealth <= 0f)
+        currentHealth -= damage;
+
+        if (currentHealth <= 0f)
         {
-            healthFill.fillAmount = 0f;
-            return;
+            currentHealth = 0f;
+            Die();
         }
-
-        healthFill.fillAmount =
-            EnemyHealth / 100f;
     }
 
-    private void DestroyEnemy()
+    private void Die()
     {
+        if (isDead)
+            return;
+
+        isDead = true;
+
+       
+
         Destroy(gameObject);
     }
 
-    private void OnDrawGizmosSelected()
+    public void RemoveFromFireProtection()
     {
-        Gizmos.color = Color.red;
+        if (isDead)
+            return;
 
-        Gizmos.DrawWireSphere(
-            transform.position,
-            AttackRange
-        );
+       
 
-        Gizmos.color = Color.yellow;
-
-        Gizmos.DrawWireSphere(
-            transform.position,
-            sightRange
-        );
-
-        Gizmos.color = Color.blue;
-
-        Gizmos.DrawWireSphere(
-            transform.position,
-            knifeAttackRange
-        );
+        Die();
     }
 }

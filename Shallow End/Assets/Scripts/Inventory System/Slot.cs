@@ -10,14 +10,13 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     private Items heldItem;
     private int ItemAmount;
 
-    // Current durability of THIS individual item.
     private int currentDurability;
 
     [SerializeField] private Image iconImage;
     [SerializeField] private TextMeshProUGUI amountTxt;
     [SerializeField] private GameObject selectionFrame;
 
-    [Header("Durability UI")]
+
     [SerializeField] private Image durabilityBackground;
     [SerializeField] private Image durabilityFill;
 
@@ -102,11 +101,10 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if (heldItem == null)
             return false;
 
-        // Items with no durability don't lose durability.
+      
         if (!heldItem.hasDurability)
             return false;
 
-        // Axe is infinite.
         if (heldItem.infiniteDurability)
             return false;
 
@@ -185,7 +183,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             return;
         }
 
-        // Empty slot = no durability UI.
+     
         if (heldItem == null)
         {
             durabilityBackground.gameObject.SetActive(false);
@@ -194,7 +192,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             return;
         }
 
-        // Items that don't have durability don't need the bar.
+
         if (!heldItem.hasDurability)
         {
             durabilityBackground.gameObject.SetActive(false);

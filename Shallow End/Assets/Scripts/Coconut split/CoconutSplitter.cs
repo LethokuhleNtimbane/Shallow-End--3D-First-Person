@@ -78,7 +78,7 @@ public class CoconutSplitter : MonoBehaviour
                 groundItem.gameObject
             );
 
-            // Successful hammer use.
+           
             inventory.UseEquippedDurability();
         }
     }

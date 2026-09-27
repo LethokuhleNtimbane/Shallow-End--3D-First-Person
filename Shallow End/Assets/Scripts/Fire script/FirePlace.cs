@@ -137,7 +137,7 @@ public class Fireplace : MonoBehaviour
             fireProtection.SetFire(true);
         }
 
-        // Use one flint durability.
+   
         if (inventory != null)
         {
             inventory.UseEquippedDurability();

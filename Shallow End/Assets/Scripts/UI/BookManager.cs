@@ -1,28 +1,24 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
-public class BookController : MonoBehaviour
+public class Book : MonoBehaviour
 {
+
+    [SerializeField] private GameObject bookUI;
+    [SerializeField] private GameObject playerHUD;
+
 
     [SerializeField] private InputActionReference openBookAction;
 
-    [SerializeField] private GameObject bookUI;
-    [SerializeField] private Items bookItem;
 
-
-    [SerializeField] private Inventory inventory;
+    [SerializeField] private MonoBehaviour timeController;
+    [SerializeField] private MonoBehaviour monsterSpawner;
+    [SerializeField] private MonoBehaviour monsterAttack;
+    [SerializeField] private HealthScript health;
+    [SerializeField] private DashScript dash;
     [SerializeField] private PlayerController playerController;
-    [SerializeField] private TimeController timeController;
-    [SerializeField] private Monster monster;
-    [SerializeField] private HealthScript healthScript;
 
-
-    [SerializeField] private GameObject playerHUD;
-    [SerializeField] private MonsterAttack monsterattack;
     private bool bookOpen = false;
-
-    private float previousTimeMultiplier;
 
     private void OnEnable()
     {
@@ -38,10 +34,11 @@ public class BookController : MonoBehaviour
 
     private void Start()
     {
-        bookOpen = false;
-
         if (bookUI != null)
             bookUI.SetActive(false);
+
+        if (playerHUD != null)
+            playerHUD.SetActive(true);
 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
@@ -52,92 +49,90 @@ public class BookController : MonoBehaviour
         if (openBookAction == null)
             return;
 
-        if (!openBookAction.action.WasPressedThisFrame())
-            return;
-
-        if (bookOpen)
+        if (openBookAction.action.WasPressedThisFrame())
         {
-            CloseBook();
-            return;
+            if (!bookOpen)
+            {
+                OpenBook();
+            }
+            else
+            {
+                CloseBook();
+            }
         }
-
-
-       
-
-        OpenBook();
     }
 
-
-
-    private void OpenBook()
+    public void OpenBook()
     {
         bookOpen = true;
 
-
-        if (timeController != null)
-        {
-          timeController.enabled = false;
-        }
-
- 
         if (bookUI != null)
             bookUI.SetActive(true);
 
-     
-        if (playerController != null)
-            playerController.PlayerControl(false);
-
-        
-        if (monster != null)
-            monster.enabled = false;
-            monsterattack.enabled = false;
-
-        if (healthScript != null)
-            healthScript.enabled = false;
-
-   
         if (playerHUD != null)
             playerHUD.SetActive(false);
 
-
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+
+        DisableGameplay();
     }
 
-    private void CloseBook()
+    public void CloseBook()
     {
         bookOpen = false;
-
-     
 
         if (bookUI != null)
             bookUI.SetActive(false);
 
-  
-        if (playerController != null)
-            playerController.PlayerControl(true);
-
-
-        if (monster != null)
-            monster.enabled = true;
-            monsterattack.enabled=true;
-
-    
-        if (healthScript != null)
-            healthScript.enabled = true;
-
- 
-        if (timeController != null)
-        {
-            timeController.enabled=true;
-        }
-
-
         if (playerHUD != null)
             playerHUD.SetActive(true);
 
- 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+
+        EnableGameplay();
+    }
+
+    private void DisableGameplay()
+    {
+        if (timeController != null)
+            timeController.enabled = false;
+
+        if (monsterSpawner != null)
+            monsterSpawner.enabled = false;
+
+        if (monsterAttack != null)
+            monsterAttack.enabled = false;
+
+        if (health != null)
+            health.enabled = false;
+
+        if (dash != null)
+            dash.enabled = false;
+
+        if (playerController != null)
+            playerController.enabled = false;
+    }
+
+    private void EnableGameplay()
+    {
+        if (timeController != null)
+            timeController.enabled = true;
+
+        if (monsterSpawner != null)
+            monsterSpawner.enabled = true;
+
+        if (monsterAttack != null)
+            monsterAttack.enabled = true;
+
+        if (health != null)
+            health.enabled = true;
+
+        if (dash != null)
+            dash.enabled = true;
+
+        if (playerController != null)
+            playerController.enabled = true;
     }
 }

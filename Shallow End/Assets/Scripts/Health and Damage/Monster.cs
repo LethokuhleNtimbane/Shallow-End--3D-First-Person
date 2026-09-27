@@ -1,11 +1,13 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class Monster : MonoBehaviour
 {
-
+ 
     [SerializeField] private Transform Player;
     private bool playerIsSleeping = false;
+
 
     [SerializeField] private TimeController timeController;
     [SerializeField] private float monsterStartHour = 21f;
@@ -14,55 +16,70 @@ public class Monster : MonoBehaviour
 
     [SerializeField] private float moveSpeed = 2f;
 
+
     [SerializeField] private float attackDistance = 1.5f;
     [SerializeField] private GameObject attackHitbox;
 
 
     [SerializeField] private GameObject monsterVisual;
 
+
+    [SerializeField] private float explosionTime = 3f;
+    [SerializeField] private float explosionDamage = 50f;
+    [SerializeField] private float explosionRadius = 4f;
+    [SerializeField] private ParticleSystem explosionParticle;
+
+
+    [SerializeField] private float maxHealth = 100f;
+    private bool insideProtectionZone = false;
+    [SerializeField] private Image healthBar;
+
+    private float currentHealth;
+
+
+    [SerializeField] private float knifeDamage = 25f;
+
     private bool shouldBeActive;
     private bool monsterAwake;
     private bool playerIsProtected;
     private bool isStunned;
- 
+    private bool isDead;
+
+    private bool isCountingDown = false;
+    private float explosionTimer = 0f;
 
     private Coroutine stunCoroutine;
 
     private void Start()
     {
+
+        if (timeController == null)
+        {
+            timeController = TimeController.instance;
+        }
+
+        currentHealth = maxHealth;
+
+
+        UpdateHealthBar();
+
+        if (healthBar != null)
+        {
+            healthBar.gameObject.SetActive(false);
+        }
+
         UpdateMonster();
-    }
-    public void SetPlayerSleeping(bool sleeping)
-    {
-        playerIsSleeping = sleeping;
-
-        if (sleeping)
-        {
-        
-            monsterAwake = false;
-
-            if (monsterVisual != null)
-            {
-                monsterVisual.SetActive(false);
-            }
-
-            if (attackHitbox != null)
-            {
-                attackHitbox.SetActive(false);
-            }
-        }
-        else
-        {
-            
-            UpdateMonster();
-        }
     }
 
     private void Update()
     {
         if (playerIsSleeping)
             return;
+
         if (timeController == null)
+            return;
+
+        if (isDead)
             return;
 
         UpdateMonster();
@@ -70,35 +87,39 @@ public class Monster : MonoBehaviour
         if (!monsterAwake)
             return;
 
-     
         if (playerIsProtected)
+        {
+            ResetExplosionTimer();
             return;
+        }
 
-    
         if (isStunned)
+        {
+            ResetExplosionTimer();
             return;
+        }
 
         FollowPlayer();
     }
 
     private void UpdateMonster()
     {
+        if (isDead)
+            return;
+
+        if (timeController == null)
+            return;
+
         float currentHour =
             (float)timeController.CurrentTime.TimeOfDay.TotalHours;
 
-        if (currentHour >= monsterStartHour ||
-            currentHour < monsterDisappearHour)
-        {
-            shouldBeActive = true;
-        }
-        else
-        {
-            shouldBeActive = false;
-        }
+        bool shouldMonsterBeActive =
+            currentHour >= monsterStartHour ||
+            currentHour < monsterDisappearHour;
 
-        if (shouldBeActive != monsterAwake)
+        if (shouldMonsterBeActive != monsterAwake)
         {
-            monsterAwake = shouldBeActive;
+            monsterAwake = shouldMonsterBeActive;
 
             if (monsterAwake)
             {
@@ -106,6 +127,7 @@ public class Monster : MonoBehaviour
             }
             else
             {
+                ResetExplosionTimer();
                 HideMonster();
             }
         }
@@ -116,17 +138,23 @@ public class Monster : MonoBehaviour
         if (Player == null)
             return;
 
-        Vector3 direction = Player.position - transform.position;
+        Vector3 direction =
+            Player.position - transform.position;
 
         direction.y = 0f;
 
         float distance = direction.magnitude;
 
-      
         if (distance <= attackDistance)
         {
+            StartExplosionTimer();
             return;
         }
+
+        ResetExplosionTimer();
+
+        if (direction.sqrMagnitude <= 0.01f)
+            return;
 
         direction.Normalize();
 
@@ -137,25 +165,156 @@ public class Monster : MonoBehaviour
             Quaternion.LookRotation(direction);
     }
 
+    private void StartExplosionTimer()
+    {
+        if (isCountingDown)
+        {
+            explosionTimer += Time.deltaTime;
+
+            if (explosionTimer >= explosionTime)
+            {
+                Explode();
+            }
+
+            return;
+        }
+
+        isCountingDown = true;
+        explosionTimer = 0f;
+    }
+
+    private void ResetExplosionTimer()
+    {
+        isCountingDown = false;
+        explosionTimer = 0f;
+    }
+
+    private void Explode()
+    {
+        if (isDead)
+            return;
+
+        isCountingDown = false;
+        explosionTimer = 0f;
+
+        if (explosionParticle != null)
+        {
+            explosionParticle.Play();
+        }
+
+        if (Player != null)
+        {
+            float distance =
+                Vector3.Distance(
+                    transform.position,
+                    Player.position
+                );
+
+            if (distance <= explosionRadius)
+            {
+                HealthScript playerHealth =
+                    Player.GetComponent<HealthScript>();
+
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(explosionDamage);
+                }
+            }
+        }
+    }
+
+
+    public void TakeDamage(float damage)
+    {
+        if (isDead)
+            return;
+
+        currentHealth -= damage;
+
+        if (currentHealth < 0f)
+        {
+            currentHealth = 0f;
+        }
+
+        UpdateHealthBar();
+
+     
+
+        if (currentHealth <= 0f)
+        {
+            Die();
+        }
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBar == null)
+            return;
+
+        if (maxHealth <= 0f)
+            return;
+
+        healthBar.fillAmount =
+            currentHealth / maxHealth;
+    }
+
+    private void Die()
+    {
+        if (isDead)
+            return;
+
+        isDead = true;
+        monsterAwake = false;
+
+        ResetExplosionTimer();
+
+        if (stunCoroutine != null)
+        {
+            StopCoroutine(stunCoroutine);
+            stunCoroutine = null;
+        }
+
+        isStunned = false;
+
+        if (attackHitbox != null)
+        {
+            attackHitbox.SetActive(false);
+        }
+
+        if (monsterVisual != null)
+        {
+            monsterVisual.SetActive(false);
+        }
+
+        if (healthBar != null)
+        {
+            healthBar.gameObject.SetActive(false);
+        }
+
+    }
+
 
 
     public void Stun(float duration)
     {
-  
+        if (isDead)
+            return;
 
         if (stunCoroutine != null)
         {
             StopCoroutine(stunCoroutine);
         }
 
-        stunCoroutine = StartCoroutine(StunCoroutine(duration));
+        ResetExplosionTimer();
+
+        stunCoroutine =
+            StartCoroutine(StunCoroutine(duration));
     }
 
     private IEnumerator StunCoroutine(float duration)
     {
         isStunned = true;
 
-        
         if (attackHitbox != null)
         {
             attackHitbox.SetActive(false);
@@ -163,8 +322,10 @@ public class Monster : MonoBehaviour
 
         yield return new WaitForSeconds(duration);
 
-        isStunned = false;
+        if (isDead)
+            yield break;
 
+        isStunned = false;
 
         if (monsterAwake && !playerIsProtected)
         {
@@ -177,14 +338,18 @@ public class Monster : MonoBehaviour
         stunCoroutine = null;
     }
 
-
+  
 
     public void SetPlayerProtected(bool protectedByFire)
     {
+        if (isDead)
+            return;
+
         playerIsProtected = protectedByFire;
 
         if (playerIsProtected)
         {
+            ResetExplosionTimer();
             HideMonster();
         }
         else
@@ -200,19 +365,59 @@ public class Monster : MonoBehaviour
 
     private void ShowMonster()
     {
+        if (isDead)
+            return;
+
         if (monsterVisual != null)
+        {
             monsterVisual.SetActive(true);
+        }
 
         if (attackHitbox != null && !isStunned)
+        {
             attackHitbox.SetActive(true);
+        }
+
+        if (healthBar != null)
+        {
+            healthBar.gameObject.SetActive(true);
+
+            UpdateHealthBar();
+        }
     }
 
     private void HideMonster()
     {
         if (monsterVisual != null)
+        {
             monsterVisual.SetActive(false);
+        }
 
         if (attackHitbox != null)
+        {
             attackHitbox.SetActive(false);
+        }
+
+        if (healthBar != null)
+        {
+            healthBar.gameObject.SetActive(false);
+        }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("ProtectionZone"))
+        {
+            insideProtectionZone = true;
+            SetPlayerProtected(true);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("ProtectionZone"))
+        {
+            insideProtectionZone = false;
+            SetPlayerProtected(false);
+        }
     }
 }

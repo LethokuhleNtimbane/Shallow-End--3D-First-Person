@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class ResourceRespawn : MonoBehaviour
+public class RespawnMR : MonoBehaviour
 {
    
 

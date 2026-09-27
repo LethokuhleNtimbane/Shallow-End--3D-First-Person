@@ -18,14 +18,15 @@ public class WaterDamage : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             InWater = true;
-            audioManager.PlaySfx(audioManager.IntoWater);
+         
 
             damageCoroutine = StartCoroutine(WaitAndDamage());
-            audioManager.PlaySfx(audioManager.LowHealth);
+      
         }
 
      
     }
+   
     private void Awake()
     {
         audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
@@ -53,7 +54,8 @@ public class WaterDamage : MonoBehaviour
 
             if (InWater)
             {
-                health.TakeDamage(damage);
+                health.TakeDamage(damage);    
+                audioManager.PlaySfx(audioManager.LowHealth);
             }
         }
     }

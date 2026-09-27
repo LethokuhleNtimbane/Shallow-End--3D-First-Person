@@ -57,7 +57,7 @@ Material:
     - _Blend: 0.1
     - _Blend_2: 1
     - _Blend_3: 30
-    - _DayNight_Slider: 0.0006743749
+    - _DayNight_Slider: 0
     - _Distortion_speed: 0.64
     - _Gradient_Offset: -1
     - _Intensity: 0

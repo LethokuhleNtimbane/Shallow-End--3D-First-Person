@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PageController : MonoBehaviour
+public class Bookscript : MonoBehaviour
 {
 
     [SerializeField] private Image leftPage;

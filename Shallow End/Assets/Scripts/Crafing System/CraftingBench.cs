@@ -2,30 +2,26 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
 
-public class CraftingInteraction : MonoBehaviour
+public class CraftingBench : MonoBehaviour
 {
-
     [SerializeField] private InputActionReference interactAction;
 
-
-  
     [SerializeField] private GameObject craftingSystem;
     [SerializeField] private GameObject background;
 
-
     [SerializeField] private TextMeshProUGUI craftText;
-
 
     [SerializeField] private GameObject playerHUD;
 
-
     [SerializeField] private PlayerController playerController;
+    [SerializeField] private DashScript dash;
     [SerializeField] private Monster monster;
     [SerializeField] private HealthScript healthScript;
     [SerializeField] private TimeController timeController;
 
     private bool playerInRange = false;
     private bool craftingOpen = false;
+
     AudioManager audioManager;
 
     private void Awake()
@@ -49,19 +45,15 @@ public class CraftingInteraction : MonoBehaviour
     {
         craftingOpen = false;
 
-   
-
         if (craftingSystem != null)
             craftingSystem.SetActive(false);
 
         if (background != null)
             background.SetActive(false);
 
-
         if (craftText != null)
             craftText.gameObject.SetActive(false);
 
-        
         if (playerHUD != null)
             playerHUD.SetActive(true);
 
@@ -71,7 +63,6 @@ public class CraftingInteraction : MonoBehaviour
 
     private void Update()
     {
-     
         if (!playerInRange)
             return;
 
@@ -95,44 +86,36 @@ public class CraftingInteraction : MonoBehaviour
     {
         craftingOpen = true;
 
-  
-
-        
         if (craftText != null)
             craftText.gameObject.SetActive(false);
 
-   
+    
         if (timeController != null)
             timeController.enabled = false;
 
-      
-  
-
-    
-        if (craftingSystem != null)
-            craftingSystem.SetActive(true);
-
-      
-        if (background != null)
-            background.SetActive(true);
-
- 
-        if (playerController != null)
-            playerController.PlayerControl(false);
-
-      
         if (monster != null)
             monster.enabled = false;
 
-        
         if (healthScript != null)
             healthScript.enabled = false;
 
-     
+        if (dash != null)
+            dash.enabled = false;
+
+        if (playerController != null)
+            playerController.enabled = false;
+
+        if (craftingSystem != null)
+            craftingSystem.SetActive(true);
+
+        if (background != null)
+            background.SetActive(true);
+
         if (playerHUD != null)
             playerHUD.SetActive(false);
 
         audioManager.PlaySfx(audioManager.FlintLight);
+
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
@@ -141,42 +124,33 @@ public class CraftingInteraction : MonoBehaviour
     {
         craftingOpen = false;
 
-        
-      
-
- 
         if (craftingSystem != null)
             craftingSystem.SetActive(false);
 
-    
         if (background != null)
             background.SetActive(false);
 
-       
         if (playerController != null)
-            playerController.PlayerControl(true);
+            playerController.enabled = true;
 
+        if (dash != null)
+            dash.enabled = true;
 
         if (monster != null)
             monster.enabled = true;
 
-   
         if (timeController != null)
             timeController.enabled = true;
 
-    
         if (healthScript != null)
             healthScript.enabled = true;
 
-  
         if (playerHUD != null)
             playerHUD.SetActive(true);
 
- 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
-        
         if (playerInRange && craftText != null)
         {
             craftText.text = "Press E to craft";
@@ -191,9 +165,6 @@ public class CraftingInteraction : MonoBehaviour
 
         playerInRange = true;
 
-       
-
-        // Show crafting prompt
         if (!craftingOpen && craftText != null)
         {
             craftText.text = "Press E to craft";
@@ -208,13 +179,9 @@ public class CraftingInteraction : MonoBehaviour
 
         playerInRange = false;
 
-    
-
-      
         if (craftText != null)
             craftText.gameObject.SetActive(false);
 
-     
         if (craftingOpen)
         {
             CloseCrafting();

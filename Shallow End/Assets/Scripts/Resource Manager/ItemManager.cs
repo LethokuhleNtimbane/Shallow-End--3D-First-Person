@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class GroundItemManager : MonoBehaviour
+public class ItemManager : MonoBehaviour
 {
-    public static GroundItemManager Instance;
+    public static ItemManager Instance;
 
     [System.Serializable]
     public class ItemLimit

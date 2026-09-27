@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 5163473097638566589}
   m_Layer: 0
   m_Name: Flint
-  m_TagString: Untagged
+  m_TagString: Flint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -135,6 +135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GroundItem
   item: {fileID: 11400000, guid: b06f1c052411df444928591080cb55f8, type: 2}
   amount: 1
+  currentDurability: -1
   sourcePrefab: {fileID: 0}
 --- !u!65 &6763318661969179457
 BoxCollider:

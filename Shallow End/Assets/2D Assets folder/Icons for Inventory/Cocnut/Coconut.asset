@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Items
   itemName: Coconut
   icon: {fileID: 21300000, guid: 3c4799fa80337a54ba29138b0e3446b9, type: 3}
-  maxStack: 6
+  maxStack: 12
   ItenPrefab: {fileID: 1639474992836956422, guid: 7453f946ba57f7f47b056269003bb10d, type: 3}
   handItem: {fileID: 7438974635801349487, guid: 2d37ec373afc79f4080296db89db4a30, type: 3}
   isFood: 1

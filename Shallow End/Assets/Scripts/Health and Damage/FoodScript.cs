@@ -61,27 +61,24 @@ public class FoodScript : MonoBehaviour
         if (food == null)
             return;
 
-        // If the food increases hunger and hunger is already full,
-        // do not allow the player to eat it.
+
         if (food.hungerIncrease > 0 &&
             healthScript.PlayerIsFullHunger())
         {
             return;
         }
 
-        // If the food increases thirst and thirst is already full,
-        // do not allow the player to consume it.
+
         if (food.thirstIncrease > 0 &&
             healthScript.PlayerIsFullThirst())
         {
             return;
         }
 
-        // Add the food's hunger and thirst values.
+
         healthScript.AddHunger(food.hungerIncrease);
         healthScript.AddThirst(food.thirstIncrease);
 
-        // Remove one item from the hotbar.
         inventory.RemoveHotbarItem(1);
     }
 

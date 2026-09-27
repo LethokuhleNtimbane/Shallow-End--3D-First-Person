@@ -75,6 +75,7 @@ public class Inventory : MonoBehaviour
     private List<Slot> hotbarSlots = new List<Slot>();
     private List<Slot> allSlots = new List<Slot>();
     private List<Slot> craftingSlots = new List<Slot>();
+    private List<Slot> storageSlots = new List<Slot>();
 
     [SerializeField] private TextMeshProUGUI interactionMessage;
 
@@ -97,6 +98,32 @@ public class Inventory : MonoBehaviour
         );
 
         allSlots.AddRange(hotbarSlots);
+    }
+    public void RegisterStorageSlots(List<Slot> slots)
+    {
+        storageSlots.Clear();
+
+        if (slots == null)
+            return;
+
+        foreach (Slot slot in slots)
+        {
+            if (slot == null)
+                continue;
+
+            if (!storageSlots.Contains(slot))
+                storageSlots.Add(slot);
+        }
+    }
+
+    public void UnregisterStorageSlots()
+    {
+        storageSlots.Clear();
+
+        if (Mouse.current != null)
+        {
+            DragIcon.enabled = false;
+        }
     }
 
     public void ShowInteractionMessage(string message)
@@ -649,6 +676,12 @@ public class Inventory : MonoBehaviour
                 return s;
         }
 
+        foreach (Slot s in storageSlots)
+        {
+            if (s.hovering)
+                return s;
+        }
+
         foreach (Slot s in craftingSlots)
         {
             if (s.hovering)
@@ -815,7 +848,95 @@ public class Inventory : MonoBehaviour
             tempDurability
         );
     }
+    public bool CanFitItems(List<Items> items, List<int> amounts)
+    {
+        if (items == null || amounts == null)
+            return false;
 
+        if (items.Count != amounts.Count)
+            return false;
+
+       
+        int emptySlots = 0;
+
+        foreach (Slot slot in hotbarSlots)
+        {
+            if (!slot.Hasitem())
+                emptySlots++;
+        }
+
+        Dictionary<Items, int> availableStackSpace =
+            new Dictionary<Items, int>();
+
+        foreach (Slot slot in hotbarSlots)
+        {
+            if (!slot.Hasitem())
+                continue;
+
+            Items item = slot.GetItem();
+
+            if (item == null || item.hasDurability)
+                continue;
+
+            int space =
+                item.maxStack - slot.GetAmount();
+
+            if (space <= 0)
+                continue;
+
+            if (!availableStackSpace.ContainsKey(item))
+                availableStackSpace[item] = 0;
+
+            availableStackSpace[item] += space;
+        }
+
+       
+        for (int i = 0; i < items.Count; i++)
+        {
+            Items item = items[i];
+            int amount = amounts[i];
+
+            if (item == null || amount <= 0)
+                continue;
+
+            if (item.hasDurability)
+            {
+                if (emptySlots < amount)
+                    return false;
+
+                emptySlots -= amount;
+                continue;
+            }
+
+            int remaining = amount;
+
+            if (availableStackSpace.ContainsKey(item))
+            {
+                int stackSpace = availableStackSpace[item];
+
+                int amountFromStacks =
+                    Mathf.Min(stackSpace, remaining);
+
+                availableStackSpace[item] -= amountFromStacks;
+                remaining -= amountFromStacks;
+            }
+
+            if (remaining <= 0)
+                continue;
+
+            int slotsNeeded =
+                Mathf.CeilToInt(
+                    (float)remaining / item.maxStack
+                );
+
+            if (emptySlots < slotsNeeded)
+                return false;
+
+            emptySlots -= slotsNeeded;
+        }
+
+        return true;
+    }
     private void UpdateDragItemPosition()
     {
         if (isDraggin &&
@@ -849,8 +970,8 @@ public class Inventory : MonoBehaviour
                         audioManager.PickupItem
                     );
 
-                    ResourceRespawn respawn =
-                        item.GetComponent<ResourceRespawn>();
+                    RespawnMR respawn =
+                        item.GetComponent<RespawnMR>();
 
                     if (respawn != null)
                     {
@@ -1035,9 +1156,9 @@ public class Inventory : MonoBehaviour
         if (prefab == null)
             return;
 
-        if (GroundItemManager.Instance != null)
+        if (ItemManager.Instance != null)
         {
-            if (!GroundItemManager.Instance.CanSpawn(prefab))
+            if (!ItemManager.Instance.CanSpawn(prefab))
                 return;
         }
 

@@ -2,27 +2,36 @@ using UnityEngine;
 
 public class FireProtect : MonoBehaviour
 {
-    [SerializeField] private Monster monster;
-
     private bool fireIsActive = false;
+    private bool playerInside = false;
 
     public void SetFire(bool active)
     {
         fireIsActive = active;
+
+        if (!fireIsActive)
+        {
+            SetAllMonstersProtected(false);
+            return;
+        }
+
+        if (playerInside)
+        {
+            SetAllMonstersProtected(true);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!fireIsActive)
-            return;
-
         if (!other.CompareTag("Player"))
             return;
 
-        if (monster != null)
-        {
-            monster.SetPlayerProtected(true);
-        }
+        playerInside = true;
+
+        if (!fireIsActive)
+            return;
+
+        SetAllMonstersProtected(true);
     }
 
     private void OnTriggerExit(Collider other)
@@ -30,9 +39,23 @@ public class FireProtect : MonoBehaviour
         if (!other.CompareTag("Player"))
             return;
 
-        if (monster != null)
+        playerInside = false;
+
+        SetAllMonstersProtected(false);
+    }
+
+    private void SetAllMonstersProtected(bool protectedState)
+    {
+        Monster[] monsters = FindObjectsByType<Monster>(
+            FindObjectsSortMode.None
+        );
+
+        foreach (Monster monster in monsters)
         {
-            monster.SetPlayerProtected(false);
+            if (monster != null)
+            {
+                monster.SetPlayerProtected(protectedState);
+            }
         }
     }
 }
