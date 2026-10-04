@@ -6,9 +6,7 @@ public class PauseScript : MonoBehaviour
 {
     public static PauseScript Instance;
 
-
     [SerializeField] private GameObject pauseMenu;
-
 
     [SerializeField] private TimeController timeController;
     [SerializeField] private Monster monster;
@@ -22,6 +20,7 @@ public class PauseScript : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        Time.timeScale = 1f;
     }
 
     private void Start()
@@ -52,10 +51,14 @@ public class PauseScript : MonoBehaviour
             }
         }
     }
+
     public void MainMenu()
     {
+        Time.timeScale = 1f;
+
         SceneManager.LoadScene("MainMenuScene");
     }
+
     public void RestartScene()
     {
         Time.timeScale = 1f;
@@ -64,6 +67,7 @@ public class PauseScript : MonoBehaviour
             SceneManager.GetActiveScene().buildIndex
         );
     }
+
     public void PauseGame()
     {
         if (isPaused)
@@ -71,6 +75,7 @@ public class PauseScript : MonoBehaviour
 
         isPaused = true;
 
+        Time.timeScale = 0f;
 
         if (timeController != null)
             timeController.enabled = false;
@@ -84,14 +89,11 @@ public class PauseScript : MonoBehaviour
         if (healthScript != null)
             healthScript.enabled = false;
 
-    
         if (pauseMenu != null)
             pauseMenu.SetActive(true);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-
-   
     }
 
     public void ResumeGame()
@@ -101,7 +103,8 @@ public class PauseScript : MonoBehaviour
 
         isPaused = false;
 
- 
+        Time.timeScale = 1f;
+
         if (timeController != null)
             timeController.enabled = true;
 
@@ -114,14 +117,10 @@ public class PauseScript : MonoBehaviour
         if (healthScript != null)
             healthScript.enabled = true;
 
-
         if (pauseMenu != null)
             pauseMenu.SetActive(false);
 
-
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-    
     }
 }

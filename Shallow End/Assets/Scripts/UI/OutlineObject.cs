@@ -13,7 +13,7 @@ public class LookAtObject : MonoBehaviour
     [SerializeField] private TextMeshProUGUI objectText;
 
 
-    [SerializeField] private int lookedAtLayer = 9;
+    [SerializeField] private int lookedAtLayer;
 
 
     private GameObject currentObject;

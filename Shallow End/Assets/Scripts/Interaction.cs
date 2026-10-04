@@ -4,22 +4,16 @@ using TMPro;
 
 public class ThomasInteraction : MonoBehaviour
 {
-  
     [SerializeField] private InputActionReference interactAction;
-
 
     [SerializeField] private GameObject thomas;
 
-
     [SerializeField] private GameObject board;
 
-  
     [SerializeField] private TextMeshProUGUI interactionText;
     [SerializeField] private GameObject interactionImage;
 
-
     [SerializeField] private ForDialog dialogueManager;
-
 
     [SerializeField] private TaskManager taskManager;
 
@@ -52,17 +46,7 @@ public class ThomasInteraction : MonoBehaviour
     private bool playerInRange = false;
     private bool dialogueIsPlaying = false;
 
-    private void OnEnable()
-    {
-        if (interactAction != null)
-            interactAction.action.Enable();
-    }
-
-    private void OnDisable()
-    {
-        if (interactAction != null)
-            interactAction.action.Disable();
-    }
+ 
 
     private void Start()
     {
@@ -120,15 +104,14 @@ public class ThomasInteraction : MonoBehaviour
         ShowRandomDialogue();
     }
 
-
-
     private void DisableGameplay()
     {
+      
+        Monster.SetDialoguePaused(true);
+        MonsterAttack.SetDialoguePaused(true);
+
         if (timeController != null)
             timeController.enabled = false;
-
-        if (monster != null)
-            monster.enabled = false;
 
         if (healthScript != null)
             healthScript.enabled = false;
@@ -142,11 +125,12 @@ public class ThomasInteraction : MonoBehaviour
 
     private void EnableGameplay()
     {
+   
+        Monster.SetDialoguePaused(false);
+        MonsterAttack.SetDialoguePaused(false);
+
         if (timeController != null)
             timeController.enabled = true;
-
-        if (monster != null)
-            monster.enabled = true;
 
         if (healthScript != null)
             healthScript.enabled = true;
@@ -157,8 +141,6 @@ public class ThomasInteraction : MonoBehaviour
         if (playerController != null)
             playerController.enabled = true;
     }
-
-
 
     private void HideBoard()
     {
@@ -171,8 +153,6 @@ public class ThomasInteraction : MonoBehaviour
         if (board != null)
             board.SetActive(true);
     }
-
-
 
     private void StartFirstDialogue()
     {
@@ -390,8 +370,6 @@ public class ThomasInteraction : MonoBehaviour
         UpdateInteractionUI();
     }
 
-
-
     private void ShowRandomDialogue()
     {
         dialogueIsPlaying = true;
@@ -438,8 +416,6 @@ public class ThomasInteraction : MonoBehaviour
         UpdateInteractionUI();
     }
 
-
-
     private float GetCurrentHour()
     {
         if (timeController == null)
@@ -458,7 +434,6 @@ public class ThomasInteraction : MonoBehaviour
 
         return true;
     }
-
 
     private void OnTriggerEnter(Collider other)
     {
@@ -479,7 +454,6 @@ public class ThomasInteraction : MonoBehaviour
 
         HideInteractionUI();
     }
-
 
     private void UpdateInteractionUI()
     {

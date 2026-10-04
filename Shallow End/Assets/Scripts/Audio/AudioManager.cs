@@ -6,15 +6,15 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource musicSource;
     [SerializeField] private AudioSource SFXSource;
 
-    [Header("Music")]
+
     public AudioClip backgroundDaytime;
     public AudioClip backgroundNightTime;
 
-    [Header("Music Fade")]
+
     [SerializeField] private float fadeDuration = 2f;
     [SerializeField] private float musicVolume = 1f;
 
-    [Header("SFX")]
+
     public AudioClip Dash;
     public AudioClip FlintLight;
     public AudioClip Monster;

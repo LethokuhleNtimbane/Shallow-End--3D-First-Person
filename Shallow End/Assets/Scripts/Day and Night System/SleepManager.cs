@@ -9,17 +9,15 @@ public class SleepManager : MonoBehaviour
 
     [SerializeField] private Camera playerCamera;
     [SerializeField] private Camera sleepCamera;
-
     [SerializeField] private GameObject sleepObject;
 
     [SerializeField] private TextMeshProUGUI sleepWarningText;
     [SerializeField] private float warningDuration = 2f;
 
-    [SerializeField] private float sleepTimeMultiplier = 120f;
-    [SerializeField] private float normalTimeMultiplier = 1f;
+    [SerializeField] private float sleepTimeMultiplier = 240f;
+    [SerializeField] private float normalTimeMultiplier = 60f;
 
     private bool sleeping = false;
-
     private Coroutine warningCoroutine;
 
     public bool IsSleeping => sleeping;
@@ -46,6 +44,7 @@ public class SleepManager : MonoBehaviour
         if (!sleeping)
             return;
 
+    
         if (Keyboard.current != null &&
             Keyboard.current.spaceKey.wasPressedThisFrame)
         {
@@ -53,11 +52,13 @@ public class SleepManager : MonoBehaviour
             return;
         }
 
-        TimeController time =
-            TimeController.instance;
+        TimeController time = TimeController.instance;
 
-        if (time != null &&
-            time.CurrentTime.Hour >= 6 &&
+        if (time == null)
+            return;
+
+      
+        if (time.CurrentTime.Hour >= 6 &&
             time.CurrentTime.Hour < 21)
         {
             WakeUp();
@@ -69,14 +70,12 @@ public class SleepManager : MonoBehaviour
         if (sleeping)
             return;
 
-        TimeController time =
-            TimeController.instance;
+        TimeController time = TimeController.instance;
 
         if (time == null)
             return;
 
-        int hour =
-            time.CurrentTime.Hour;
+        int hour = time.CurrentTime.Hour;
 
         if (hour >= 6 && hour < 21)
         {
@@ -92,34 +91,21 @@ public class SleepManager : MonoBehaviour
         if (sleepWarningText == null)
             return;
 
-        sleepWarningText.text =
-            "I can only sleep at 21:00";
-
+        sleepWarningText.text = "I can only sleep at 21:00";
         sleepWarningText.gameObject.SetActive(true);
 
         if (warningCoroutine != null)
-        {
-            StopCoroutine(
-                warningCoroutine
-            );
-        }
+            StopCoroutine(warningCoroutine);
 
-        warningCoroutine =
-            StartCoroutine(
-                HideSleepWarning()
-            );
+        warningCoroutine = StartCoroutine(HideSleepWarning());
     }
 
     private IEnumerator HideSleepWarning()
     {
-        yield return new WaitForSeconds(
-            warningDuration
-        );
+        yield return new WaitForSeconds(warningDuration);
 
         if (sleepWarningText != null)
-        {
             sleepWarningText.gameObject.SetActive(false);
-        }
 
         warningCoroutine = null;
     }
@@ -132,9 +118,7 @@ public class SleepManager : MonoBehaviour
             sleepObject.SetActive(true);
 
         if (PlayerController.Instance != null)
-        {
             PlayerController.Instance.PlayerControl(false);
-        }
 
         if (playerCamera != null)
             playerCamera.gameObject.SetActive(false);
@@ -142,6 +126,10 @@ public class SleepManager : MonoBehaviour
         if (sleepCamera != null)
             sleepCamera.gameObject.SetActive(true);
 
+    
+        DisableAllMonsters();
+
+   
         if (TimeController.instance != null)
         {
             TimeController.instance.SetTimeMultiplier(
@@ -150,26 +138,58 @@ public class SleepManager : MonoBehaviour
         }
     }
 
+    private void DisableAllMonsters()
+    {
+        Monster[] monsters =
+            FindObjectsByType<Monster>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+        foreach (Monster monster in monsters)
+        {
+            if (monster != null)
+            {
+                
+                monster.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void EnableAllMonsters()
+    {
+        Monster[] monsters =
+            FindObjectsByType<Monster>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
+
+        foreach (Monster monster in monsters)
+        {
+            if (monster != null)
+            {
+             
+                monster.gameObject.SetActive(true);
+            }
+        }
+    }
+
     public void MonsterWakePlayer(float damage)
     {
         if (!sleeping)
             return;
 
-        HealthScript health =
-            FindPlayerHealth();
+        HealthScript health = FindPlayerHealth();
 
         if (health != null)
-        {
             health.TakeDamage(damage);
-        }
 
         WakeUp();
     }
 
     private HealthScript FindPlayerHealth()
     {
-        GameObject player =
-            GameObject.Find("Player");
+        GameObject player = GameObject.Find("Player");
 
         if (player == null)
             return null;
@@ -187,12 +207,9 @@ public class SleepManager : MonoBehaviour
         if (sleepObject != null)
             sleepObject.SetActive(false);
 
-        TimeController time =
-            TimeController.instance;
-
-        if (time != null)
+        if (TimeController.instance != null)
         {
-            time.SetTimeMultiplier(
+            TimeController.instance.SetTimeMultiplier(
                 normalTimeMultiplier
             );
         }
@@ -204,8 +221,9 @@ public class SleepManager : MonoBehaviour
             playerCamera.gameObject.SetActive(true);
 
         if (PlayerController.Instance != null)
-        {
             PlayerController.Instance.PlayerControl(true);
-        }
+
+        
+        EnableAllMonsters();
     }
 }

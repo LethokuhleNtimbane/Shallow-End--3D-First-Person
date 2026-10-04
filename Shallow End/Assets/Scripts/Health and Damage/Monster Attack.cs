@@ -4,11 +4,9 @@ using System.Collections;
 
 public class MonsterAttack : MonoBehaviour
 {
- 
     [SerializeField] private float damage = 10f;
     [SerializeField] private float damageInterval = 1f;
 
-    
     [SerializeField] private TextMeshProUGUI monsterRunText;
     [SerializeField] private float messageDuration = 1f;
 
@@ -17,18 +15,35 @@ public class MonsterAttack : MonoBehaviour
 
     AudioManager audioManager;
 
-    private void Awake()
+    public static bool IsDialoguePaused { get; private set; }
+
+    public static void SetDialoguePaused(bool paused)
     {
-        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+        IsDialoguePaused = paused;
     }
 
+    private void Awake()
+    {
+        GameObject audioObject =
+            GameObject.FindGameObjectWithTag("Audio");
+
+        if (audioObject != null)
+        {
+            audioManager =
+                audioObject.GetComponent<AudioManager>();
+        }
+    }
 
     private void OnTriggerStay(Collider other)
     {
+        if (IsDialoguePaused)
+            return;
+
         if (!other.CompareTag("Player"))
             return;
 
-        HealthScript health = other.GetComponent<HealthScript>();
+        HealthScript health =
+            other.GetComponent<HealthScript>();
 
         if (health == null)
             return;
@@ -38,8 +53,11 @@ public class MonsterAttack : MonoBehaviour
         if (damageTimer <= 0f)
         {
             health.TakeDamage(damage);
-            audioManager.PlaySfx(audioManager.LowHealth);
 
+            if (audioManager != null)
+            {
+                audioManager.PlaySfx(audioManager.LowHealth);
+            }
 
             ShowMonsterMessage();
 
@@ -53,6 +71,7 @@ public class MonsterAttack : MonoBehaviour
             return;
 
         monsterRunText.text = "Monster, quickly start a fire";
+
         monsterRunText.gameObject.SetActive(true);
 
         if (messageCoroutine != null)
@@ -60,7 +79,8 @@ public class MonsterAttack : MonoBehaviour
             StopCoroutine(messageCoroutine);
         }
 
-        messageCoroutine = StartCoroutine(HideMonsterMessage());
+        messageCoroutine =
+            StartCoroutine(HideMonsterMessage());
     }
 
     private IEnumerator HideMonsterMessage()

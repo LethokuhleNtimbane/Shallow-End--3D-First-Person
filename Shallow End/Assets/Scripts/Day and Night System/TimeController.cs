@@ -33,7 +33,6 @@ public class TimeController : MonoBehaviour
 
     [SerializeField] private float horizonFadeAngle = 20f;
 
-    [SerializeField] private float maxMoonLightIntensity = 0.5f;
     [SerializeField] private Material skyboxMaterial;
 
 

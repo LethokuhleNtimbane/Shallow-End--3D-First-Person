@@ -1,7 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using TMPro;
-using System.Collections;
 
 public class KnifeAttack : MonoBehaviour
 {
@@ -13,11 +11,6 @@ public class KnifeAttack : MonoBehaviour
 
     [SerializeField] private float attackRange = 3f;
     [SerializeField] private float knifeDamage = 25f;
-
-
-
-
-    private Coroutine messageCoroutine;
 
     private void OnEnable()
     {
@@ -43,7 +36,10 @@ public class KnifeAttack : MonoBehaviour
         if (!attackAction.action.WasPressedThisFrame())
             return;
 
-        
+        // Make sure the player is actually holding the knife
+        if (inventory == null || !inventory.IsKnifeEquipped())
+            return;
+
         AttackMonster();
     }
 
@@ -71,9 +67,16 @@ public class KnifeAttack : MonoBehaviour
         if (monster == null)
             return;
 
+      
         monster.TakeDamage(knifeDamage);
-    }
 
- 
- 
+      
+        bool knifeBroke =
+            inventory.UseEquippedDurability();
+
+        if (knifeBroke)
+        {
+            Debug.Log("Knife broke!");
+        }
+    }
 }

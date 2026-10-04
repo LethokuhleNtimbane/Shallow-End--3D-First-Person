@@ -11,13 +11,13 @@ public class FireProtect : MonoBehaviour
 
         if (!fireIsActive)
         {
-            SetAllMonstersProtected(false);
+            SetAllMonstersActive(true);
             return;
         }
 
         if (playerInside)
         {
-            SetAllMonstersProtected(true);
+            SetAllMonstersActive(false);
         }
     }
 
@@ -31,7 +31,7 @@ public class FireProtect : MonoBehaviour
         if (!fireIsActive)
             return;
 
-        SetAllMonstersProtected(true);
+        SetAllMonstersActive(false);
     }
 
     private void OnTriggerExit(Collider other)
@@ -41,20 +41,22 @@ public class FireProtect : MonoBehaviour
 
         playerInside = false;
 
-        SetAllMonstersProtected(false);
+        SetAllMonstersActive(true);
     }
 
-    private void SetAllMonstersProtected(bool protectedState)
+    private void SetAllMonstersActive(bool active)
     {
-        Monster[] monsters = FindObjectsByType<Monster>(
-            FindObjectsSortMode.None
-        );
+        Monster[] monsters =
+            FindObjectsByType<Monster>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None
+            );
 
         foreach (Monster monster in monsters)
         {
             if (monster != null)
             {
-                monster.SetPlayerProtected(protectedState);
+                monster.gameObject.SetActive(active);
             }
         }
     }

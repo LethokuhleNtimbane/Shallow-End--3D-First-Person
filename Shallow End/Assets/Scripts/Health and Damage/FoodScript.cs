@@ -12,7 +12,7 @@ public class FoodScript : MonoBehaviour
     {
         public Items item;
 
-        [Header("Food Values")]
+     
         public float hungerIncrease;
         public float thirstIncrease;
     }

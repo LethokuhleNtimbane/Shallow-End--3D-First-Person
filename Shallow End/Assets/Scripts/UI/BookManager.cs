@@ -3,13 +3,10 @@ using UnityEngine.InputSystem;
 
 public class Book : MonoBehaviour
 {
-
     [SerializeField] private GameObject bookUI;
     [SerializeField] private GameObject playerHUD;
 
-
     [SerializeField] private InputActionReference openBookAction;
-
 
     [SerializeField] private MonoBehaviour timeController;
     [SerializeField] private MonoBehaviour monsterSpawner;
@@ -42,6 +39,8 @@ public class Book : MonoBehaviour
 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+
+        Time.timeScale = 1f;
     }
 
     private void Update()
@@ -64,7 +63,12 @@ public class Book : MonoBehaviour
 
     public void OpenBook()
     {
+        if (bookOpen)
+            return;
+
         bookOpen = true;
+
+        Time.timeScale = 0f;
 
         if (bookUI != null)
             bookUI.SetActive(true);
@@ -80,7 +84,12 @@ public class Book : MonoBehaviour
 
     public void CloseBook()
     {
+        if (!bookOpen)
+            return;
+
         bookOpen = false;
+
+        Time.timeScale = 1f;
 
         if (bookUI != null)
             bookUI.SetActive(false);
