@@ -7,6 +7,9 @@ using System.Collections;
 
 public class Inventory : MonoBehaviour
 {
+    [SerializeField] private Camera playerCamera;
+
+    [Header("Item variables")]
     public Items WoodItem;
     public Items Spear;
     public Items Hammer;
@@ -14,88 +17,81 @@ public class Inventory : MonoBehaviour
     public Items Vines;
     public Items WholeCoconut;
     public Items Coconut;
-
-
     public Items AxeItem;
+    [SerializeField] private Items CrabItem;
+    [SerializeField] private Items FlintItem;
+    [SerializeField] private Items RockItem;
 
-    [SerializeField] private Camera playerCamera;
 
-    public GameObject hotBrObj;
-
-    public CraftinSystem craftingSystem;
-
+    [Header("Input Action")]
     [SerializeField] private InputActionReference pickupobj;
-
     [SerializeField] private InputActionReference[] hotbarActions;
     [SerializeField] private InputActionReference dropAction;
     [SerializeField] private InputActionReference hotbarScroll;
 
-    public Image DragIcon;
 
+    [Header("")]
     public float pickupRange = 3f;
 
     private Material originalmaerial;
     private Renderer lookedAtRender = null;
 
-    public GameObject Crafting;
+
 
     private int equippedHotBarIndex = 0;
 
     public float equippedOpacity = 0.9f;
     public float normalOpacity = 0.58f;
 
-    private Slot dragslot = null;
-    private bool isDraggin = false;
+   
 
+
+    [Header("In hand item")]
     public Transform hand;
-
     [SerializeField] private GameObject axeHandItem;
     [SerializeField] private GameObject spearHandItem;
     [SerializeField] private GameObject hammerHandItem;
     [SerializeField] private GameObject knifeHandItem;
     [SerializeField] private GameObject FlintHandItem;
     [SerializeField] private GameObject RockHandItem;
-
-    [SerializeField] private Items CrabItem;
-    [SerializeField] private Items FlintItem;
-
-   
     [SerializeField] private GameObject CrabHandItem;
     [SerializeField] private GameObject WoodHandItem;
     [SerializeField] private GameObject VineHandItem;
     [SerializeField] private GameObject WholeCoconutHandItem;
     [SerializeField] private GameObject CoconutHandItem;
-
-    [SerializeField] private Items RockItem;
-
     private GameObject currentHandItem;
 
+
+
+
     AudioManager audioManager;
+    [Header("Slots")]
 
     private List<Slot> hotbarSlots = new List<Slot>();
     private List<Slot> allSlots = new List<Slot>();
     private List<Slot> craftingSlots = new List<Slot>();
     private List<Slot> storageSlots = new List<Slot>();
 
-    [SerializeField] private TextMeshProUGUI interactionMessage;
+  
 
+    [Header("UI elements")]
     [SerializeField] private float messageDuration = 2f;
-
+    [SerializeField] private TextMeshProUGUI interactionMessage;
+    public Image DragIcon;
+    private Slot dragslot = null;
+    private bool isDraggin = false;
     private Coroutine messageCoroutine;
-
+    public GameObject Crafting;
+    public GameObject hotBar;
+    public CraftinSystem craftingSystem;
     private void Awake()
     {
-        audioManager =
-            GameObject.FindGameObjectWithTag("Audio")
-                .GetComponent<AudioManager>();
+        //Finds audiomanager
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
 
-        hotbarSlots.AddRange(
-            hotBrObj.GetComponentsInChildren<Slot>(true)
-        );
+        hotbarSlots.AddRange(hotBar.GetComponentsInChildren<Slot>(true));
 
-        craftingSlots.AddRange(
-            Crafting.GetComponentsInChildren<Slot>(true)
-        );
+        craftingSlots.AddRange(Crafting.GetComponentsInChildren<Slot>(true));
 
         allSlots.AddRange(hotbarSlots);
     }
@@ -126,7 +122,7 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    public void ShowInteractionMessage(string message)
+    public void ShowInteractionMessage(string message) // Overhead message display
     {
         if (interactionMessage == null)
             return;
@@ -143,7 +139,9 @@ public class Inventory : MonoBehaviour
             StartCoroutine(HideInteractionMessage());
     }
 
-    private IEnumerator HideInteractionMessage()
+    // IEnumerator responsible for hiding message after
+    // a few seconds so that text is not displayed all the time
+    private IEnumerator HideInteractionMessage() 
     {
         yield return new WaitForSeconds(messageDuration);
 
@@ -156,7 +154,9 @@ public class Inventory : MonoBehaviour
     }
 
     private void EquippedHandItem()
-    {
+    {  
+        //The reason all of these are set to false is so that when changing
+        //an item in the hotbar the previous item disappear in hand
         axeHandItem.SetActive(false);
         spearHandItem.SetActive(false);
         hammerHandItem.SetActive(false);
@@ -169,25 +169,22 @@ public class Inventory : MonoBehaviour
         VineHandItem.SetActive(false);
         WholeCoconutHandItem.SetActive(false);
         CoconutHandItem.SetActive(false);
-
+      //Checking if Hotbar index grater than 0 but less than how many hotbar slots are available
         if (equippedHotBarIndex < 0 ||
             equippedHotBarIndex >= hotbarSlots.Count)
         {
             return;
         }
-
-        Slot currentSlot =
-            hotbarSlots[equippedHotBarIndex];
-
-        if (!currentSlot.Hasitem())
-            return;
-
-        Items item =
-            currentSlot.GetItem();
-
-        if (item == null)
-            return;
-
+         //uses elements from Slot script to check the current hot bar slot
+        Slot currentSlot =  hotbarSlots[equippedHotBarIndex];
+        //if current clot has an item do not execute the following
+        if (!currentSlot.Hasitem()) return;
+        //uses elements from the Items script to get information about the item in the current slot
+        Items item = currentSlot.GetItem();
+        // if there is no information on the item, do not excute the following
+        if (item == null) return;
+        //Just checking if the item information corresponds to the item currently in slots
+        // if so set active gameobject which is a in hand item
         if (item == AxeItem)
         {
             axeHandItem.SetActive(true);
@@ -237,11 +234,9 @@ public class Inventory : MonoBehaviour
 
     private void HandleHotBarScroll()
     {
-        if (hotbarScroll == null)
-            return;
+        if (hotbarScroll == null) return;
 
-        Vector2 scrollValue =
-            hotbarScroll.action.ReadValue<Vector2>();
+        Vector2 scrollValue = hotbarScroll.action.ReadValue<Vector2>();
 
         if (scrollValue.y > 0)
         {
@@ -270,12 +265,12 @@ public class Inventory : MonoBehaviour
     private void OnEnable()
     {
         if (pickupobj != null)
-            pickupobj.action.Enable();
+        pickupobj.action.Enable();
 
         foreach (InputActionReference action in hotbarActions)
         {
             if (action != null)
-                action.action.Enable();
+            action.action.Enable();
         }
 
         if (dropAction != null)
@@ -305,117 +300,92 @@ public class Inventory : MonoBehaviour
 
     public Items GetHotbarItem()
     {
-        if (equippedHotBarIndex < 0 ||
-            equippedHotBarIndex >= hotbarSlots.Count)
+        if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count)
         {
             return null;
         }
 
-        Slot equippedSlot =
-            hotbarSlots[equippedHotBarIndex];
+        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
 
-        if (!equippedSlot.Hasitem())
-            return null;
+        if (!equippedSlot.Hasitem()) return null;
 
         return equippedSlot.GetItem();
     }
 
     public int GetEquippedDurability()
     {
-        if (equippedHotBarIndex < 0 ||
-            equippedHotBarIndex >= hotbarSlots.Count)
+        if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count)
         {
             return -1;
         }
 
-        Slot slot =
-            hotbarSlots[equippedHotBarIndex];
+        Slot slot = hotbarSlots[equippedHotBarIndex];
 
-        if (!slot.Hasitem())
-            return -1;
+        if (!slot.Hasitem()) return -1;
 
         return slot.GetDurability();
     }
 
     public bool UseEquippedDurability()
     {
-        if (equippedHotBarIndex < 0 ||
-            equippedHotBarIndex >= hotbarSlots.Count)
+        if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count)
         {
             return false;
         }
 
-        Slot equippedSlot =
-            hotbarSlots[equippedHotBarIndex];
+        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
 
-        if (!equippedSlot.Hasitem())
-            return false;
+        if (!equippedSlot.Hasitem()) return false;
 
-        bool broke =
-            equippedSlot.UseDurability(1);
+        bool broke = equippedSlot.UseDurability(1);
 
         EquippedHandItem();
-
         return broke;
     }
 
     public void RemoveHotbarItem(int amount)
     {
-        if (equippedHotBarIndex < 0 ||
-            equippedHotBarIndex >= hotbarSlots.Count)
+        if (equippedHotBarIndex < 0 || equippedHotBarIndex >= hotbarSlots.Count)
         {
             return;
         }
 
-        Slot equippedSlot =
-            hotbarSlots[equippedHotBarIndex];
+        Slot equippedSlot = hotbarSlots[equippedHotBarIndex];
 
-        if (!equippedSlot.Hasitem())
-            return;
+        if (!equippedSlot.Hasitem()) return;
 
         equippedSlot.RemoveAmount(amount);
-
         EquippedHandItem();
     }
 
     public bool IsHammerEquipped()
     {
         Items item = GetHotbarItem();
-
-        return item != null &&
-               item == Hammer;
+        return item != null && item == Hammer;
     }
 
     public bool IsAxeEquipped()
     {
         Items item = GetHotbarItem();
-
-        return item != null &&
-               item == AxeItem;
+        return item != null && item == AxeItem;
     }
 
     public bool IsKnifeEquipped()
     {
         Items item = GetHotbarItem();
-
-        return item != null &&
-               item == Knife;
+        return item != null && item == Knife;
     }
 
     public bool IsSpearEquipped()
     {
         Items item = GetHotbarItem();
-
-        return item != null &&
-               item == Spear;
+        return item != null && item == Spear;
     }
 
     public bool IsFlintEquipped(Items flintItem)
     {
         Items item = GetHotbarItem();
-
-        return item != null &&
-               item == flintItem;
+        return item != null && item == flintItem;
     }
 
     private void Update()
@@ -440,8 +410,7 @@ public class Inventory : MonoBehaviour
 
         foreach (Slot slot in hotbarSlots)
         {
-            if (slot.Hasitem() &&
-                slot.GetItem() == itemToCheck)
+            if (slot.Hasitem() && slot.GetItem() == itemToCheck)
             {
                 total += slot.GetAmount();
             }
@@ -450,9 +419,7 @@ public class Inventory : MonoBehaviour
         return total;
     }
 
-    public int RemoveItemAmount(
-        Items itemToRemove,
-        int amount)
+    public int RemoveItemAmount(Items itemToRemove,int amount)
     {
         int remaining = amount;
 
@@ -461,17 +428,11 @@ public class Inventory : MonoBehaviour
             if (remaining <= 0)
                 break;
 
-            if (slot.Hasitem() &&
-                slot.GetItem() == itemToRemove)
+            if (slot.Hasitem() && slot.GetItem() == itemToRemove)
             {
-                int amountInSlot =
-                    slot.GetAmount();
+                int amountInSlot = slot.GetAmount();
 
-                int amountToRemove =
-                    Mathf.Min(
-                        amountInSlot,
-                        remaining
-                    );
+                int amountToRemove = Mathf.Min(amountInSlot,remaining);
 
                 slot.RemoveAmount(amountToRemove);
 
@@ -484,13 +445,9 @@ public class Inventory : MonoBehaviour
         return amount - remaining;
     }
 
-    public bool AddItem(
-        Items itemToAdd,
-        int amount,
-        int durability = -1)
+    public bool AddItem(Items itemToAdd,int amount,int durability = -1)
     {
-        if (itemToAdd == null ||
-            amount <= 0)
+        if (itemToAdd == null || amount <= 0)
         {
             return false;
         }
@@ -517,21 +474,15 @@ public class Inventory : MonoBehaviour
                     return false;
                 }
 
-                int durabilityToUse =
-                    durability;
+                int durabilityToUse = durability;
 
                 
                 if (durabilityToUse < 0)
                 {
-                    durabilityToUse =
-                        itemToAdd.maxDurability;
+                    durabilityToUse = itemToAdd.maxDurability;
                 }
 
-                emptySlot.SetItem(
-                    itemToAdd,
-                    1,
-                    durabilityToUse
-                );
+                emptySlot.SetItem(itemToAdd,1,durabilityToUse);
 
               
                 durability = -1;
@@ -546,23 +497,18 @@ public class Inventory : MonoBehaviour
 
         foreach (Slot slot in hotbarSlots)
         {
-            if (!slot.Hasitem())
-                continue;
+            if (!slot.Hasitem()) continue;
 
-            if (slot.GetItem() != itemToAdd)
-                continue;
+            if (slot.GetItem() != itemToAdd) continue;
 
-            int currentAmount =
-                slot.GetAmount();
+            int currentAmount = slot.GetAmount();
 
-            int maxStack =
-                itemToAdd.maxStack;
+            int maxStack = itemToAdd.maxStack;
 
             if (currentAmount >= maxStack)
                 continue;
 
-            int spaceLeft =
-                maxStack - currentAmount;
+            int spaceLeft = maxStack - currentAmount;
 
             int amountToAdd =
                 Mathf.Min(
@@ -684,8 +630,7 @@ public class Inventory : MonoBehaviour
 
         foreach (Slot s in craftingSlots)
         {
-            if (s.hovering)
-                return s;
+            if (s.hovering) return s;
         }
 
         if (craftingSystem != null &&
@@ -949,29 +894,26 @@ public class Inventory : MonoBehaviour
 
     private void Pickup()
     {
-        if (lookedAtRender != null &&
-            pickupobj.action.WasPressedThisFrame())
+        //LookedAtRender is set default null, it uses raycast (an invisible line drawn from the camera to
+        //objects if that is not null/ nothing and input action "E" was pressed player picks up object
+       
+        if (lookedAtRender != null && pickupobj.action.WasPressedThisFrame())
         {
             GroundItem item =
                 lookedAtRender.GetComponent<GroundItem>();
 
             if (item != null)
             {
-                bool pickedUp =
-                    AddItem(
-                        item.item,
-                        item.amount,
-                        item.currentDurability
-                    );
+                //uses AddIem method collecting data such as the item,
+                //the item amount if stackable, item durability if durability is allocated
+                bool pickedUp = AddItem(item.item,item.amount,item.currentDurability);
 
                 if (pickedUp)
                 {
-                    audioManager.PlaySfx(
-                        audioManager.PickupItem
-                    );
-
-                    RespawnMR respawn =
-                        item.GetComponent<RespawnMR>();
+                    // Plays picking up sound effect
+                    audioManager.PlaySfx(audioManager.PickupItem);
+                    //checks if item has respawn script
+                    RespawnMR respawn = item.GetComponent<RespawnMR>();
 
                     if (respawn != null)
                     {
@@ -979,6 +921,7 @@ public class Inventory : MonoBehaviour
                     }
                     else
                     {
+                        //if item does not contain respawn script destroy picked up object
                         Destroy(item.gameObject);
                     }
 
