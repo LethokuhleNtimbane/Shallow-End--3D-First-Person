@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
 
-public class ThomasInteraction : MonoBehaviour
+public class Interaction : MonoBehaviour
 {
     [SerializeField] private InputActionReference interactAction;
 
