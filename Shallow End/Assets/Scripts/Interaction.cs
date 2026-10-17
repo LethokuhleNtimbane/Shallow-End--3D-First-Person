@@ -188,14 +188,28 @@ public class Interaction : MonoBehaviour
             new ForDialog.DialogueLine
             {
                 speakerName = "Player",
-                dialogueText = "I just got here. I was shipwrecked a few hours ago.",
+                dialogueText = "What is this place? All I remember was my boat sinking and then i woke up here on the shore.",
                 isThomas = false
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Thomas",
-                dialogueText = "Ahh I suffered a similar fate",
+                dialogueText = "Ahh I suffered a similar fate.But you will find that this island has all you need to live on the rest of your life.",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "What....I can't stay here. I have to get home...",
+                isThomas = false
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Oh it's not so bad here. Sure the island has it's downsides but its quite peacful...during the day atleast.",
                 isThomas = true
             },
 
@@ -209,44 +223,51 @@ public class Interaction : MonoBehaviour
             new ForDialog.DialogueLine
             {
                 speakerName = "Thomas",
-                dialogueText = "Long enough to forget what a face looks like.",
+                dialogueText = "Hmm, what year is it?.",
                 isThomas = true
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Player",
-                dialogueText = "How have you survived this long",
+                dialogueText = "It's 2024",
                 isThomas = false
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Thomas",
-                dialogueText = "Crabs.",
+                dialogueText = "I see, about 20 years..give or take.",
                 isThomas = true
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Player",
-                dialogueText = "Really? That's it",
+                dialogueText = "WHAT! I cant stay here your 20 years, there must be a way off this island",
+                isThomas = true
+            },
+
+            new ForDialog.DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Dont be so worried, ill teach you how to make your way around here",
                 isThomas = false
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Thomas",
-                dialogueText = "I have written a journal describing my time here. It has all you need to survive.",
-                isThomas = true
+                dialogueText = "Use your WASD keys to move around and head to that chest behind me, it's got my journal in it and an axe you will need to cut down trees to make  tent.",
+                isThomas = false
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Thomas",
-                dialogueText = "It is in the wooden box. You can take anything you like.",
-                isThomas = true
-            }
+                dialogueText = "Once you have the axe just 'Left Click' on a tree to cut it down. 'Left Click' is also how you interact and use other items and food.",
+                isThomas = false
+            },
         };
 
         dialogueManager.StartDialogue(
