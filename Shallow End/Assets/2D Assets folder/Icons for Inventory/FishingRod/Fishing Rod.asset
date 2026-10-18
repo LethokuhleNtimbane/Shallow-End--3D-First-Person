@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e90402f69b9d3a948927d065e761d3db, type: 3}
+  m_Name: Fishing Rod
+  m_EditorClassIdentifier: Assembly-CSharp::Items
+  itemName: Fishing Rod
+  icon: {fileID: 21300000, guid: 40b0d78072ebc4248adbb79bfbe96403, type: 3}
+  maxStack: 1
+  ItenPrefab: {fileID: 1441472636814297929, guid: 22f6ee7e184d67e448c6f1c172adaaf8, type: 3}
+  handItem: {fileID: 4344498040250578896, guid: c95a2821bab3d844eaf4a7db5d31428e, type: 3}
+  isFood: 0
+  healthRegenerate: 0
+  hasDurability: 1
+  infiniteDurability: 0
+  maxDurability: 10
