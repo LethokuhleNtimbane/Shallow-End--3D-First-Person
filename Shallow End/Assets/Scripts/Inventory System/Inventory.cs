@@ -18,6 +18,7 @@ public class Inventory : MonoBehaviour
     public Items WholeCoconut;
     public Items Coconut;
     public Items AxeItem;
+    public Items FishingRodItem;
     [SerializeField] private Items CrabItem;
     [SerializeField] private Items FlintItem;
     [SerializeField] private Items RockItem;
@@ -59,6 +60,7 @@ public class Inventory : MonoBehaviour
     [SerializeField] private GameObject VineHandItem;
     [SerializeField] private GameObject WholeCoconutHandItem;
     [SerializeField] private GameObject CoconutHandItem;
+    [SerializeField] private GameObject fishingRodHandItem;
     private GameObject currentHandItem;
 
 
@@ -163,7 +165,8 @@ public class Inventory : MonoBehaviour
         knifeHandItem.SetActive(false);
         FlintHandItem.SetActive(false);
         RockHandItem.SetActive(false);
-     
+        fishingRodHandItem.SetActive(false);
+
         CrabHandItem.SetActive(false);
         WoodHandItem.SetActive(false);
         VineHandItem.SetActive(false);
@@ -229,6 +232,11 @@ public class Inventory : MonoBehaviour
         else if (item == Coconut)
         {
             CoconutHandItem.SetActive(true);
+        }
+
+        else if (item == FishingRodItem)
+        {
+            fishingRodHandItem.SetActive(true);
         }
     }
 

@@ -64,6 +64,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Fishing Rod for game  2
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1dec8c05d52255045a8a951054283196, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7071182760956848314, guid: 1dec8c05d52255045a8a951054283196, type: 3}
       propertyPath: m_Materials.Array.size
       value: 2
@@ -96,6 +100,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1dec8c05d52255045a8a951054283196, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2863412945546198928}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1dec8c05d52255045a8a951054283196, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -3496782846309825422}
   m_SourcePrefab: {fileID: 100100000, guid: 1dec8c05d52255045a8a951054283196, type: 3}
 --- !u!1 &1441472636814297929 stripped
 GameObject:
@@ -215,3 +222,34 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &-3496782846309825422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1441472636814297929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8409f03fd1ab025409f46aea1cfd3ffc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FishingSystem
+  inventory: {fileID: 0}
+  playerCamera: {fileID: 0}
+  player: {fileID: 0}
+  useAction: {fileID: 0}
+  fishingRodItem: {fileID: 11400000, guid: 95956b8dc18964e4e9297f32c6a1c19d, type: 2}
+  fishItem: {fileID: 11400000, guid: f4ada1f24f8c8884093d3509d09809cf, type: 2}
+  waterLayer:
+    serializedVersion: 2
+    m_Bits: 16
+  castRange: 15
+  minimumBiteDelay: 3
+  maximumBiteDelay: 7
+  reelWindow: 3
+  spawnDistance: 1.2
+  groundCheckHeight: 3
+  groundCheckDistance: 10
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
