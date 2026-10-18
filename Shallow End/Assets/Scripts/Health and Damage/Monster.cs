@@ -14,6 +14,15 @@ public class Monster : MonoBehaviour
 
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float attackDistance = 1.5f;
+    [SerializeField] private float detectionRange = 12f;
+    [SerializeField] private float patrolSpeed = 1.5f;
+    [SerializeField] private float patrolRadius = 8f;
+    [SerializeField] private float patrolWaitTime = 2f;
+
+    private Vector3 patrolCenter;
+    private Vector3 patrolTarget;
+    private float patrolWaitTimer;
+    private bool waitingAtPatrolPoint;
 
     [SerializeField] private GameObject attackHitbox;
     [SerializeField] private GameObject monsterVisual;
@@ -52,6 +61,9 @@ public class Monster : MonoBehaviour
             timeController = TimeController.instance;
 
         currentHealth = maxHealth;
+
+        patrolCenter = transform.position;
+        ChooseNewPatrolTarget();
 
         UpdateHealthBar();
 
@@ -132,15 +144,25 @@ public class Monster : MonoBehaviour
     private void FollowPlayer()
     {
         if (Player == null)
+        {
+            Patrol();
             return;
+        }
 
-        Vector3 direction =
-            Player.position - transform.position;
-
+        Vector3 direction = Player.position - transform.position;
         direction.y = 0f;
 
         float distance = direction.magnitude;
 
+        // Player is too far away then patrol instead.
+        if (distance > detectionRange)
+        {
+            ResetExplosionTimer();
+            Patrol();
+            return;
+        }
+
+        // Player is close enough to attack.
         if (distance <= attackDistance)
         {
             StartExplosionTimer();
@@ -154,11 +176,62 @@ public class Monster : MonoBehaviour
 
         direction.Normalize();
 
-        transform.position +=
-            direction * moveSpeed * Time.deltaTime;
+        transform.position += direction * moveSpeed * Time.deltaTime;
+        transform.rotation = Quaternion.LookRotation(direction);
+    }
 
-        transform.rotation =
-            Quaternion.LookRotation(direction);
+    private void Patrol()
+    {
+        if (waitingAtPatrolPoint)
+        {
+            patrolWaitTimer += Time.deltaTime;
+
+            if (patrolWaitTimer >= patrolWaitTime)
+            {
+                waitingAtPatrolPoint = false;
+                patrolWaitTimer = 0f;
+                ChooseNewPatrolTarget();
+            }
+
+            return;
+        }
+
+        Vector3 direction = patrolTarget - transform.position;
+        direction.y = 0f;
+
+        if (direction.magnitude <= 0.5f)
+        {
+            waitingAtPatrolPoint = true;
+            patrolWaitTimer = 0f;
+            return;
+        }
+
+        direction.Normalize();
+
+        transform.position += direction * patrolSpeed * Time.deltaTime;
+        transform.rotation = Quaternion.LookRotation(direction);
+    }
+
+    private void ChooseNewPatrolTarget()
+    {
+        Vector2 randomPoint = Random.insideUnitCircle * patrolRadius;
+
+        patrolTarget = patrolCenter +
+            new Vector3(randomPoint.x, 0f, randomPoint.y);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
+
+        Gizmos.color = Color.blue;
+
+        Vector3 center = Application.isPlaying
+            ? patrolCenter
+            : transform.position;
+
+        Gizmos.DrawWireSphere(center, patrolRadius);
     }
 
     private void StartExplosionTimer()
