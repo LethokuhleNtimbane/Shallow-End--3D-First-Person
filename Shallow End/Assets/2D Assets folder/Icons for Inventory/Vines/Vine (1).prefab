@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 8874396727818098892}
   - component: {fileID: 4676060620945756698}
   - component: {fileID: 1855193743130208738}
+  - component: {fileID: -3622446151943801765}
   m_Layer: 9
   m_Name: Vine (1)
   m_TagString: Vines
@@ -240,6 +241,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.442099, y: 7.856945, z: 0.32340568}
   m_Center: {x: -1.8098296, y: -0.2076912, z: 0.00096420496}
+--- !u!114 &-3622446151943801765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4287120656022678515}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c113d846ee9f765408b3ddf4f3708fdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeSpawnItem
+  lifetime: 30
 --- !u!1 &5321540245862483430
 GameObject:
   m_ObjectHideFlags: 0

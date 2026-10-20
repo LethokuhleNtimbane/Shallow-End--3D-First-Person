@@ -1,9 +1,10 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Net.Sockets;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections;
 
 public class Inventory : MonoBehaviour
 {
@@ -19,10 +20,13 @@ public class Inventory : MonoBehaviour
     public Items Coconut;
     public Items AxeItem;
     public Items FishingRodItem;
+    public Items Fish;
+    public Items Mushroom;
     [SerializeField] private Items CrabItem;
     [SerializeField] private Items FlintItem;
     [SerializeField] private Items RockItem;
-
+    [SerializeField] private Items Bucket;
+    [SerializeField] private Items WaterBucket;
 
     [Header("Input Action")]
     [SerializeField] private InputActionReference pickupobj;
@@ -50,6 +54,8 @@ public class Inventory : MonoBehaviour
     [Header("In hand item")]
     public Transform hand;
     [SerializeField] private GameObject axeHandItem;
+    [SerializeField] private GameObject bucket;
+    [SerializeField] private GameObject waterbucket;
     [SerializeField] private GameObject spearHandItem;
     [SerializeField] private GameObject hammerHandItem;
     [SerializeField] private GameObject knifeHandItem;
@@ -61,6 +67,8 @@ public class Inventory : MonoBehaviour
     [SerializeField] private GameObject WholeCoconutHandItem;
     [SerializeField] private GameObject CoconutHandItem;
     [SerializeField] private GameObject fishingRodHandItem;
+    public GameObject fish;
+    public GameObject mushroom;
     private GameObject currentHandItem;
 
 
@@ -163,10 +171,13 @@ public class Inventory : MonoBehaviour
         spearHandItem.SetActive(false);
         hammerHandItem.SetActive(false);
         knifeHandItem.SetActive(false);
+        fish.SetActive(false);
+        mushroom.SetActive(false);
         FlintHandItem.SetActive(false);
         RockHandItem.SetActive(false);
         fishingRodHandItem.SetActive(false);
-
+        bucket.SetActive(false);
+        waterbucket.SetActive(false);
         CrabHandItem.SetActive(false);
         WoodHandItem.SetActive(false);
         VineHandItem.SetActive(false);
@@ -191,6 +202,22 @@ public class Inventory : MonoBehaviour
         if (item == AxeItem)
         {
             axeHandItem.SetActive(true);
+        }
+        if (item == Mushroom)
+        {
+            mushroom.SetActive(true);
+        }
+        if (item == Bucket)
+        {
+            bucket.SetActive(true);
+        }
+        if (item == WaterBucket)
+        {
+            waterbucket.SetActive(true);
+        }
+        if (item == Fish)
+        {
+            fish.SetActive(true);
         }
         else if (item == Spear)
         {

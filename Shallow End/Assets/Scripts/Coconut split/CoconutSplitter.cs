@@ -41,17 +41,23 @@ public class CoconutSplitter : MonoBehaviour
         TrySplitCoconut();
     }
 
+
     private void TrySplitCoconut()
     {
-        if (inventory == null ||
-            playerCamera == null)
+        Debug.Log("Coconut splitter: Click detected.");
+
+        if (inventory == null || playerCamera == null)
         {
+            Debug.LogWarning("Coconut splitter: Inventory or camera is missing.");
             return;
         }
+
+        Debug.Log("Hammer equipped: " + inventory.IsHammerEquipped());
 
         if (!inventory.IsHammerEquipped())
         {
             ShowMessage("I need a hammer");
+            Debug.Log("Coconut splitter: Hammer is not equipped.");
             return;
         }
 
@@ -60,28 +66,45 @@ public class CoconutSplitter : MonoBehaviour
             playerCamera.transform.forward
         );
 
-        if (Physics.Raycast(
-            ray,
-            out RaycastHit hit,
-            splitRange))
+        if (Physics.Raycast(ray, out RaycastHit hit, splitRange))
         {
+            Debug.Log("Coconut splitter hit: " + hit.collider.name);
+
             GroundItem groundItem =
                 hit.collider.GetComponent<GroundItem>();
 
             if (groundItem == null)
+            {
+                Debug.Log("Coconut splitter: Hit object has no GroundItem.");
                 return;
+            }
+
+            Debug.Log("Hit item: " + groundItem.item);
 
             if (groundItem.item != wholeCoconut)
+            {
+                Debug.Log("Coconut splitter: Hit item is not a whole coconut.");
                 return;
+            }
 
-            SplitCoconut(
-                groundItem.gameObject
-            );
+            if (coconut == null)
+            {
+                Debug.LogError("Coconut splitter: Coconut prefab is missing.");
+                return;
+            }
 
-           
+            SplitCoconut(groundItem.gameObject);
+
             inventory.UseEquippedDurability();
+
+            Debug.Log("Coconut splitter: Coconut split successfully.");
+        }
+        else
+        {
+            Debug.Log("Coconut splitter: Raycast did not hit anything.");
         }
     }
+
 
     private void SplitCoconut(
         GameObject wholeCoconutObject)

@@ -12,6 +12,35 @@ public class FoodScript : MonoBehaviour
     [SerializeField] private HealthScript healthScript;
     [SerializeField] private PlayerController playerController;
 
+    [Header("Water Bucket Input")]
+    [Tooltip("Left-click to fill an empty bucket when aiming at water.")]
+    [SerializeField] private InputActionReference fillWaterAction;
+
+    [Tooltip("Right-click to drink from a filled bucket.")]
+    [SerializeField] private InputActionReference drinkWaterAction;
+
+    [Tooltip("Layer name used by water objects.")]
+    [SerializeField] private string waterLayerName = "Water";
+
+    [Header("Water Bucket Items")]
+    [SerializeField] private Items emptyWaterBucketItem;
+    [SerializeField] private Items filledWaterBucketItem;
+
+    [Tooltip("Maximum distance for the water raycast.")]
+    [SerializeField] private float waterRaycastDistance = 5f;
+
+    [Tooltip("Amount of thirst restored when drinking.")]
+    [SerializeField] private float waterThirstIncrease = 65f;
+
+    [Tooltip("Percentage of current health removed when drinking.")]
+    [Range(0f, 100f)]
+    [SerializeField] private float waterHealthLossPercent = 65f;
+
+    [Tooltip("Percentage of current hunger removed when drinking.")]
+    [Range(0f, 100f)]
+    [SerializeField] private float waterHungerLossPercent = 65f;
+
+ 
     [System.Serializable]
     public class FoodItem
     {
@@ -20,7 +49,6 @@ public class FoodScript : MonoBehaviour
         public float thirstIncrease;
     }
 
-    [Header("Normal Food")]
     [SerializeField] private FoodItem[] foodItems;
 
     [Header("Mushroom")]
@@ -28,7 +56,6 @@ public class FoodScript : MonoBehaviour
 
     [Header("Mushroom Effect UI")]
     [SerializeField] private Image mushroomEffectImage;
-
     [SerializeField] private Sprite neutralSprite;
     [SerializeField] private Sprite poisonSprite;
     [SerializeField] private Sprite fasterMovementSprite;
@@ -41,10 +68,7 @@ public class FoodScript : MonoBehaviour
     [SerializeField] private float fadeOutDuration = 1f;
 
     [Header("Mushroom Speed Boost")]
-    [Tooltip("Movement speed multiplier for the speed boost.")]
     [SerializeField] private float speedMultiplier = 1.25f;
-
-    [Tooltip("Duration of the speed boost in seconds.")]
     [SerializeField] private float speedBoostDuration = 60f;
 
     private enum MushroomEffect
@@ -56,29 +80,40 @@ public class FoodScript : MonoBehaviour
     }
 
     private Coroutine effectDisplayCoroutine;
+    private Camera playerCamera;
+    private int waterLayer = -1;
 
     private void Awake()
     {
+        playerCamera = Camera.main;
+        waterLayer = LayerMask.NameToLayer(waterLayerName);
+
         if (mushroomEffectImage != null)
         {
             SetImageAlpha(0f);
+        }
+
+        if (waterLayer == -1)
+        {
+            Debug.LogWarning(
+                "FoodScript: No layer named '" + waterLayerName +
+                "' exists. Create the layer or change Water Layer Name."
+            );
         }
     }
 
     private void OnEnable()
     {
-        if (eatAct != null && eatAct.action != null)
-        {
-            eatAct.action.Enable();
-        }
+        EnableAction(eatAct);
+        EnableAction(fillWaterAction);
+        EnableAction(drinkWaterAction);
     }
 
     private void OnDisable()
     {
-        if (eatAct != null && eatAct.action != null)
-        {
-            eatAct.action.Disable();
-        }
+        DisableAction(eatAct);
+        DisableAction(fillWaterAction);
+        DisableAction(drinkWaterAction);
 
         if (effectDisplayCoroutine != null)
         {
@@ -92,15 +127,119 @@ public class FoodScript : MonoBehaviour
         }
     }
 
+    private void EnableAction(InputActionReference actionReference)
+    {
+        if (actionReference != null && actionReference.action != null)
+        {
+            actionReference.action.Enable();
+        }
+    }
+
+    private void DisableAction(InputActionReference actionReference)
+    {
+        if (actionReference != null && actionReference.action != null)
+        {
+            actionReference.action.Disable();
+        }
+    }
+
     private void Update()
     {
-        if (eatAct == null || eatAct.action == null)
+        // Water bucket interactions are only possible when the
+        // corresponding bucket is selected in the hotbar.
+        Items selectedItem = inventory != null
+            ? inventory.GetHotbarItem()
+            : null;
+
+        if (selectedItem == emptyWaterBucketItem &&
+            emptyWaterBucketItem != null &&
+            WasPressed(fillWaterAction))
+        {
+            TryFillBucket();
+        }
+
+        if (selectedItem == filledWaterBucketItem &&
+            filledWaterBucketItem != null &&
+            WasPressed(drinkWaterAction))
+        {
+            DrinkWater();
+        }
+
+        if (WasPressed(eatAct))
+        {
+            EatFood();
+        }
+    }
+
+    private bool WasPressed(InputActionReference actionReference)
+    {
+        return actionReference != null &&
+               actionReference.action != null &&
+               actionReference.action.WasPressedThisFrame();
+    }
+
+    private void TryFillBucket()
+    {
+        if (inventory == null || playerCamera == null)
+        {
+            Debug.LogWarning(
+                "FoodScript: Inventory or player camera is missing."
+            );
+            return;
+        }
+
+        if (waterLayer == -1)
             return;
 
-        if (!eatAct.action.WasPressedThisFrame())
+        // Only objects on the Water layer can fill the bucket.
+        Ray ray = playerCamera.ViewportPointToRay(
+            new Vector3(0.5f, 0.5f, 0f)
+        );
+
+        int layerMask = 1 << waterLayer;
+
+        if (!Physics.Raycast(
+                ray,
+                out RaycastHit hit,
+                waterRaycastDistance,
+                layerMask,
+                QueryTriggerInteraction.Collide))
+        {
+            return;
+        }
+
+        // Replace one empty bucket with one filled bucket.
+        inventory.RemoveHotbarItem(1);
+        inventory.AddItem(filledWaterBucketItem, 1);
+
+        Debug.Log("Water bucket filled!");
+    }
+
+    private void DrinkWater()
+    {
+        if (inventory == null || healthScript == null)
             return;
 
-        EatFood();
+        // Restore thirst.
+        healthScript.AddThirst(waterThirstIncrease);
+
+        // Reduce current health and hunger by the configured percentages.
+        float newHealth = healthScript.health *
+            (1f - waterHealthLossPercent / 100f);
+
+        float hungerToRemove = healthScript.hunger *
+            (waterHungerLossPercent / 100f);
+
+        healthScript.SetHealth(newHealth);
+        healthScript.RemoveHunger(hungerToRemove);
+
+        // Empty the bucket after drinking.
+        inventory.RemoveHotbarItem(1);
+        inventory.AddItem(emptyWaterBucketItem, 1);
+
+        Debug.Log(
+            "Drank water. Thirst increased; health and hunger decreased."
+        );
     }
 
     private void EatFood()
@@ -113,14 +252,12 @@ public class FoodScript : MonoBehaviour
         if (hotbarItem == null)
             return;
 
-        // Handle mushrooms separately from normal food.
         if (mushroomItem != null && hotbarItem == mushroomItem)
         {
             EatMushroom();
             return;
         }
 
-        // Existing normal food functionality.
         FoodItem food = GetFoodData(hotbarItem);
 
         if (food == null)
@@ -153,7 +290,6 @@ public class FoodScript : MonoBehaviour
         {
             case MushroomEffect.Neutral:
                 Debug.Log("Mushroom Effect: Nothing");
-
                 ShowMushroomEffect(neutralSprite);
                 break;
 
@@ -195,14 +331,12 @@ public class FoodScript : MonoBehaviour
                 healthScript.SetHealth(healthScript.maxHealth);
                 healthScript.AddHunger(healthScript.maxHunger);
                 healthScript.AddThirst(healthScript.maxThirst);
-
                 healthScript.SetHealthRegenerationEnabled(true);
 
                 ShowMushroomEffect(fullRecoverySprite);
                 break;
         }
 
-        // Consume one mushroom after applying its effect.
         inventory.RemoveHotbarItem(1);
     }
 
@@ -224,47 +358,38 @@ public class FoodScript : MonoBehaviour
             return;
         }
 
-        // Stop any previous display or fade timer.
         if (effectDisplayCoroutine != null)
         {
             StopCoroutine(effectDisplayCoroutine);
         }
 
-        // Set the new symbol and show it at full opacity.
         mushroomEffectImage.sprite = effectSprite;
         SetImageAlpha(1f);
 
-        // Start the visibility timer and fade-out.
         effectDisplayCoroutine =
             StartCoroutine(HideEffectAfterDelay());
     }
 
     private IEnumerator HideEffectAfterDelay()
     {
-        // Keep the symbol fully visible.
         yield return new WaitForSeconds(effectDisplayDuration);
 
         float elapsed = 0f;
 
-        // Gradually fade the symbol from visible to invisible.
         while (elapsed < fadeOutDuration)
         {
             elapsed += Time.deltaTime;
 
-            float fadeProgress = Mathf.Clamp01(
-                elapsed / fadeOutDuration
-            );
+            float fadeProgress = fadeOutDuration > 0f
+                ? Mathf.Clamp01(elapsed / fadeOutDuration)
+                : 1f;
 
-            float alpha = Mathf.Lerp(1f, 0f, fadeProgress);
-
-            SetImageAlpha(alpha);
+            SetImageAlpha(Mathf.Lerp(1f, 0f, fadeProgress));
 
             yield return null;
         }
 
-        // Ensure the image ends completely invisible.
         SetImageAlpha(0f);
-
         effectDisplayCoroutine = null;
     }
 
@@ -275,7 +400,6 @@ public class FoodScript : MonoBehaviour
 
         Color imageColor = mushroomEffectImage.color;
         imageColor.a = alpha;
-
         mushroomEffectImage.color = imageColor;
     }
 

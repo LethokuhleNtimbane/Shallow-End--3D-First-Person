@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3631952949752257827}
   - component: {fileID: 8893164136392600599}
   - component: {fileID: 8524305619750953571}
+  - component: {fileID: 6232965280725704289}
   m_Layer: 9
   m_Name: Rock 3 (1)
   m_TagString: Untagged
@@ -157,3 +158,16 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.6856724, y: 1.6100508, z: 2.1371238}
   m_Center: {x: -0.020480542, y: 0.0035511253, z: -0.06900125}
+--- !u!114 &6232965280725704289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5090398925155841278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d28497ab6a86e245bf73f5f4f00e73f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RespawnMR
+  respawnTime: 30

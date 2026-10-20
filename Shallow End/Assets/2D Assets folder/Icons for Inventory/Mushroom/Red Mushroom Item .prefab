@@ -239,6 +239,7 @@ GameObject:
   - component: {fileID: 1974125156606422224}
   - component: {fileID: 8542314907520441795}
   - component: {fileID: 114714409772639851}
+  - component: {fileID: 486790107261707567}
   m_Layer: 9
   m_Name: 'Red Mushroom Item '
   m_TagString: Food Item
@@ -377,6 +378,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.1574419, y: 4.033132, z: 3.3870587}
   m_Center: {x: -0.069269285, y: 0.10950056, z: 0.12244807}
+--- !u!114 &486790107261707567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8216045110482968929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d28497ab6a86e245bf73f5f4f00e73f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RespawnMR
+  respawnTime: 30
 --- !u!1 &8686390183677582625
 GameObject:
   m_ObjectHideFlags: 0

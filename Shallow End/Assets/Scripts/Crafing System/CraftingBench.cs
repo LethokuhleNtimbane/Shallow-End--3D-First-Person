@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -6,19 +7,24 @@ public class CraftingBench : MonoBehaviour
 {
     public static bool IsCraftingOpen { get; private set; }
 
+    [Header("Input")]
     [SerializeField] private InputActionReference interactAction;
 
+    [Header("Crafting UI")]
     [SerializeField] private GameObject craftingSystem;
     [SerializeField] private GameObject background;
-
     [SerializeField] private TextMeshProUGUI craftText;
-
     [SerializeField] private GameObject playerHUD;
 
+    [Header("Player Scripts")]
     [SerializeField] private PlayerController playerController;
     [SerializeField] private DashScript dash;
     [SerializeField] private HealthScript healthScript;
     [SerializeField] private TimeController timeController;
+
+    [Header("Other Scripts")]
+    [SerializeField] private PauseScript Pause;
+    [SerializeField] private BookManager Book;
 
     private bool playerInRange = false;
     private bool craftingOpen = false;
@@ -84,7 +90,6 @@ public class CraftingBench : MonoBehaviour
         if (interactAction == null)
             return;
 
-
         if (!interactAction.action.enabled)
         {
             interactAction.action.Enable();
@@ -114,7 +119,7 @@ public class CraftingBench : MonoBehaviour
         if (craftText != null)
             craftText.gameObject.SetActive(false);
 
-       
+        // Disable player-related scripts.
         if (timeController != null)
             timeController.enabled = false;
 
@@ -127,11 +132,18 @@ public class CraftingBench : MonoBehaviour
         if (playerController != null)
             playerController.enabled = false;
 
-        // Stop EVERY monster, including monsters spawned
-        // by MonsterSpawner.
+        // Disable PauseScript and BookManager.
+        if (Pause != null)
+            Pause.enabled = false;
+
+        if (Book != null)
+            Book.enabled = false;
+
+        // Stop every monster, including newly spawned monsters.
         Monster.SetDialoguePaused(true);
         MonsterAttack.SetDialoguePaused(true);
 
+        // Show crafting UI.
         if (craftingSystem != null)
             craftingSystem.SetActive(true);
 
@@ -141,6 +153,7 @@ public class CraftingBench : MonoBehaviour
         if (playerHUD != null)
             playerHUD.SetActive(false);
 
+        // Play crafting sound.
         if (audioManager != null)
         {
             audioManager.PlaySfx(audioManager.FlintLight);
@@ -158,13 +171,14 @@ public class CraftingBench : MonoBehaviour
         craftingOpen = false;
         IsCraftingOpen = false;
 
+        // Hide crafting UI.
         if (craftingSystem != null)
             craftingSystem.SetActive(false);
 
         if (background != null)
             background.SetActive(false);
 
-   
+        // Re-enable player-related scripts.
         if (playerController != null)
             playerController.enabled = true;
 
@@ -177,7 +191,14 @@ public class CraftingBench : MonoBehaviour
         if (healthScript != null)
             healthScript.enabled = true;
 
-     
+        // Re-enable PauseScript and BookManager.
+        if (Pause != null)
+            Pause.enabled = true;
+
+        if (Book != null)
+            Book.enabled = true;
+
+        // Resume monsters.
         Monster.SetDialoguePaused(false);
         MonsterAttack.SetDialoguePaused(false);
 

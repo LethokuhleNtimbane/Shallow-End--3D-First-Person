@@ -63,9 +63,15 @@ public class WoodenBox : MonoBehaviour
 
     [Header("Gameplay Scripts")]
     [SerializeField] private PlayerController playerController;
-    [SerializeField] private DashScript dashScript;
+    [SerializeField] private DashScript dash;
     [SerializeField] private HealthScript healthScript;
     [SerializeField] private TimeController timeController;
+
+    [Header("Other Scripts")]
+    [SerializeField] private PauseScript Pause;
+    [SerializeField] private BookManager Book;
+
+    [Header("Monster Scripts")]
     [SerializeField] private Monster monster;
     [SerializeField] private MonsterAttack monsterAttack;
 
@@ -88,6 +94,9 @@ public class WoodenBox : MonoBehaviour
 
         if (bookManager == null)
             bookManager = FindFirstObjectByType<BookManager>();
+
+        if (Book == null)
+            Book = bookManager;
 
         if (taskManager == null)
             taskManager = FindFirstObjectByType<TaskManager>();
@@ -213,6 +222,7 @@ public class WoodenBox : MonoBehaviour
             }
         }
 
+        // Disable gameplay and menu scripts.
         DisableGameplay();
 
         Cursor.lockState = CursorLockMode.None;
@@ -223,14 +233,13 @@ public class WoodenBox : MonoBehaviour
         {
             GiveFirstOpenRewards();
 
-            // Mark rewards as claimed for this playthrough.
             rewardsClaimedThisPlaythrough = true;
 
             // Enable the object that tracks book opening.
             if (journalObject != null)
                 journalObject.SetActive(true);
 
-            // Enable the UI that tells the player they can open the book.
+            // Show the prompt telling the player they can open the book.
             if (firstOpenGameObject != null)
                 firstOpenGameObject.SetActive(true);
 
@@ -278,6 +287,7 @@ public class WoodenBox : MonoBehaviour
             }
         }
 
+        // Restore gameplay scripts when appropriate.
         EnableGameplay();
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -289,18 +299,26 @@ public class WoodenBox : MonoBehaviour
 
     private void DisableGameplay()
     {
-        if (timeController != null)
-            timeController.enabled = false;
+        if (playerController != null)
+            playerController.enabled = false;
+
+        if (dash != null)
+            dash.enabled = false;
 
         if (healthScript != null)
             healthScript.enabled = false;
 
-        if (dashScript != null)
-            dashScript.enabled = false;
+        if (timeController != null)
+            timeController.enabled = false;
 
-        if (playerController != null)
-            playerController.enabled = false;
+        // Disable PauseScript and BookManager.
+        if (Pause != null)
+            Pause.enabled = false;
 
+        if (Book != null)
+            Book.enabled = false;
+
+        // Stop monster behaviour.
         if (monster != null)
             monster.enabled = false;
 
@@ -314,18 +332,26 @@ public class WoodenBox : MonoBehaviour
         if (CraftingBench.IsCraftingOpen || BookManager.IsBookOpen)
             return;
 
-        if (timeController != null)
-            timeController.enabled = true;
+        if (playerController != null)
+            playerController.enabled = true;
+
+        if (dash != null)
+            dash.enabled = true;
 
         if (healthScript != null)
             healthScript.enabled = true;
 
-        if (dashScript != null)
-            dashScript.enabled = true;
+        if (timeController != null)
+            timeController.enabled = true;
 
-        if (playerController != null)
-            playerController.enabled = true;
+        // Re-enable PauseScript and BookManager.
+        if (Pause != null)
+            Pause.enabled = true;
 
+        if (Book != null)
+            Book.enabled = true;
+
+        // Resume monster behaviour.
         if (monster != null)
             monster.enabled = true;
 
