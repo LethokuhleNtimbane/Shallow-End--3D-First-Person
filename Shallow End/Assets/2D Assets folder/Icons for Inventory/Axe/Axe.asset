@@ -15,8 +15,8 @@ MonoBehaviour:
   itemName: Axe
   icon: {fileID: 21300000, guid: d4e01f49a369ee4498748072fd75f7d6, type: 3}
   maxStack: 1
-  ItenPrefab: {fileID: 2105178043615314671, guid: 041e70b088d19ac458c7a5e406277f36, type: 3}
-  handItem: {fileID: 2800009004811309490, guid: 947465dfa2020ac40ab8c308ef22154e, type: 3}
+  ItenPrefab: {fileID: 8821144097976385622, guid: f4690f167c7dc7346a9662910e465efb, type: 3}
+  handItem: {fileID: 8821144097976385622, guid: f4690f167c7dc7346a9662910e465efb, type: 3}
   isFood: 0
   healthRegenerate: 0
   hasDurability: 0

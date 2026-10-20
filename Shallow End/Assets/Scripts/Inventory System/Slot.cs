@@ -155,8 +155,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
             if (amountTxt != null)
             {
-                amountTxt.text =
-                    ItemAmount.ToString();
+                amountTxt.text = "x" + ItemAmount.ToString();
             }
         }
         else

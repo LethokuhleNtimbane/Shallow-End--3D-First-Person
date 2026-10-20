@@ -15,8 +15,8 @@ MonoBehaviour:
   itemName: Spear
   icon: {fileID: 21300000, guid: afd9fda13496c3f4cbd57ded67602dcb, type: 3}
   maxStack: 1
-  ItenPrefab: {fileID: 2173714790193504078, guid: c337e31144ae1584393f7cfbeb962547, type: 3}
-  handItem: {fileID: 2458572116505877667, guid: 1c8502dae71010a4b92d5d4465a30af0, type: 3}
+  ItenPrefab: {fileID: 4641662848801446438, guid: 3ddd766b59169e247b72c073ef2d1a66, type: 3}
+  handItem: {fileID: 4641662848801446438, guid: 3ddd766b59169e247b72c073ef2d1a66, type: 3}
   isFood: 0
   healthRegenerate: 0
   hasDurability: 1

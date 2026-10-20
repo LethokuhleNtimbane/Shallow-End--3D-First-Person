@@ -15,8 +15,8 @@ MonoBehaviour:
   itemName: Fishing Rod
   icon: {fileID: 21300000, guid: 40b0d78072ebc4248adbb79bfbe96403, type: 3}
   maxStack: 1
-  ItenPrefab: {fileID: 1441472636814297929, guid: 22f6ee7e184d67e448c6f1c172adaaf8, type: 3}
-  handItem: {fileID: 4344498040250578896, guid: c95a2821bab3d844eaf4a7db5d31428e, type: 3}
+  ItenPrefab: {fileID: 2409946005379730263, guid: df56aaa573da65940a800e679cfa9ba6, type: 3}
+  handItem: {fileID: 2409946005379730263, guid: df56aaa573da65940a800e679cfa9ba6, type: 3}
   isFood: 0
   healthRegenerate: 0
   hasDurability: 1
