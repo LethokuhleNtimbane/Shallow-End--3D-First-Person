@@ -1,4 +1,6 @@
+
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -27,29 +29,31 @@ public class TaskManager : MonoBehaviour
         }
     }
 
+    [Header("Task UI")]
     [SerializeField] private TextMeshProUGUI taskText1;
     [SerializeField] private TextMeshProUGUI taskText2;
 
-
+    [Header("Task Colours")]
     [SerializeField] private Color activeTaskColour = Color.white;
     [SerializeField] private Color completedTaskColour = Color.green;
 
-
+    [Header("Display")]
     [SerializeField] private float completedTaskDisplayTime = 2f;
 
     private TaskData[] tasks;
-
     private int currentTaskIndex = 0;
 
     private bool showingCompletedTask = false;
     private Coroutine completedTaskCoroutine;
 
+    // Remembers completed tasks after the UI advances.
+    private readonly HashSet<TaskID> completedTasks =
+        new HashSet<TaskID>();
+
     private void Start()
     {
         CreateTasks();
-
         currentTaskIndex = 0;
-
         UpdateTaskUI();
     }
 
@@ -103,6 +107,9 @@ public class TaskManager : MonoBehaviour
         if (showingCompletedTask)
             return;
 
+        // Record completion immediately and permanently for this session.
+        completedTasks.Add(taskID);
+
         showingCompletedTask = true;
 
         if (completedTaskCoroutine != null)
@@ -110,8 +117,7 @@ public class TaskManager : MonoBehaviour
             StopCoroutine(completedTaskCoroutine);
         }
 
-        completedTaskCoroutine =
-            StartCoroutine(ShowCompletedTask());
+        completedTaskCoroutine = StartCoroutine(ShowCompletedTask());
     }
 
     private IEnumerator ShowCompletedTask()
@@ -123,15 +129,15 @@ public class TaskManager : MonoBehaviour
         currentTaskIndex++;
 
         showingCompletedTask = false;
+        completedTaskCoroutine = null;
 
         UpdateTaskUI();
     }
 
     private void UpdateTaskUI()
     {
-        if (taskText1 == null || taskText2 == null)
+        if (taskText1 == null || taskText2 == null || tasks == null)
             return;
-
 
         if (currentTaskIndex < tasks.Length)
         {
@@ -145,13 +151,10 @@ public class TaskManager : MonoBehaviour
             taskText1.gameObject.SetActive(false);
         }
 
-
         if (currentTaskIndex + 1 < tasks.Length)
         {
             taskText2.text = tasks[currentTaskIndex + 1].taskText;
             taskText2.color = activeTaskColour;
-
-         
             taskText2.gameObject.SetActive(false);
         }
         else
@@ -163,10 +166,9 @@ public class TaskManager : MonoBehaviour
 
     private void UpdateCompletedTaskUI()
     {
-        if (taskText1 == null || taskText2 == null)
+        if (taskText1 == null || taskText2 == null || tasks == null)
             return;
 
-     
         if (currentTaskIndex < tasks.Length)
         {
             taskText1.text = tasks[currentTaskIndex].taskText;
@@ -174,25 +176,22 @@ public class TaskManager : MonoBehaviour
             taskText1.gameObject.SetActive(true);
         }
 
-
         if (currentTaskIndex + 1 < tasks.Length)
         {
             taskText2.text = tasks[currentTaskIndex + 1].taskText;
             taskText2.color = activeTaskColour;
             taskText2.gameObject.SetActive(true);
         }
+        else
+        {
+            taskText2.text = "";
+            taskText2.gameObject.SetActive(false);
+        }
     }
 
     public bool IsTaskCompleted(TaskID taskID)
     {
-        if (tasks == null)
-            return false;
-
-        if (currentTaskIndex >= tasks.Length)
-            return false;
-
-        return tasks[currentTaskIndex].taskID == taskID &&
-               showingCompletedTask;
+        return completedTasks.Contains(taskID);
     }
 
     public bool IsCurrentTask(TaskID taskID)
@@ -214,4 +213,3 @@ public class TaskManager : MonoBehaviour
         return tasks[currentTaskIndex].taskID;
     }
 }
-

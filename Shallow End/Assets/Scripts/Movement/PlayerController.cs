@@ -1,14 +1,18 @@
-using System;
+
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController Instance;
+
+    [Header("Movement")]
     [SerializeField] private float speed = 5f;
     [SerializeField] private float jumpHeight = 2f;
     [SerializeField] private float gravity = -9.8f;
+
+    [Header("Camera")]
     public Transform cameraTransform;
     public float lookSensitivity = 2f;
     public float verticalLookLimit = 90f;
@@ -18,32 +22,33 @@ public class PlayerController : MonoBehaviour
     private Vector3 velocity;
     private Vector2 lookInput;
     private float verticalRotation = 0f;
+
     public bool updateingRotation = true;
 
-
-    void Start()
-    {
-        Controller = GetComponent<CharacterController>();
-
-        
-
-        
-    }
+    [Header("Temporary Speed Effect")]
+    private float speedMultiplier = 1f;
+    private Coroutine speedBoostCoroutine;
 
     private void Awake()
     {
         Controller = GetComponent<CharacterController>();
-        Cursor.lockState = CursorLockMode.Locked;
 
+        Cursor.lockState = CursorLockMode.Locked;
         updateingRotation = true;
         Cursor.visible = false;
-       Instance = this;
+
+        Instance = this;
+    }
+
+    private void Start()
+    {
+        Controller = GetComponent<CharacterController>();
     }
 
     public void OnMove(InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
-        
+
         if (!updateingRotation)
         {
             moveInput = Vector2.zero;
@@ -60,6 +65,7 @@ public class PlayerController : MonoBehaviour
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
     }
+
     public void CPlayerControl(bool inControl)
     {
         updateingRotation = inControl;
@@ -75,6 +81,7 @@ public class PlayerController : MonoBehaviour
     {
         lookInput = context.ReadValue<Vector2>();
     }
+
     public void PlayerControl(bool PlayercanControl)
     {
         if (!PlayercanControl)
@@ -86,31 +93,65 @@ public class PlayerController : MonoBehaviour
         updateingRotation = PlayercanControl;
     }
 
-
-    void Update()
-    { 
-        if (updateingRotation)
+    // Called by FoodScript when the mushroom grants faster movement.
+    public void ApplyTemporarySpeedBoost(float multiplier, float duration)
+    {
+        if (speedBoostCoroutine != null)
         {
-            Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
-            Controller.Move(move * speed * Time.deltaTime);
-  
-            HandleLook();
+            StopCoroutine(speedBoostCoroutine);
         }
 
-        velocity.y += gravity * Time.deltaTime;
-        Controller.Move(velocity * Time.deltaTime);
+        speedBoostCoroutine = StartCoroutine(
+            SpeedBoostRoutine(multiplier, duration)
+        );
+    }
 
+    private IEnumerator SpeedBoostRoutine(float multiplier, float duration)
+    {
+        speedMultiplier = Mathf.Max(1f, multiplier);
+
+        yield return new WaitForSeconds(duration);
+
+        speedMultiplier = 1f;
+        speedBoostCoroutine = null;
     }
 
     public void HandleLook()
     {
         float mouseX = lookInput.x * lookSensitivity;
-        float mousey = lookInput.y * lookSensitivity;
-        verticalRotation -= mousey;
-        verticalRotation = Mathf.Clamp(verticalRotation, -
-        verticalLookLimit, verticalLookLimit);
-        cameraTransform.localRotation = Quaternion.Euler(verticalRotation,
-        0f, 0f);
+        float mouseY = lookInput.y * lookSensitivity;
+
+        verticalRotation -= mouseY;
+
+        verticalRotation = Mathf.Clamp(
+            verticalRotation,
+            -verticalLookLimit,
+            verticalLookLimit
+        );
+
+        cameraTransform.localRotation = Quaternion.Euler(
+            verticalRotation, 0f, 0f
+        );
+
         transform.Rotate(Vector3.up * mouseX);
+    }
+
+    private void Update()
+    {
+        if (updateingRotation)
+        {
+            Vector3 move =
+                transform.right * moveInput.x +
+                transform.forward * moveInput.y;
+
+            Controller.Move(
+                move * speed * speedMultiplier * Time.deltaTime
+            );
+
+            HandleLook();
+        }
+
+        velocity.y += gravity * Time.deltaTime;
+        Controller.Move(velocity * Time.deltaTime);
     }
 }

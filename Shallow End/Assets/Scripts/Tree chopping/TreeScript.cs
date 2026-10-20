@@ -4,17 +4,13 @@ using UnityEngine.InputSystem;
 
 public class TreeScript : MonoBehaviour
 {
-  
+    [Header("References")]
     [SerializeField] private Inventory inventory;
     [SerializeField] private TimeController timeController;
-
-  
     [SerializeField] private GameObject tree;
-
-  
     [SerializeField] private InputActionReference interactAction;
 
-
+    [Header("Tree Drops")]
     [SerializeField] private Items woodItem;
     [SerializeField] private Items coconutItem;
     [SerializeField] private Items vineItems;
@@ -23,11 +19,20 @@ public class TreeScript : MonoBehaviour
     [SerializeField] private int maximumDrop = 4;
     [SerializeField] private float dropRange = 2f;
 
+    [Header("Tree Durability")]
+    [SerializeField] private int minimumHits = 2;
+    [SerializeField] private int maximumHits = 3;
 
+    [SerializeField] private ParticleSystem hitParticleEffect;
+
+    [Header("Regrowth")]
     [SerializeField] private int ReGrow = 6;
 
     private bool isChopped;
     private DateTime choppedTime;
+
+    private int hitsRequired;
+    private int currentHits;
 
     private void OnEnable()
     {
@@ -47,6 +52,8 @@ public class TreeScript : MonoBehaviour
 
     private void Start()
     {
+        ResetTreeDurability();
+
         if (timeController != null)
         {
             timeController.OnHourChanged += CheckRegrowth;
@@ -96,20 +103,46 @@ public class TreeScript : MonoBehaviour
         if (!Physics.Raycast(ray, out RaycastHit hit, 3f))
             return;
 
-       
         if (hit.transform == transform ||
             hit.transform.IsChildOf(transform))
         {
-           
             if (!inventory.IsAxeEquipped())
             {
                 inventory.ShowInteractionMessage("I need an axe");
                 return;
             }
 
-        
+            HitTree();
+        }
+    }
+
+    private void HitTree()
+    {
+        currentHits++;
+
+     
+
+        PlayHitParticleEffect();
+
+        if (currentHits >= hitsRequired)
+        {
             ChopTree();
         }
+    }
+
+
+    private void PlayHitParticleEffect()
+    {
+ 
+
+        hitParticleEffect.Stop(
+            true,
+            ParticleSystemStopBehavior.StopEmittingAndClear
+        );
+
+        hitParticleEffect.Play();
+
+     
     }
 
     private void ChopTree()
@@ -203,9 +236,25 @@ public class TreeScript : MonoBehaviour
     {
         isChopped = false;
 
+        ResetTreeDurability();
+
         if (tree != null)
         {
             tree.SetActive(true);
         }
+    }
+
+    private void ResetTreeDurability()
+    {
+        currentHits = 0;
+
+        int min = Mathf.Max(1, minimumHits);
+        int max = Mathf.Max(min, maximumHits);
+
+        hitsRequired = UnityEngine.Random.Range(min, max + 1);
+
+        Debug.Log(
+            $"Tree durability reset. Hits required: {hitsRequired}"
+        );
     }
 }

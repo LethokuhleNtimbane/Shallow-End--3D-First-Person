@@ -1,62 +1,94 @@
+
 using System.Collections;
 using UnityEngine;
 
 public class WaterDamage : MonoBehaviour
 {
+    [Header("Damage Settings")]
     [SerializeField] private float damage = 30f;
     [SerializeField] private float SharkWaitTime = 3f;
-  
+
+    [Header("References")]
     [SerializeField] private HealthScript health;
 
+
     private bool InWater;
-    AudioManager audioManager;
+    private AudioManager audioManager;
     private Coroutine damageCoroutine;
+
+    private void Awake()
+    {
+        GameObject audioObject =
+            GameObject.FindGameObjectWithTag("Audio");
+
+        if (audioObject != null)
+        {
+            audioManager =
+                audioObject.GetComponent<AudioManager>();
+        }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
-
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player") || InWater)
         {
-            InWater = true;
-         
-
-            damageCoroutine = StartCoroutine(WaitAndDamage());
-      
+            return;
         }
 
-     
-    }
-   
-    private void Awake()
-    {
-        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+        InWater = true;
+        damageCoroutine = StartCoroutine(WaitAndDamage());
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player"))
         {
-            InWater = false;
+            return;
+        }
 
-            if (damageCoroutine != null)
-            {
-                StopCoroutine(damageCoroutine);
-                damageCoroutine = null;
-            }
+        InWater = false;
+
+        if (damageCoroutine != null)
+        {
+            StopCoroutine(damageCoroutine);
+            damageCoroutine = null;
         }
     }
 
-    IEnumerator WaitAndDamage()
+    private IEnumerator WaitAndDamage()
     {
         while (InWater)
         {
             yield return new WaitForSeconds(SharkWaitTime);
 
-            if (InWater)
+            if (!InWater)
             {
-                health.TakeDamage(damage);    
-                audioManager.PlaySfx(audioManager.LowHealth);
+                break;
             }
+
+            if (health != null)
+            {
+                health.TakeDamage(damage);
+
+             
+                if (audioManager != null)
+                {
+                    audioManager.PlaySfx(audioManager.LowHealth);
+                }
+            }
+        }
+
+        damageCoroutine = null;
+    }
+
+    private void OnDisable()
+    {
+        InWater = false;
+
+        if (damageCoroutine != null)
+        {
+            StopCoroutine(damageCoroutine);
+            damageCoroutine = null;
         }
     }
 }

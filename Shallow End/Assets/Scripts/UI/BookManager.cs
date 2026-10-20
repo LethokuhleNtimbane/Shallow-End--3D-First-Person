@@ -1,13 +1,17 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Book : MonoBehaviour
+public class BookManager : MonoBehaviour
 {
+    [Header("Book UI")]
     [SerializeField] private GameObject bookUI;
     [SerializeField] private GameObject playerHUD;
 
+    [Header("Input")]
     [SerializeField] private InputActionReference openBookAction;
 
+    [Header("Gameplay Scripts")]
     [SerializeField] private MonoBehaviour timeController;
     [SerializeField] private MonoBehaviour monsterSpawner;
     [SerializeField] private MonoBehaviour monsterAttack;
@@ -15,17 +19,31 @@ public class Book : MonoBehaviour
     [SerializeField] private DashScript dash;
     [SerializeField] private PlayerController playerController;
 
-    private bool bookOpen = false;
+    [Header("Journal Unlock")]
+    public bool journalUnlocked = false;
+
+    public static bool IsBookOpen { get; private set; }
+
+    private bool bookOpen;
+
+    private void Awake()
+    {
+        bookOpen = false;
+        IsBookOpen = false;
+    }
 
     private void OnEnable()
     {
-        if (openBookAction != null)
+        if (openBookAction != null && openBookAction.action != null)
             openBookAction.action.Enable();
     }
 
     private void OnDisable()
     {
-        if (openBookAction != null)
+        if (bookOpen)
+            CloseBook();
+
+        if (openBookAction != null && openBookAction.action != null)
             openBookAction.action.Disable();
     }
 
@@ -39,36 +57,35 @@ public class Book : MonoBehaviour
 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-
-        Time.timeScale = 1f;
     }
 
     private void Update()
     {
-        if (openBookAction == null)
+        if (openBookAction == null || openBookAction.action == null)
             return;
 
-        if (openBookAction.action.WasPressedThisFrame())
-        {
-            if (!bookOpen)
-            {
-                OpenBook();
-            }
-            else
-            {
-                CloseBook();
-            }
-        }
+        if (!openBookAction.action.enabled)
+            return;
+
+        if (!openBookAction.action.WasPressedThisFrame())
+            return;
+
+        if (!journalUnlocked)
+            return;
+
+        if (bookOpen)
+            CloseBook();
+        else
+            OpenBook();
     }
 
     public void OpenBook()
     {
-        if (bookOpen)
+        if (bookOpen || !journalUnlocked)
             return;
 
         bookOpen = true;
-
-        Time.timeScale = 0f;
+        IsBookOpen = true;
 
         if (bookUI != null)
             bookUI.SetActive(true);
@@ -76,10 +93,10 @@ public class Book : MonoBehaviour
         if (playerHUD != null)
             playerHUD.SetActive(false);
 
+        DisableGameplay();
+
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-
-        DisableGameplay();
     }
 
     public void CloseBook()
@@ -88,8 +105,7 @@ public class Book : MonoBehaviour
             return;
 
         bookOpen = false;
-
-        Time.timeScale = 1f;
+        IsBookOpen = false;
 
         if (bookUI != null)
             bookUI.SetActive(false);
@@ -97,10 +113,10 @@ public class Book : MonoBehaviour
         if (playerHUD != null)
             playerHUD.SetActive(true);
 
+        EnableGameplay();
+
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-
-        EnableGameplay();
     }
 
     private void DisableGameplay()
@@ -126,6 +142,10 @@ public class Book : MonoBehaviour
 
     private void EnableGameplay()
     {
+        // Do not resume gameplay while another interface is open.
+        if (CraftingBench.IsCraftingOpen || ChestIsOpen())
+            return;
+
         if (timeController != null)
             timeController.enabled = true;
 
@@ -143,5 +163,30 @@ public class Book : MonoBehaviour
 
         if (playerController != null)
             playerController.enabled = true;
+    }
+
+    private bool ChestIsOpen()
+    {
+        WoodenBox[] boxes = FindObjectsByType<WoodenBox>(
+            FindObjectsSortMode.None
+        );
+
+        foreach (WoodenBox box in boxes)
+        {
+            if (box != null && box.IsOpen)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void OnDestroy()
+    {
+        if (bookOpen)
+        {
+            bookOpen = false;
+            IsBookOpen = false;
+            EnableGameplay();
+        }
     }
 }

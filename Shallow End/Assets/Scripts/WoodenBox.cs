@@ -1,7 +1,9 @@
+
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class WoodenBox : MonoBehaviour
 {
@@ -10,48 +12,109 @@ public class WoodenBox : MonoBehaviour
     {
         public Items item;
         public int amount = 1;
-
-
         public int durability = -1;
     }
 
+    public bool IsOpen => isOpen;
 
+    // Tracks rewards only during the current playthrough.
+    private static bool rewardsClaimedThisPlaythrough = false;
+
+    public static void StartNewGame()
+    {
+        rewardsClaimedThisPlaythrough = false;
+    }
+
+    [Header("Interaction")]
     [SerializeField] private InputActionReference interactAction;
     [SerializeField] private GameObject interactionUI;
 
-    
-
+    [Header("Chest UI")]
+    [SerializeField] private GameObject chestUI;
+    [SerializeField] private GameObject chestBackground;
     [SerializeField] private GameObject gameUI;
+    [SerializeField] private GameObject[] hudToHideWhileOpen;
 
-
+    [Header("Chest Storage")]
+    [SerializeField] private List<Slot> chestSlots = new List<Slot>();
     [SerializeField] private Inventory inventory;
 
+    [SerializeField]
+    private string fullInventoryMessage = "Your hotbar is full!";
 
-    [SerializeField] private List<ChestReward> firstOpenRewards = new List<ChestReward>();
-
-
-    [SerializeField] private GameObject journalObject;
-
+    [Header("First-Time Rewards")]
+    [SerializeField]
+    private List<ChestReward> firstOpenRewards =
+        new List<ChestReward>();
 
     [SerializeField] private GameObject firstOpenGameObject;
 
+    [Header("Journal")]
+    [SerializeField] private GameObject journalObject;
+    [SerializeField] private BookManager bookManager;
 
+    [Header("Tasks")]
     [SerializeField] private TaskManager taskManager;
 
-
+    [Header("Warnings")]
+    [SerializeField] private GameObject warningObject;
     [SerializeField] private TextMeshProUGUI warningText;
     [SerializeField] private float warningDuration = 2f;
-    [SerializeField] private GameObject bookManager;
-    [SerializeField] private string fullInventoryMessage = "My hotbar is full";
 
-    private bool playerNearby;
-    private bool boxOpen;
-    private bool hasBeenOpened;
+    [Header("Gameplay Scripts")]
+    [SerializeField] private PlayerController playerController;
+    [SerializeField] private DashScript dashScript;
+    [SerializeField] private HealthScript healthScript;
+    [SerializeField] private TimeController timeController;
+    [SerializeField] private Monster monster;
+    [SerializeField] private MonsterAttack monsterAttack;
+
+    private bool playerInRange;
+    private bool isOpen;
     private float warningTimer;
+
+    private void Awake()
+    {
+        if (chestUI != null)
+        {
+            chestSlots.Clear();
+            chestSlots.AddRange(
+                chestUI.GetComponentsInChildren<Slot>(true)
+            );
+        }
+
+        if (inventory == null)
+            inventory = FindFirstObjectByType<Inventory>();
+
+        if (bookManager == null)
+            bookManager = FindFirstObjectByType<BookManager>();
+
+        if (taskManager == null)
+            taskManager = FindFirstObjectByType<TaskManager>();
+    }
+
+    private void OnEnable()
+    {
+        if (interactAction != null && interactAction.action != null)
+            interactAction.action.Enable();
+    }
+
+    private void OnDisable()
+    {
+        if (interactAction != null && interactAction.action != null)
+            interactAction.action.Disable();
+
+        if (isOpen)
+            CloseBox();
+    }
 
     private void Start()
     {
+        if (chestUI != null)
+            chestUI.SetActive(false);
 
+        if (chestBackground != null)
+            chestBackground.SetActive(false);
 
         if (interactionUI != null)
             interactionUI.SetActive(false);
@@ -62,20 +125,15 @@ public class WoodenBox : MonoBehaviour
         if (firstOpenGameObject != null)
             firstOpenGameObject.SetActive(false);
 
+        if (warningObject != null)
+            warningObject.SetActive(false);
+
         if (warningText != null)
             warningText.gameObject.SetActive(false);
-    }
 
-    private void OnEnable()
-    {
-        if (interactAction != null)
-            interactAction.action.Enable();
-    }
-
-    private void OnDisable()
-    {
-        if (interactAction != null)
-            interactAction.action.Disable();
+        // Keep the hotbar visible while the chest is open.
+        if (gameUI != null)
+            gameUI.SetActive(true);
     }
 
     private void Update()
@@ -84,59 +142,197 @@ public class WoodenBox : MonoBehaviour
         {
             warningTimer -= Time.deltaTime;
 
-            if (warningTimer <= 0f && warningText != null)
-                warningText.gameObject.SetActive(false);
+            if (warningTimer <= 0f)
+                HideWarning();
         }
 
-        if (!playerNearby)
+        if (!playerInRange || interactAction == null)
             return;
 
-        if (interactAction != null && interactAction.action.WasPressedThisFrame())
+        if (interactAction.action.WasPressedThisFrame())
         {
-            if (boxOpen)
-            {
+            if (isOpen)
                 CloseBox();
-            }
             else
-            {
                 TryOpenBox();
-            }
         }
     }
 
     private void TryOpenBox()
     {
+        if (isOpen)
+            return;
 
-        if (!HasSpokenToThomas())
+        // The player must speak to Thomas first.
+        if (taskManager != null &&
+            !taskManager.IsTaskCompleted(
+                TaskManager.TaskID.SpeakToThomasFirst))
         {
-            ShowLockedMessage();
+            ShowWarning("I shouldn't be snooping around.");
+            return;
+        }
+
+        // Only check reward space if rewards have not been claimed.
+        if (!rewardsClaimedThisPlaythrough && !CanFitAllRewards())
+        {
+            ShowWarning(fullInventoryMessage);
             return;
         }
 
         OpenBox();
     }
 
-    private bool HasSpokenToThomas()
+    private void OpenBox()
     {
-        if (taskManager == null)
-            return false;
+        if (isOpen)
+            return;
 
-    
-        if (taskManager.IsTaskCompleted(
-            TaskManager.TaskID.SpeakToThomasFirst))
+        isOpen = true;
+
+        if (chestUI != null)
+            chestUI.SetActive(true);
+
+        if (chestBackground != null)
+            chestBackground.SetActive(true);
+
+        if (interactionUI != null)
+            interactionUI.SetActive(false);
+
+        if (gameUI != null)
+            gameUI.SetActive(true);
+
+        if (inventory != null)
+            inventory.RegisterStorageSlots(chestSlots);
+
+        if (hudToHideWhileOpen != null)
         {
-            return true;
+            foreach (GameObject hudObject in hudToHideWhileOpen)
+            {
+                if (hudObject != null)
+                    hudObject.SetActive(false);
+            }
         }
 
+        DisableGameplay();
 
-        if (taskManager.IsCurrentTask(
-            TaskManager.TaskID.SearchWoodenBox))
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        // Award the first-time rewards only once per playthrough.
+        if (!rewardsClaimedThisPlaythrough)
         {
-            return true;
-        }
+            GiveFirstOpenRewards();
 
-        return false;
+            // Mark rewards as claimed for this playthrough.
+            rewardsClaimedThisPlaythrough = true;
+
+            // Enable the object that tracks book opening.
+            if (journalObject != null)
+                journalObject.SetActive(true);
+
+            // Enable the UI that tells the player they can open the book.
+            if (firstOpenGameObject != null)
+                firstOpenGameObject.SetActive(true);
+
+            if (bookManager != null)
+            {
+                bookManager.journalUnlocked = true;
+                bookManager.gameObject.SetActive(true);
+            }
+
+            if (taskManager != null)
+            {
+                taskManager.CompleteTask(
+                    TaskManager.TaskID.SearchWoodenBox
+                );
+            }
+        }
     }
+
+    public void CloseBox()
+    {
+        if (!isOpen)
+            return;
+
+        isOpen = false;
+
+        if (inventory != null)
+            inventory.UnregisterStorageSlots();
+
+        if (chestUI != null)
+            chestUI.SetActive(false);
+
+        if (chestBackground != null)
+            chestBackground.SetActive(false);
+
+        // Keep the hotbar visible.
+        if (gameUI != null)
+            gameUI.SetActive(true);
+
+        if (hudToHideWhileOpen != null)
+        {
+            foreach (GameObject hudObject in hudToHideWhileOpen)
+            {
+                if (hudObject != null)
+                    hudObject.SetActive(true);
+            }
+        }
+
+        EnableGameplay();
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        if (interactionUI != null && playerInRange)
+            interactionUI.SetActive(true);
+    }
+
+    private void DisableGameplay()
+    {
+        if (timeController != null)
+            timeController.enabled = false;
+
+        if (healthScript != null)
+            healthScript.enabled = false;
+
+        if (dashScript != null)
+            dashScript.enabled = false;
+
+        if (playerController != null)
+            playerController.enabled = false;
+
+        if (monster != null)
+            monster.enabled = false;
+
+        if (monsterAttack != null)
+            monsterAttack.enabled = false;
+    }
+
+    private void EnableGameplay()
+    {
+        // Don't resume gameplay if another menu is open.
+        if (CraftingBench.IsCraftingOpen || BookManager.IsBookOpen)
+            return;
+
+        if (timeController != null)
+            timeController.enabled = true;
+
+        if (healthScript != null)
+            healthScript.enabled = true;
+
+        if (dashScript != null)
+            dashScript.enabled = true;
+
+        if (playerController != null)
+            playerController.enabled = true;
+
+        if (monster != null)
+            monster.enabled = true;
+
+        if (monsterAttack != null)
+            monsterAttack.enabled = true;
+    }
+
     private bool CanFitAllRewards()
     {
         if (inventory == null)
@@ -147,130 +343,63 @@ public class WoodenBox : MonoBehaviour
 
         foreach (ChestReward reward in firstOpenRewards)
         {
-            if (reward == null || reward.item == null)
+            if (reward == null ||
+                reward.item == null ||
+                reward.amount <= 0)
+            {
                 continue;
+            }
 
             items.Add(reward.item);
-            amounts.Add(Mathf.Max(1, reward.amount));
+            amounts.Add(reward.amount);
         }
 
         return inventory.CanFitItems(items, amounts);
     }
-    private void ShowFullInventoryMessage()
-    {
-        if (warningText == null)
-            return;
-
-        warningText.text = fullInventoryMessage;
-        warningText.gameObject.SetActive(true);
-
-        warningTimer = warningDuration;
-    }
-    private void OpenBox()
-    {
-
-        if (!CanFitAllRewards())
-        {
-            ShowFullInventoryMessage();
-            return;
-        }
-
-        boxOpen = true;
-
-        if (interactionUI != null)
-            interactionUI.SetActive(false);
-
-        if (gameUI != null)
-            gameUI.SetActive(false);
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        if (!hasBeenOpened)
-        {
-            hasBeenOpened = true;
-
-            GiveFirstOpenRewards();
-
-            if (journalObject != null)
-                journalObject.SetActive(true);
-
-            if (bookManager != null)
-            {
-                bookManager.SetActive(true);
-            }
-
-            if (firstOpenGameObject != null)
-                firstOpenGameObject.SetActive(true);
-
-            if (taskManager != null)
-            {
-                taskManager.CompleteTask(
-                    TaskManager.TaskID.SearchWoodenBox
-                );
-            }
-        }
-    }
-    private void CloseBox()
-    {
-        boxOpen = false;
-
-        if (gameUI != null)
-            gameUI.SetActive(true);
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        if (playerNearby && interactionUI != null)
-            interactionUI.SetActive(true);
-    }
 
     private void GiveFirstOpenRewards()
     {
-        if (inventory == null)
-        {
-
+        if (inventory == null || firstOpenRewards == null)
             return;
-        }
 
         foreach (ChestReward reward in firstOpenRewards)
         {
-            if (reward == null || reward.item == null)
-                continue;
-
-            int amount = Mathf.Max(1, reward.amount);
-
-            for (int i = 0; i < amount; i++)
+            if (reward == null ||
+                reward.item == null ||
+                reward.amount <= 0)
             {
-  
-                if (reward.item.hasDurability)
-                {
-                    inventory.AddItem(
-                        reward.item,
-                        1,
-                        reward.durability
-                    );
-                }
-                else
-                {
-                    inventory.AddItem(
-                        reward.item,
-                        1
-                    );
-                }
+                continue;
             }
+
+            inventory.AddItem(
+                reward.item,
+                reward.amount,
+                reward.durability
+            );
         }
     }
 
-    private void ShowLockedMessage()
+    private void ShowWarning(string message)
     {
-        if (warningText == null)
-            return;
+        if (warningText != null)
+        {
+            warningText.text = message;
+            warningText.gameObject.SetActive(true);
+        }
 
-        warningText.text = "I shouldn't be snooping around";
-        warningText.gameObject.SetActive(true);
+        if (warningObject != null)
+            warningObject.SetActive(true);
 
         warningTimer = warningDuration;
+    }
+
+    private void HideWarning()
+    {
+        if (warningText != null)
+            warningText.gameObject.SetActive(false);
+
+        if (warningObject != null)
+            warningObject.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -278,9 +407,9 @@ public class WoodenBox : MonoBehaviour
         if (!other.CompareTag("Player"))
             return;
 
-        playerNearby = true;
+        playerInRange = true;
 
-        if (!boxOpen && interactionUI != null)
+        if (!isOpen && interactionUI != null)
             interactionUI.SetActive(true);
     }
 
@@ -289,17 +418,18 @@ public class WoodenBox : MonoBehaviour
         if (!other.CompareTag("Player"))
             return;
 
-        playerNearby = false;
+        playerInRange = false;
 
         if (interactionUI != null)
             interactionUI.SetActive(false);
 
-        if (boxOpen)
+        if (isOpen)
             CloseBox();
     }
 
-    public bool IsOpen()
+    private void OnDestroy()
     {
-        return boxOpen;
+        if (isOpen && inventory != null)
+            inventory.UnregisterStorageSlots();
     }
 }
