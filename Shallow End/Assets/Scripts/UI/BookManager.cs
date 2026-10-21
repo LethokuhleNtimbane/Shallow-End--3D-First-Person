@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -22,9 +21,13 @@ public class BookManager : MonoBehaviour
     [Header("Journal Unlock")]
     public bool journalUnlocked = false;
 
+    [Header("Task Progress")]
+    [SerializeField] private TaskManager taskManager;
+
     public static bool IsBookOpen { get; private set; }
 
     private bool bookOpen;
+    private bool hasReadJournal;
 
     private void Awake()
     {
@@ -97,6 +100,14 @@ public class BookManager : MonoBehaviour
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+
+        if (!hasReadJournal)
+        {
+            hasReadJournal = true;
+
+            if (taskManager != null)
+                taskManager.RegisterJournalRead();
+        }
     }
 
     public void CloseBook()
@@ -142,7 +153,6 @@ public class BookManager : MonoBehaviour
 
     private void EnableGameplay()
     {
-        // Do not resume gameplay while another interface is open.
         if (CraftingBench.IsCraftingOpen || ChestIsOpen())
             return;
 

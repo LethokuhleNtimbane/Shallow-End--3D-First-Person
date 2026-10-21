@@ -1,9 +1,9 @@
+
 using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class ForDialog : MonoBehaviour
 {
@@ -11,10 +11,7 @@ public class ForDialog : MonoBehaviour
     public class DialogueLine
     {
         public string speakerName;
-
-
         public string dialogueText;
-
         public bool isThomas;
     }
 
@@ -37,7 +34,6 @@ public class ForDialog : MonoBehaviour
 
     [SerializeField] private float timeBetweenCharacters = 0.03f;
 
-    // Night-time GameObject
     [SerializeField] private TimeController timeController;
     [SerializeField] private GameObject ThomasMontgomerey;
 
@@ -48,7 +44,6 @@ public class ForDialog : MonoBehaviour
     private bool isTyping;
 
     private Coroutine typingCoroutine;
-
     private Action dialogueFinishedCallback;
 
     private bool healthbarWasActive;
@@ -59,17 +54,13 @@ public class ForDialog : MonoBehaviour
     private void OnEnable()
     {
         if (advanceDialogueAction != null)
-        {
             advanceDialogueAction.action.Enable();
-        }
     }
 
     private void OnDisable()
     {
         if (advanceDialogueAction != null)
-        {
             advanceDialogueAction.action.Disable();
-        }
     }
 
     private void Start()
@@ -93,39 +84,31 @@ public class ForDialog : MonoBehaviour
             speakerText.text = "";
 
         if (dialogueText != null)
-            dialogueText.text = "";
-
-       
-        if (timeController == null)
         {
-            timeController = TimeController.instance;
+            dialogueText.text = "";
+            dialogueText.maxVisibleCharacters = int.MaxValue;
         }
+
+        if (timeController == null)
+            timeController = TimeController.instance;
 
         UpdateNightObject();
     }
 
     private void Update()
     {
-     
         UpdateNightObject();
 
-        if (!dialogueActive)
-            return;
-
-        if (advanceDialogueAction == null)
+        if (!dialogueActive || advanceDialogueAction == null)
             return;
 
         if (!advanceDialogueAction.action.WasPressedThisFrame())
             return;
 
         if (isTyping)
-        {
             FinishTyping();
-        }
         else
-        {
             ShowNextLine();
-        }
     }
 
     private void UpdateNightObject()
@@ -134,9 +117,7 @@ public class ForDialog : MonoBehaviour
             return;
 
         if (timeController == null)
-        {
             timeController = TimeController.instance;
-        }
 
         if (timeController == null)
             return;
@@ -144,9 +125,7 @@ public class ForDialog : MonoBehaviour
         float currentHour =
             (float)timeController.CurrentTime.TimeOfDay.TotalHours;
 
-        bool isNight =
-            currentHour >= 21f ||
-            currentHour < 6f;
+        bool isNight = currentHour >= 21f || currentHour < 6f;
 
         ThomasMontgomerey.SetActive(!isNight);
     }
@@ -155,16 +134,12 @@ public class ForDialog : MonoBehaviour
         DialogueLine[] dialogue,
         Action onComplete = null)
     {
-        if (dialogue == null || dialogue.Length == 0)
-            return;
-
-        if (dialogueActive)
+        if (dialogue == null || dialogue.Length == 0 || dialogueActive)
             return;
 
         currentDialogue = dialogue;
         currentLineIndex = 0;
         dialogueFinishedCallback = onComplete;
-
         dialogueActive = true;
 
         SaveObjectStates();
@@ -184,66 +159,69 @@ public class ForDialog : MonoBehaviour
 
     private void ShowCurrentLine()
     {
-        if (currentDialogue == null)
+        if (!dialogueActive || currentDialogue == null)
             return;
 
-        if (currentLineIndex >= currentDialogue.Length)
+        if (currentLineIndex < 0 || currentLineIndex >= currentDialogue.Length)
         {
             EndDialogue();
             return;
         }
 
-        DialogueLine line =
-            currentDialogue[currentLineIndex];
-
-        if (speakerText != null)
-        {
-            speakerText.text = line.speakerName;
-        }
-
-        UpdatePortrait(line.isThomas);
-
         if (typingCoroutine != null)
         {
             StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
         }
 
-        typingCoroutine =
-            StartCoroutine(
-                TypeDialogue(line.dialogueText)
-            );
+        isTyping = false;
+
+        DialogueLine line = currentDialogue[currentLineIndex];
+
+        if (speakerText != null)
+            speakerText.text = line.speakerName;
+
+        UpdatePortrait(line.isThomas);
+
+        if (dialogueText != null)
+        {
+            dialogueText.text = line.dialogueText ?? "";
+            dialogueText.maxVisibleCharacters = 0;
+            dialogueText.ForceMeshUpdate();
+        }
+
+        typingCoroutine = StartCoroutine(TypeDialogue());
     }
 
-    private IEnumerator TypeDialogue(string text)
+    private IEnumerator TypeDialogue()
     {
         isTyping = true;
 
         if (dialogueText == null)
         {
             isTyping = false;
+            typingCoroutine = null;
             yield break;
         }
 
-        dialogueText.text = text;
-
         dialogueText.ForceMeshUpdate();
 
-        dialogueText.maxVisibleCharacters = 0;
-
-        int characterCount =
-            dialogueText.textInfo.characterCount;
+        int characterCount = dialogueText.textInfo.characterCount;
 
         for (int i = 0; i < characterCount; i++)
         {
+            if (!dialogueActive)
+                yield break;
+
             dialogueText.maxVisibleCharacters = i + 1;
 
-            yield return new WaitForSeconds(
-                timeBetweenCharacters
-            );
+            if (timeBetweenCharacters > 0f)
+                yield return new WaitForSeconds(timeBetweenCharacters);
+            else
+                yield return null;
         }
 
-        dialogueText.maxVisibleCharacters =
-            characterCount;
+        dialogueText.maxVisibleCharacters = int.MaxValue;
 
         isTyping = false;
         typingCoroutine = null;
@@ -261,24 +239,17 @@ public class ForDialog : MonoBehaviour
         }
 
         if (dialogueText != null)
-        {
-            dialogueText.maxVisibleCharacters =
-                int.MaxValue;
-        }
+            dialogueText.maxVisibleCharacters = int.MaxValue;
 
         isTyping = false;
     }
 
     private void ShowNextLine()
     {
-        currentLineIndex++;
-
-        if (currentLineIndex >= currentDialogue.Length)
-        {
-            EndDialogue();
+        if (!dialogueActive || currentDialogue == null)
             return;
-        }
 
+        currentLineIndex++;
         ShowCurrentLine();
     }
 
@@ -297,16 +268,13 @@ public class ForDialog : MonoBehaviour
             healthbarWasActive = healthbar.activeSelf;
 
         if (overheadText != null)
-            overheadTextWasActive =
-                overheadText.activeSelf;
+            overheadTextWasActive = overheadText.activeSelf;
 
         if (imageOverlap != null)
-            imageOverlapWasActive =
-                imageOverlap.activeSelf;
+            imageOverlapWasActive = imageOverlap.activeSelf;
 
         if (centrePointer != null)
-            centrePointerWasActive =
-                centrePointer.activeSelf;
+            centrePointerWasActive = centrePointer.activeSelf;
     }
 
     private void HideGameplayObjects()
@@ -356,15 +324,12 @@ public class ForDialog : MonoBehaviour
         if (dialogueText != null)
         {
             dialogueText.text = "";
-            dialogueText.maxVisibleCharacters =
-                int.MaxValue;
+            dialogueText.maxVisibleCharacters = int.MaxValue;
         }
 
         RestoreGameplayObjects();
 
-        Action callback =
-            dialogueFinishedCallback;
-
+        Action callback = dialogueFinishedCallback;
         dialogueFinishedCallback = null;
 
         callback?.Invoke();
@@ -373,24 +338,16 @@ public class ForDialog : MonoBehaviour
     private void RestoreGameplayObjects()
     {
         if (healthbar != null)
-            healthbar.SetActive(
-                healthbarWasActive
-            );
+            healthbar.SetActive(healthbarWasActive);
 
         if (overheadText != null)
-            overheadText.SetActive(
-                overheadTextWasActive
-            );
+            overheadText.SetActive(overheadTextWasActive);
 
         if (imageOverlap != null)
-            imageOverlap.SetActive(
-                imageOverlapWasActive
-            );
+            imageOverlap.SetActive(imageOverlapWasActive);
 
         if (centrePointer != null)
-            centrePointer.SetActive(
-                centrePointerWasActive
-            );
+            centrePointer.SetActive(centrePointerWasActive);
     }
 
     public bool IsDialogueActive()

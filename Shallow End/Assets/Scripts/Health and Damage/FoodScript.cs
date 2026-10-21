@@ -40,7 +40,6 @@ public class FoodScript : MonoBehaviour
     [Range(0f, 100f)]
     [SerializeField] private float waterHungerLossPercent = 65f;
 
- 
     [System.Serializable]
     public class FoodItem
     {
@@ -145,8 +144,6 @@ public class FoodScript : MonoBehaviour
 
     private void Update()
     {
-        // Water bucket interactions are only possible when the
-        // corresponding bucket is selected in the hotbar.
         Items selectedItem = inventory != null
             ? inventory.GetHotbarItem()
             : null;
@@ -191,7 +188,19 @@ public class FoodScript : MonoBehaviour
         if (waterLayer == -1)
             return;
 
-        // Only objects on the Water layer can fill the bucket.
+        // Make sure the selected empty bucket has durability.
+        int currentDurability = inventory.GetEquippedDurability();
+
+        if (currentDurability < 0)
+        {
+            Debug.LogWarning(
+                "Water bucket has no durability configured. " +
+                "Enable durability on the empty bucket Items asset."
+            );
+            return;
+        }
+
+        // Check whether the player is looking at water.
         Ray ray = playerCamera.ViewportPointToRay(
             new Vector3(0.5f, 0.5f, 0f)
         );
@@ -208,17 +217,48 @@ public class FoodScript : MonoBehaviour
             return;
         }
 
-        // Replace one empty bucket with one filled bucket.
-        inventory.RemoveHotbarItem(1);
-        inventory.AddItem(filledWaterBucketItem, 1);
+        // Fetching water costs one durability.
+        int remainingDurability = currentDurability - 1;
 
-        Debug.Log("Water bucket filled!");
+        // If the bucket uses its final durability point,
+        // it breaks instead of producing a filled bucket.
+        inventory.RemoveHotbarItem(1);
+
+        if (remainingDurability <= 0)
+        {
+            Debug.Log("The empty water bucket broke while fetching water!");
+            return;
+        }
+
+        // Create the filled bucket with the remaining durability.
+        inventory.AddItem(
+            filledWaterBucketItem,
+            1,
+            remainingDurability
+        );
+
+        Debug.Log(
+            "Water bucket filled! Remaining durability: " +
+            remainingDurability
+        );
     }
 
     private void DrinkWater()
     {
         if (inventory == null || healthScript == null)
             return;
+
+        // Read the filled bucket's current durability.
+        int currentDurability = inventory.GetEquippedDurability();
+
+        if (currentDurability < 0)
+        {
+            Debug.LogWarning(
+                "Filled water bucket has no durability configured. " +
+                "Enable durability on the filled bucket Items asset."
+            );
+            return;
+        }
 
         // Restore thirst.
         healthScript.AddThirst(waterThirstIncrease);
@@ -233,12 +273,19 @@ public class FoodScript : MonoBehaviour
         healthScript.SetHealth(newHealth);
         healthScript.RemoveHunger(hungerToRemove);
 
-        // Empty the bucket after drinking.
+        // Remove the filled bucket without consuming durability.
         inventory.RemoveHotbarItem(1);
-        inventory.AddItem(emptyWaterBucketItem, 1);
+
+        // Return the same bucket as empty, keeping its durability.
+        inventory.AddItem(
+            emptyWaterBucketItem,
+            1,
+            currentDurability
+        );
 
         Debug.Log(
-            "Drank water. Thirst increased; health and hunger decreased."
+            "Drank water. Bucket durability preserved at: " +
+            currentDurability
         );
     }
 

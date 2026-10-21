@@ -79,6 +79,7 @@ public class Interaction : MonoBehaviour
         InteractWithThomas();
     }
 
+
     private void InteractWithThomas()
     {
         if (taskManager == null || dialogueManager == null)
@@ -97,12 +98,31 @@ public class Interaction : MonoBehaviour
         if (taskManager.IsCurrentTask(
             TaskManager.TaskID.SpeakToThomasSecond))
         {
-            StartSecondDialogue();
+            if (HasCompletedRequiredTasks())
+            {
+                StartSecondDialogue();
+            }
+            else
+            {
+                ShowRandomDialogue();
+            }
+
             return;
         }
 
         ShowRandomDialogue();
     }
+
+    private bool HasCompletedRequiredTasks()
+    {
+        return taskManager.IsTaskCompleted(
+                   TaskManager.TaskID.SurviveNight)
+            && taskManager.IsTaskCompleted(
+                   TaskManager.TaskID.CraftTent)
+            && taskManager.IsTaskCompleted(
+                   TaskManager.TaskID.BuildRaft);
+    }
+
 
     private void DisableGameplay()
     {
@@ -245,28 +265,28 @@ public class Interaction : MonoBehaviour
             {
                 speakerName = "Player",
                 dialogueText = "WHAT! I cant stay here your 20 years, there must be a way off this island",
-                isThomas = true
+                isThomas = false
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Thomas",
                 dialogueText = "Dont be so worried, ill teach you how to make your way around here",
-                isThomas = false
+                isThomas = true
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Thomas",
                 dialogueText = "Use your WASD keys to move around and head to that chest behind me, it's got my journal in it and an axe you will need to cut down trees to make  tent.",
-                isThomas = false
+                isThomas = true
             },
 
             new ForDialog.DialogueLine
             {
                 speakerName = "Thomas",
                 dialogueText = "Once you have the axe just 'Left Click' on a tree to cut it down. 'Left Click' is also how you interact and use other items and food.",
-                isThomas = false
+                isThomas = true
             },
         };
 
