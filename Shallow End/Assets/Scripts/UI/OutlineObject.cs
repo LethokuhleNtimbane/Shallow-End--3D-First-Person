@@ -13,11 +13,9 @@ public class LookAtObject : MonoBehaviour
     [SerializeField] private TextMeshProUGUI objectText;
 
 
-    [SerializeField] private int lookedAtLayer;
-
 
     private GameObject currentObject;
-    private int originalLayer;
+
 
     private void Start()
     {
@@ -108,15 +106,41 @@ public class LookAtObject : MonoBehaviour
             }
             if (hitObject.CompareTag("Chest"))
             {
-                LookAtObjectFound(hitObject, "To open");
+                LookAtObjectFound(hitObject, "To open Chest");
                 return;
             }
+            if (hitObject.CompareTag("Mushroom"))
+            {
+                LookAtObjectFound(hitObject, "To pickup Mushroom");
+                return;
+            }
+
 
 
 
             if (hitObject.CompareTag("Fireplace"))
             {
                 LookAtObjectFound(hitObject, "To use Fireplace");
+                return;
+            }
+            if (hitObject.CompareTag("Bucket"))
+            {
+                LookAtObjectFound(hitObject, "To pickup Bucket");
+                return;
+            }
+            if (hitObject.CompareTag("WaterBucket"))
+            {
+                LookAtObjectFound(hitObject, "To pickup Water Bucket");
+                return;
+            }
+            if (hitObject.CompareTag("Fish"))
+            {
+                LookAtObjectFound(hitObject, "To pickup Fish");
+                return;
+            }
+            if (hitObject.CompareTag("FishRod"))
+            {
+                LookAtObjectFound(hitObject, "To pickup Fishing Rod");
                 return;
             }
         }
@@ -134,8 +158,6 @@ public class LookAtObject : MonoBehaviour
 
             currentObject = target;
 
-     
-            originalLayer = currentObject.layer;
 
       
             currentObject.layer = 9;
@@ -156,7 +178,7 @@ public class LookAtObject : MonoBehaviour
         if (currentObject != null)
         {
            
-            currentObject.layer = originalLayer;
+
 
             currentObject = null;
         }

@@ -106,7 +106,7 @@ GameObject:
   - component: {fileID: 5626440137972685794}
   m_Layer: 9
   m_Name: Coconutblend (1)
-  m_TagString: Food Item
+  m_TagString: Coconut
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

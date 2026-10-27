@@ -50,7 +50,7 @@ Material:
     - _WaterDepth: 5.81
     m_Colors:
     - _DeepWater: {r: 0.003921569, g: 0.29411766, b: 0.5019608, a: 1}
-    - _FoamColour: {r: 1, g: 1, b: 1, a: 0.7686275}
+    - _FoamColour: {r: 1, g: 1, b: 1, a: 0.21568628}
     - _ShallowWater: {r: 0.007843138, g: 0.6862745, b: 0.74509805, a: 0.6313726}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
