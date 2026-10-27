@@ -13,17 +13,10 @@ MonoBehaviour:
   m_Name: Fish
   m_EditorClassIdentifier: Assembly-CSharp::Items
   itemName: Fish
-<<<<<<< HEAD
   icon: {fileID: 21300000, guid: f2df8152c65182f47b614693543ca154, type: 3}
   maxStack: 1
   ItenPrefab: {fileID: 8425896003759031763, guid: f34262c71caf8064ab9eaf32c6b442f5, type: 3}
   handItem: {fileID: 8425896003759031763, guid: f34262c71caf8064ab9eaf32c6b442f5, type: 3}
-=======
-  icon: {fileID: 21300000, guid: cb89bf74b548ea248bac9e1bf21d4c3c, type: 3}
-  maxStack: 12
-  ItenPrefab: {fileID: 4864983374408004418, guid: a7193b9f36e67794e89bf9555069ddae, type: 3}
-  handItem: {fileID: 4864983374408004418, guid: a7193b9f36e67794e89bf9555069ddae, type: 3}
->>>>>>> parent of 12031d4 (19 October)
   isFood: 1
   healthRegenerate: 0
   hasDurability: 1
