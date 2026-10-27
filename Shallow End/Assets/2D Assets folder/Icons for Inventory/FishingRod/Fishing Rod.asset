@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Fishing Rod
   m_EditorClassIdentifier: Assembly-CSharp::Items
   itemName: Fishing Rod
-  icon: {fileID: 21300000, guid: a2a451a4c8fb62445a5848caab052507, type: 3}
+  icon: {fileID: 21300000, guid: 40b0d78072ebc4248adbb79bfbe96403, type: 3}
   maxStack: 1
   ItenPrefab: {fileID: 2409946005379730263, guid: df56aaa573da65940a800e679cfa9ba6, type: 3}
   handItem: {fileID: 2409946005379730263, guid: df56aaa573da65940a800e679cfa9ba6, type: 3}
