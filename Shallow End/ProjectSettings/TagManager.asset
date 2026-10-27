@@ -25,6 +25,11 @@ TagManager:
   - Wood
   - Bed
   - ProtectionZone
+  - Bucket
+  - Mushroom
+  - WaterBucket
+  - Fish
+  - FishRod
   layers:
   - Default
   - TransparentFX

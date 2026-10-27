@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -6,8 +7,10 @@ public class PauseScript : MonoBehaviour
 {
     public static PauseScript Instance;
 
+    [Header("Pause Menu")]
     [SerializeField] private GameObject pauseMenu;
 
+    [Header("Gameplay Scripts")]
     [SerializeField] private TimeController timeController;
     [SerializeField] private Monster monster;
     [SerializeField] private PlayerController playerController;
@@ -20,6 +23,7 @@ public class PauseScript : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+
         Time.timeScale = 1f;
     }
 
@@ -52,22 +56,35 @@ public class PauseScript : MonoBehaviour
         }
     }
 
+    // Return to the main menu.
+    // This does NOT reset the current playthrough.
     public void MainMenu()
     {
         Time.timeScale = 1f;
 
+        isPaused = false;
+        WoodenBox.StartNewGame();
         SceneManager.LoadScene("MainMenuScene");
     }
 
+    // Restart the current gameplay scene.
+    // This starts a new playthrough.
     public void RestartScene()
     {
         Time.timeScale = 1f;
 
+        isPaused = false;
+
+        // Reset chest rewards and journal unlock.
+        WoodenBox.StartNewGame();
+
+        // Reload the current gameplay scene.
         SceneManager.LoadScene(
             SceneManager.GetActiveScene().buildIndex
         );
     }
 
+    // Pause the game.
     public void PauseGame()
     {
         if (isPaused)
@@ -96,6 +113,7 @@ public class PauseScript : MonoBehaviour
         Cursor.visible = true;
     }
 
+    // Resume the game.
     public void ResumeGame()
     {
         if (!isPaused)

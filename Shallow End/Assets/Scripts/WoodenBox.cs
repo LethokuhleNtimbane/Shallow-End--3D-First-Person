@@ -17,12 +17,17 @@ public class WoodenBox : MonoBehaviour
 
     public bool IsOpen => isOpen;
 
-    // Tracks rewards only during the current playthrough.
+    // Tracks rewards during the current playthrough.
     private static bool rewardsClaimedThisPlaythrough = false;
 
+    // Tracks whether the journal has been unlocked.
+    private static bool journalUnlockedThisPlaythrough = false;
+
+    // Call this when starting a completely new game.
     public static void StartNewGame()
     {
         rewardsClaimedThisPlaythrough = false;
+        journalUnlockedThisPlaythrough = false;
     }
 
     [Header("Interaction")]
@@ -84,6 +89,7 @@ public class WoodenBox : MonoBehaviour
         if (chestUI != null)
         {
             chestSlots.Clear();
+
             chestSlots.AddRange(
                 chestUI.GetComponentsInChildren<Slot>(true)
             );
@@ -140,9 +146,15 @@ public class WoodenBox : MonoBehaviour
         if (warningText != null)
             warningText.gameObject.SetActive(false);
 
-        // Keep the hotbar visible while the chest is open.
+        // Keep the hotbar visible.
         if (gameUI != null)
             gameUI.SetActive(true);
+
+        // Restore the journal if it was already unlocked.
+        if (journalUnlockedThisPlaythrough)
+        {
+            UnlockJournal();
+        }
     }
 
     private void Update()
@@ -182,7 +194,8 @@ public class WoodenBox : MonoBehaviour
         }
 
         // Only check reward space if rewards have not been claimed.
-        if (!rewardsClaimedThisPlaythrough && !CanFitAllRewards())
+        if (!rewardsClaimedThisPlaythrough &&
+            !CanFitAllRewards())
         {
             ShowWarning(fullInventoryMessage);
             return;
@@ -228,26 +241,12 @@ public class WoodenBox : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Award the first-time rewards only once per playthrough.
+        // Give first-time rewards only once per playthrough.
         if (!rewardsClaimedThisPlaythrough)
         {
             GiveFirstOpenRewards();
 
             rewardsClaimedThisPlaythrough = true;
-
-            // Enable the object that tracks book opening.
-            if (journalObject != null)
-                journalObject.SetActive(true);
-
-            // Show the prompt telling the player they can open the book.
-            if (firstOpenGameObject != null)
-                firstOpenGameObject.SetActive(true);
-
-            if (bookManager != null)
-            {
-                bookManager.journalUnlocked = true;
-                bookManager.gameObject.SetActive(true);
-            }
 
             if (taskManager != null)
             {
@@ -255,6 +254,27 @@ public class WoodenBox : MonoBehaviour
                     TaskManager.TaskID.SearchWoodenBox
                 );
             }
+        }
+
+        // Unlock the journal separately from the rewards.
+        UnlockJournal();
+    }
+
+    // Unlocks and remembers the journal.
+    private void UnlockJournal()
+    {
+        journalUnlockedThisPlaythrough = true;
+
+        if (journalObject != null)
+            journalObject.SetActive(true);
+
+        if (firstOpenGameObject != null)
+            firstOpenGameObject.SetActive(true);
+
+        if (bookManager != null)
+        {
+            bookManager.journalUnlocked = true;
+            bookManager.gameObject.SetActive(true);
         }
     }
 
