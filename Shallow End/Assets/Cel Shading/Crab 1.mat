@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Water 2.0
-  m_Shader: {fileID: -6465566751694194690, guid: e1d60c6114f37404290f281a5d25a51b, type: 3}
+  m_Name: Crab 1
+  m_Shader: {fileID: -6465566751694194690, guid: 4c9d57f701ffcd744b80565cd6b97ad3, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -24,6 +24,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _Texture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -38,23 +42,16 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FoamScale: 114.1
-    - _FoamSpeed: 0.6
-    - _Foam_Amount: 3.1
-    - _Foam_CutOff: 1
+    - _Divide_shade: -0.19
+    - _Max: 1
+    - _Min: 0.3
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _RefractionScale: 1
-    - _RefractionSpeed: 0.05
-    - _RefractionStrength: 2
-    - _WaterDepth: 10
     m_Colors:
-    - _DeepWater: {r: 0.003921569, g: 0.2941175, b: 0.5019608, a: 1}
-    - _FoamColour: {r: 1, g: 1, b: 1, a: 0.21568628}
-    - _ShallowWater: {r: 0.007843138, g: 0.6862744, b: 0.74509805, a: 0.6313726}
+    - _Color: {r: 0.5283019, g: 0, b: 0.0015963789, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &4945982110117794685
+--- !u!114 &3704022728729788767
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

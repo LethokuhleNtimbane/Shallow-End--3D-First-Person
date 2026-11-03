@@ -11,48 +11,10 @@ public class QuickCraftButton : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private CanvasGroup canvasGroup;
 
-    [Header("Manually Assigned Crafting Slots")]
-    [SerializeField] private Slot slot1;
-    [SerializeField] private Slot slot2;
-    [SerializeField] private Slot slot3;
-    [SerializeField] private Slot slot4;
+    [Header("Required Ingredients")]
+    [SerializeField] private Items[] requiredIngredients = new Items[4];
 
-    [Header("Ingredients For This Recipe")]
-    [SerializeField] private Items ingredientSlot1;
-    [SerializeField] private Items ingredientSlot2;
-    [SerializeField] private Items ingredientSlot3;
-    [SerializeField] private Items ingredientSlot4;
-
-    [Header("Canvas Group Alpha")]
-    [SerializeField, Range(0f, 1f)]
-    private float availableAlpha = 1f;
-
-    [SerializeField, Range(0f, 1f)]
-    private float unavailableAlpha = 0.7f;
-
-    private bool isPreparing;
-
-    private Slot[] GetSlots()
-    {
-        return new Slot[]
-        {
-            slot1,
-            slot2,
-            slot3,
-            slot4
-        };
-    }
-
-    private Items[] GetIngredients()
-    {
-        return new Items[]
-        {
-            ingredientSlot1,
-            ingredientSlot2,
-            ingredientSlot3,
-            ingredientSlot4
-        };
-    }
+    private const int RequiredSlotCount = 4;
 
     private void Awake()
     {
@@ -61,6 +23,15 @@ public class QuickCraftButton : MonoBehaviour
 
         if (canvasGroup == null)
             canvasGroup = GetComponent<CanvasGroup>();
+
+        if (button == null)
+        {
+            Debug.LogError("QuickCraftButton: No Button component assigned.", this);
+            enabled = false;
+            return;
+        }
+
+        button.onClick.AddListener(CraftButtonPressed);
     }
 
     private void OnEnable()
@@ -68,147 +39,172 @@ public class QuickCraftButton : MonoBehaviour
         RefreshButton();
     }
 
+    private void OnDestroy()
+    {
+        if (button != null)
+            button.onClick.RemoveListener(CraftButtonPressed);
+    }
+
     private void Update()
     {
         RefreshButton();
     }
 
-    private void OnDisable()
+    private Dictionary<Items, int> GetRequiredItemCounts()
     {
-        isPreparing = false;
+        Dictionary<Items, int> requiredCounts =
+            new Dictionary<Items, int>();
+
+        for (int i = 0; i < RequiredSlotCount; i++)
+        {
+            Items item = requiredIngredients[i];
+
+            if (item == null)
+                continue;
+
+            if (requiredCounts.ContainsKey(item))
+            {
+                requiredCounts[item]++;
+            }
+            else
+            {
+                requiredCounts.Add(item, 1);
+            }
+        }
+
+        return requiredCounts;
     }
 
-    private bool CanPrepareRecipe()
+    private bool CanQuickCraft()
     {
         if (inventory == null || craftingSystem == null)
             return false;
 
-        Slot[] slots = GetSlots();
-        Items[] ingredients = GetIngredients();
+        if (craftingSystem.craftinSlots == null ||
+            requiredIngredients == null)
+            return false;
 
-        foreach (Slot slot in slots)
+        if (craftingSystem.craftinSlots.Length != RequiredSlotCount ||
+            requiredIngredients.Length != RequiredSlotCount)
+            return false;
+
+        // Every ingredient slot on the crafting table must be empty.
+        // Items already in the crafting table are never counted.
+        foreach (Slot slot in craftingSystem.craftinSlots)
         {
             if (slot == null || slot.Hasitem())
                 return false;
         }
 
-        Dictionary<Items, int> required =
-            new Dictionary<Items, int>();
+        Dictionary<Items, int> requiredCounts =
+            GetRequiredItemCounts();
 
-        foreach (Items item in ingredients)
-        {
-            if (item == null)
-                continue;
-
-            if (!required.ContainsKey(item))
-                required[item] = 0;
-
-            required[item]++;
-        }
-
-        if (required.Count == 0)
+        if (requiredCounts.Count == 0)
             return false;
 
-        foreach (KeyValuePair<Items, int> entry in required)
+        // Only check the hotbar for the required ingredients.
+        foreach (KeyValuePair<Items, int> requirement in requiredCounts)
         {
-            if (inventory.GetTotalItemAmount(entry.Key)
-                < entry.Value)
-            {
+            int amountInHotbar =
+                inventory.GetTotalItemAmount(requirement.Key);
+
+            if (amountInHotbar < requirement.Value)
                 return false;
-            }
         }
 
         return true;
     }
 
-    public void RefreshButton()
+    private void RefreshButton()
     {
-        bool canCraft = !isPreparing && CanPrepareRecipe();
+        if (button == null)
+            return;
+
+        bool canCraft = CanQuickCraft();
+
+        button.interactable = canCraft;
 
         if (canvasGroup != null)
-        {
-            canvasGroup.alpha = canCraft
-                ? availableAlpha
-                : unavailableAlpha;
-        }
-
-        if (button != null)
-            button.interactable = canCraft;
+            canvasGroup.alpha = canCraft ? 1f : 0.5f;
     }
 
     public void CraftButtonPressed()
     {
-        Debug.Log("QUICK CRAFT: Button clicked!", this);
-
-        if (isPreparing)
-            return;
-
-        if (!CanPrepareRecipe())
+        // Check everything again when the button is pressed.
+        if (!CanQuickCraft())
         {
-            Debug.LogWarning(
-                "QUICK CRAFT: Requirements are not met.",
-                this
-            );
-
             RefreshButton();
             return;
         }
 
-        Slot[] slots = GetSlots();
-        Items[] ingredients = GetIngredients();
+        Dictionary<Items, int> requiredCounts =
+            GetRequiredItemCounts();
 
-        isPreparing = true;
+        List<Items> removedItems = new List<Items>();
+        List<int> removedAmounts = new List<int>();
 
-        // Remove the required ingredients from the inventory.
-        List<Items> removedIngredients = new List<Items>();
-
-        foreach (Items item in ingredients)
+        // Remove the ingredients directly from the hotbar.
+        foreach (KeyValuePair<Items, int> requirement in requiredCounts)
         {
-            if (item == null)
-                continue;
+            int removedAmount = inventory.RemoveItemAmount(
+                requirement.Key,
+                requirement.Value
+            );
 
-            int removed = inventory.RemoveItemAmount(item, 1);
-
-            if (removed != 1)
+            if (removedAmount > 0)
             {
-                // Return any ingredients already removed.
-                foreach (Items previousItem in removedIngredients)
-                    inventory.AddItem(previousItem, 1);
+                removedItems.Add(requirement.Key);
+                removedAmounts.Add(removedAmount);
+            }
+
+            // Restore anything already removed if an unexpected
+            // removal failure occurs.
+            if (removedAmount != requirement.Value)
+            {
+                RestoreRemovedItems(removedItems, removedAmounts);
 
                 Debug.LogError(
-                    "QUICK CRAFT: Could not remove " + item.name +
-                    ". Previously removed ingredients were returned.",
-                    this
+                    "Quick crafting stopped because an ingredient could not be removed."
                 );
 
-                isPreparing = false;
                 RefreshButton();
                 return;
             }
-
-            removedIngredients.Add(item);
         }
 
-        // Place ingredients into the assigned crafting slots.
-        for (int i = 0; i < ingredients.Length; i++)
+        // Place the ingredients directly into their corresponding slots.
+        // This does not use CraftinSystem to collect or transfer anything.
+        for (int i = 0; i < RequiredSlotCount; i++)
         {
-            if (ingredients[i] == null)
+            Items item = requiredIngredients[i];
+
+            if (item == null)
                 continue;
 
-            slots[i].SetItem(ingredients[i], 1);
-
-            Debug.Log(
-                "QUICK CRAFT: Placed " + ingredients[i].name +
-                " into " + slots[i].name,
-                this
-            );
+            craftingSystem.craftinSlots[i].SetItem(item, 1);
         }
 
+        // This only refreshes the crafting result after the transfer.
         craftingSystem.UpdateCraftingResult();
 
-        Debug.Log("QUICK CRAFT: Ingredients placed successfully.", this);
-
-        isPreparing = false;
         RefreshButton();
+    }
+
+    private void RestoreRemovedItems(
+        List<Items> items,
+        List<int> amounts)
+    {
+        for (int i = 0; i < items.Count; i++)
+        {
+            bool restored = inventory.AddItem(items[i], amounts[i]);
+
+            if (!restored)
+            {
+                Debug.LogError(
+                    "Quick crafting could not fully restore an ingredient: " +
+                    items[i].itemName
+                );
+            }
+        }
     }
 }

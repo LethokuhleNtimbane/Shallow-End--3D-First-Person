@@ -12,7 +12,8 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _SURFACE_TYPE_TRANSPARENT
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -38,20 +39,33 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FoamScale: 100
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _CastShadows: 0
+    - _Cull: 2
+    - _DstBlend: 10
+    - _DstBlendAlpha: 10
+    - _FoamScale: 150.1
     - _FoamSpeed: 1
     - _Foam_Amount: 0.6
     - _Foam_CutOff: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _RefractionScale: 1
-    - _RefractionSpeed: 0.1
-    - _RefractionStrength: 1.01
-    - _WaterDepth: 5.81
+    - _RefractionSpeed: 0.01
+    - _RefractionStrength: 1
+    - _SrcBlend: 5
+    - _SrcBlendAlpha: 1
+    - _Surface: 1
+    - _WaterDepth: 0.5
+    - _ZTest: 4
+    - _ZWrite: 0
+    - _ZWriteControl: 0
     m_Colors:
-    - _DeepWater: {r: 0.003921569, g: 0.29411766, b: 0.5019608, a: 1}
-    - _FoamColour: {r: 1, g: 1, b: 1, a: 0.21568628}
-    - _ShallowWater: {r: 0.007843138, g: 0.6862745, b: 0.74509805, a: 0.6313726}
+    - _DeepWater: {r: 0.17637733, g: 0.5645903, b: 0.6163521, a: 0.6509804}
+    - _FoamColour: {r: 1, g: 1, b: 1, a: 0.36862746}
+    - _ShallowWater: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &1474807402479301705
