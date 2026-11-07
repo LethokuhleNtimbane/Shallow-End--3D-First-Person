@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
@@ -5,13 +6,17 @@ using UnityEngine.UI;
 public class Monster : MonoBehaviour
 {
     [SerializeField] private Transform Player;
+    [SerializeField] private TimeController timeController;
+
+    [Header("Spawner Control")]
+    [SerializeField] private bool controlledBySpawner = false;
 
     private bool playerIsSleeping = false;
 
-    [SerializeField] private TimeController timeController;
     [SerializeField] private float monsterStartHour = 21f;
     [SerializeField] private float monsterDisappearHour = 5f;
 
+    [Header("Movement")]
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float attackDistance = 1.5f;
     [SerializeField] private float detectionRange = 12f;
@@ -24,14 +29,17 @@ public class Monster : MonoBehaviour
     private float patrolWaitTimer;
     private bool waitingAtPatrolPoint;
 
+    [Header("Monster Objects")]
     [SerializeField] private GameObject attackHitbox;
     [SerializeField] private GameObject monsterVisual;
 
+    [Header("Explosion")]
     [SerializeField] private float explosionTime = 3f;
     [SerializeField] private float explosionDamage = 50f;
     [SerializeField] private float explosionRadius = 4f;
     [SerializeField] private ParticleSystem explosionParticle;
 
+    [Header("Health")]
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private Image healthBar;
     [SerializeField] private float knifeDamage;
@@ -67,10 +75,11 @@ public class Monster : MonoBehaviour
 
         UpdateHealthBar();
 
-        if (healthBar != null)
+        if (!controlledBySpawner && healthBar != null)
             healthBar.gameObject.SetActive(false);
 
-        UpdateMonster();
+        if (!controlledBySpawner)
+            UpdateMonster();
     }
 
     private void Update()
@@ -80,6 +89,10 @@ public class Monster : MonoBehaviour
             ResetExplosionTimer();
             return;
         }
+
+        // The spawner controls this monster until its emergence is complete.
+        if (controlledBySpawner)
+            return;
 
         if (playerIsSleeping)
             return;
@@ -110,6 +123,14 @@ public class Monster : MonoBehaviour
         FollowPlayer();
     }
 
+    public void SetSpawnerControlled(bool controlled)
+    {
+        controlledBySpawner = controlled;
+
+        if (controlled)
+            ResetExplosionTimer();
+    }
+
     private void UpdateMonster()
     {
         if (isDead)
@@ -130,9 +151,7 @@ public class Monster : MonoBehaviour
             monsterAwake = shouldMonsterBeActive;
 
             if (monsterAwake)
-            {
                 ShowMonster();
-            }
             else
             {
                 ResetExplosionTimer();
@@ -154,7 +173,6 @@ public class Monster : MonoBehaviour
 
         float distance = direction.magnitude;
 
-        // Player is too far away then patrol instead.
         if (distance > detectionRange)
         {
             ResetExplosionTimer();
@@ -162,7 +180,6 @@ public class Monster : MonoBehaviour
             return;
         }
 
-        // Player is close enough to attack.
         if (distance <= attackDistance)
         {
             StartExplosionTimer();
@@ -270,10 +287,7 @@ public class Monster : MonoBehaviour
         if (Player != null)
         {
             float distance =
-                Vector3.Distance(
-                    transform.position,
-                    Player.position
-                );
+                Vector3.Distance(transform.position, Player.position);
 
             if (distance <= explosionRadius)
             {
@@ -310,8 +324,7 @@ public class Monster : MonoBehaviour
         if (maxHealth <= 0f)
             return;
 
-        healthBar.fillAmount =
-            currentHealth / maxHealth;
+        healthBar.fillAmount = currentHealth / maxHealth;
     }
 
     private void Die()
@@ -352,8 +365,7 @@ public class Monster : MonoBehaviour
 
         ResetExplosionTimer();
 
-        stunCoroutine =
-            StartCoroutine(StunCoroutine(duration));
+        stunCoroutine = StartCoroutine(StunCoroutine(duration));
     }
 
     private IEnumerator StunCoroutine(float duration)
@@ -395,11 +407,8 @@ public class Monster : MonoBehaviour
         }
         else
         {
-            if (monsterAwake &&
-                !IsDialoguePaused)
-            {
+            if (monsterAwake && !IsDialoguePaused)
                 ShowMonster();
-            }
         }
     }
 
@@ -433,20 +442,14 @@ public class Monster : MonoBehaviour
 
     private void ShowMonster()
     {
-        if (isDead)
-            return;
-
-        if (IsDialoguePaused)
+        if (isDead || IsDialoguePaused)
             return;
 
         if (monsterVisual != null)
             monsterVisual.SetActive(true);
 
-        if (attackHitbox != null &&
-            !isStunned)
-        {
+        if (attackHitbox != null && !isStunned)
             attackHitbox.SetActive(true);
-        }
 
         if (healthBar != null)
         {
