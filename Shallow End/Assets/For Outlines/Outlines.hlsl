@@ -33,7 +33,7 @@ void DepthBasedOutlines_float(float2 screenUV, float2 px, out float outlines)
 
     }
     float g = sqrt(gx * gx + gy * gy);
-    outlines = step(.02, g);
+    outlines = step(0.009, g);
 #endif 
 }
 void NormalBasedOutlines_float(float2 screenUV, float2 px, out float outlines)

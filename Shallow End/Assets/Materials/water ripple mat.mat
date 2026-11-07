@@ -8,12 +8,11 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: water ripple mat
-  m_Shader: {fileID: -6465566751694194690, guid: e1d60c6114f37404290f281a5d25a51b, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 57cb20c32f7cb19498d1fb196ea333fc, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _SURFACE_TYPE_TRANSPARENT
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -46,10 +45,10 @@ Material:
     - _Cull: 2
     - _DstBlend: 10
     - _DstBlendAlpha: 10
-    - _FoamScale: 150.1
+    - _FoamScale: 114
     - _FoamSpeed: 1
-    - _Foam_Amount: 0.6
-    - _Foam_CutOff: 1
+    - _Foam_Amount: 0.4
+    - _Foam_CutOff: 1.1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _RefractionScale: 1
@@ -58,14 +57,17 @@ Material:
     - _SrcBlend: 5
     - _SrcBlendAlpha: 1
     - _Surface: 1
+    - _Transition: 0
     - _WaterDepth: 0.5
     - _ZTest: 4
     - _ZWrite: 0
     - _ZWriteControl: 0
     m_Colors:
-    - _DeepWater: {r: 0.17637733, g: 0.5645903, b: 0.6163521, a: 0.6509804}
+    - _DeepWater: {r: 0.03532285, g: 0.52667415, b: 0.59119487, a: 0.6509804}
+    - _DeepWaterMonster_1: {r: 0.6156863, g: 0.1764706, b: 0.1777163, a: 0.6509804}
     - _FoamColour: {r: 1, g: 1, b: 1, a: 0.36862746}
-    - _ShallowWater: {r: 1, g: 1, b: 1, a: 0}
+    - _ShallowWater: {r: 0, g: 0.40765843, b: 0.59748423, a: 0.33333334}
+    - _ShallowWater_Monster_1: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &1474807402479301705

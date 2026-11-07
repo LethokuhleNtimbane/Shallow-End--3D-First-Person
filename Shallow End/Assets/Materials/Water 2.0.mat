@@ -48,7 +48,7 @@ Material:
     - _DstBlendAlpha: 10
     - _FoamScale: 114.1
     - _FoamSpeed: 0.6
-    - _Foam_Amount: 16.28
+    - _Foam_Amount: 3.9
     - _Foam_CutOff: 1
     - _QueueControl: 0
     - _QueueOffset: 0
