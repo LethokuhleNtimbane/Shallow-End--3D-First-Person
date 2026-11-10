@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour
     private float speedMultiplier = 1f;
     private Coroutine speedBoostCoroutine;
 
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+
     private void Awake()
     {
         Controller = GetComponent<CharacterController>();
@@ -48,6 +51,8 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputAction.CallbackContext context)
     {
         moveInput = context.ReadValue<Vector2>();
+
+        Debug.Log("Move Input: " + moveInput);
 
         if (!updateingRotation)
         {
@@ -153,5 +158,13 @@ public class PlayerController : MonoBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         Controller.Move(velocity * Time.deltaTime);
+        //player animation stuff
+        if (animator != null)
+        {
+            float movementSpeed = moveInput.magnitude;
+
+            animator.SetFloat("Speed", movementSpeed);
+
+        }
     }
 }
