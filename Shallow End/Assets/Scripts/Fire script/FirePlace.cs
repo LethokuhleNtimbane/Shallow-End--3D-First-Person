@@ -3,106 +3,114 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using TMPro;
 
 public class Fireplace : MonoBehaviour
 {
-    [Header("Fire Objects")]
-    [SerializeField] private GameObject fireMat;
-    [SerializeField] private Light fireLight;
-    [SerializeField] private GameObject fireDamageZone;
-    [SerializeField] private GameObject protectionZone;
-    [SerializeField] private FireProtect fireProtection;
-
-    [Header("Fire Settings")]
-    [SerializeField] private float fireDurationInGameHours = 3f;
-    [SerializeField] private ParticleSystem[] fireParticles;
-    [SerializeField] private float minimumParticleScale = 0.2f;
+    [Header("Interaction")]
+    [SerializeField] private float interactionDistance = 3f;
+    [SerializeField] private InputActionReference interactAction;
+    [SerializeField] private InputActionReference lightFireAction;
+    [SerializeField] private GameObject fireplaceInterface;
+    [SerializeField] private GameObject fireplaceBackground;
 
     [Header("Inventory")]
     [SerializeField] private Inventory inventory;
     [SerializeField] private Slot fuelSlot;
     [SerializeField] private Slot cookingSlot;
-    [SerializeField] private Items flintItem;
+
+    [Header("Items")]
     [SerializeField] private Items woodItem;
-    [SerializeField] private Items fishItem;
-    [SerializeField] private Items crabItem;
+    [SerializeField] private Items flintItem;
     [SerializeField] private Items waterItem;
-
-    [Header("Cooked Items")]
-    [SerializeField] private Items cookedFishItem;
-    [SerializeField] private Items cookedCrabItem;
     [SerializeField] private Items boiledWaterItem;
+    [SerializeField] private Items rawFishItem;
+    [SerializeField] private Items cookedFishItem;
+    [SerializeField] private Items rawCrabItem;
+    [SerializeField] private Items cookedCrabItem;
 
-    [Header("Fireplace Interface")]
-    [SerializeField] private GameObject fireplaceInterface;
-    [SerializeField] private TextMeshProUGUI fuelMessage;
-    [SerializeField] private float interactionRange = 3f;
+    [Header("Fire")]
+    [SerializeField] private float fireDurationHours = 3f;
+    [SerializeField] private GameObject fireVisual;
+    [SerializeField] private Light fireLight;
+    [SerializeField] private GameObject damageZone;
+    [SerializeField] private GameObject protectionZone;
+    [SerializeField] private FireProtect fireProtect;
 
-    [Header("Cooking")]
-    [SerializeField] private GameObject cookingVisual;
-    [SerializeField] private Image cookingProgressImage;
-    [SerializeField] private float fishCookingHours = 1f;
-    [SerializeField] private float crabCookingHours = 1f;
-    [SerializeField] private float waterBoilingHours = 1f;
+    [Header("Fire Particles")]
+    [SerializeField] private ParticleSystem fireParticle1;
+    [SerializeField] private ParticleSystem fireParticle2;
+    [SerializeField] private ParticleSystem fireParticle3;
 
-    [Header("Cooking Spinner")]
+    [Header("Cooking Visuals")]
     [SerializeField] private GameObject cookingSpinner;
-    [SerializeField] private float spinnerRotationSpeed = 180f;
+    [SerializeField] private float cookingSpinnerSpeed = 100f;
+    [SerializeField] private GameObject rawFishVisual;
+    [SerializeField] private GameObject cookedFishVisual;
+    [SerializeField] private GameObject rawCrabVisual;
+    [SerializeField] private GameObject cookedCrabVisual;
+    [SerializeField] private GameObject rawWaterVisual;
+    [SerializeField] private GameObject boiledWaterVisual;
 
-    [Header("Input")]
-    [SerializeField] private InputActionReference interactAction;
-    [SerializeField] private InputActionReference lightFireAction;
+    [Header("Cooking Progress")]
+    [SerializeField] private float fishCookingTimeHours = 1f;
+    [SerializeField] private float crabCookingTimeHours = 1f;
+    [SerializeField] private float waterBoilingTimeHours = 1f;
+    [SerializeField] private Image cookingProgress;
 
-    private bool fireIsLit;
     private bool interfaceOpen;
+    private bool fireIsLit;
+
     private DateTime fireEndTime;
     private DateTime lastClockTime;
-    private float cookingElapsedHours;
-    private Items trackedCookingItem;
-    private Vector3[] originalParticleScales;
 
-    private AudioManager audioManager;
-    private CursorLockMode previousCursorLockState;
-    private bool previousCursorVisibility;
+    private Items lastCookingItem;
+    private float cookingElapsedHours;
+
+    private Vector3 particle1OriginalScale;
+    private Vector3 particle2OriginalScale;
+    private Vector3 particle3OriginalScale;
 
     private void Awake()
     {
-        GameObject audioObject =
-            GameObject.FindGameObjectWithTag("Audio");
+        if (fireParticle1 != null)
+            particle1OriginalScale = fireParticle1.transform.localScale;
 
-        if (audioObject != null)
-        {
-            audioManager = audioObject.GetComponent<AudioManager>();
-        }
+        if (fireParticle2 != null)
+            particle2OriginalScale = fireParticle2.transform.localScale;
 
-        CacheParticleScales();
-    }
+        if (fireParticle3 != null)
+            particle3OriginalScale = fireParticle3.transform.localScale;
 
-    private void Start()
-    {
+        SetFireObjects(false);
+        SetParticlesActive(false);
+        SetCookingItemVisuals(null);
+
         if (fireplaceInterface != null)
-        {
             fireplaceInterface.SetActive(false);
-        }
 
-        TurnFireOff();
-        UpdateCookingVisuals();
+        if (fireplaceBackground != null)
+            fireplaceBackground.SetActive(false);
+
+        if (cookingProgress != null)
+            cookingProgress.fillAmount = 0f;
     }
 
     private void OnEnable()
     {
-        EnableAction(interactAction);
-        EnableAction(lightFireAction);
+        if (interactAction != null)
+            interactAction.action.Enable();
 
-        if (inventory != null)
+        if (lightFireAction != null)
+            lightFireAction.action.Enable();
+
+        if (inventory != null && fuelSlot != null && cookingSlot != null)
         {
             inventory.RegisterFireplaceSlots(
                 fuelSlot,
                 cookingSlot,
                 woodItem,
-                fishItem,
-                crabItem,
+                rawFishItem,
+                rawCrabItem,
                 waterItem
             );
         }
@@ -110,36 +118,14 @@ public class Fireplace : MonoBehaviour
 
     private void OnDisable()
     {
-        DisableAction(interactAction);
-        DisableAction(lightFireAction);
+        if (interactAction != null)
+            interactAction.action.Disable();
 
-        if (interfaceOpen)
-        {
-            CloseInterface();
-        }
+        if (lightFireAction != null)
+            lightFireAction.action.Disable();
 
         if (inventory != null)
-        {
             inventory.UnregisterFireplaceSlots();
-        }
-    }
-
-    private void EnableAction(InputActionReference actionReference)
-    {
-        if (actionReference != null &&
-            actionReference.action != null)
-        {
-            actionReference.action.Enable();
-        }
-    }
-
-    private void DisableAction(InputActionReference actionReference)
-    {
-        if (actionReference != null &&
-            actionReference.action != null)
-        {
-            actionReference.action.Disable();
-        }
     }
 
     private void Update()
@@ -147,65 +133,56 @@ public class Fireplace : MonoBehaviour
         if (TimeController.instance == null)
             return;
 
-        DateTime currentTime =
-            TimeController.instance.CurrentTime;
+        DateTime currentTime = TimeController.instance.CurrentTime;
 
-        UpdateCookingClock(currentTime);
-        UpdateCooking();
+        CheckInteraction();
 
-        if (fireIsLit)
+        if (interfaceOpen && lightFireAction != null &&
+            lightFireAction.action.WasPressedThisFrame())
         {
-            UpdateParticleScales(currentTime);
-
-            if (currentTime >= fireEndTime)
-            {
-                TurnFireOff();
-            }
+            CheckFireLighting();
         }
 
-        UpdateCookingVisuals();
-        CheckInteraction();
-        CheckFireLighting();
-        UpdateFuelMessage();
+        UpdateFire(currentTime);
+        UpdateCookingClock(currentTime);
+        UpdateCooking();
     }
 
     private void CheckInteraction()
     {
-        if (PlayerController.Instance == null)
-            return;
-
-        float distance = Vector3.Distance(
-            transform.position,
-            PlayerController.Instance.transform.position
-        );
-
-        if (distance > interactionRange && !interfaceOpen)
-            return;
-
         if (interactAction == null ||
             !interactAction.action.WasPressedThisFrame())
             return;
 
-        if (interfaceOpen)
+        Camera cam = Camera.main;
+
+        if (cam == null)
+            return;
+
+        Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
         {
-            CloseInterface();
-        }
-        else if (distance <= interactionRange)
-        {
-            OpenInterface();
+            if (hit.collider.transform == transform ||
+                hit.collider.transform.IsChildOf(transform))
+            {
+                if (interfaceOpen)
+                    CloseInterface();
+                else
+                    OpenInterface();
+            }
         }
     }
 
     private void OpenInterface()
     {
-        if (fireplaceInterface == null)
-            return;
-
         interfaceOpen = true;
-        fireplaceInterface.SetActive(true);
 
-        previousCursorLockState = Cursor.lockState;
-        previousCursorVisibility = Cursor.visible;
+        if (fireplaceInterface != null)
+            fireplaceInterface.SetActive(true);
+
+        if (fireplaceBackground != null)
+            fireplaceBackground.SetActive(true);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -216,209 +193,109 @@ public class Fireplace : MonoBehaviour
         interfaceOpen = false;
 
         if (fireplaceInterface != null)
-        {
             fireplaceInterface.SetActive(false);
-        }
 
-        Cursor.lockState = previousCursorLockState;
-        Cursor.visible = previousCursorVisibility;
+        if (fireplaceBackground != null)
+            fireplaceBackground.SetActive(false);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void CheckFireLighting()
     {
-        if (fireIsLit || interfaceOpen)
+        if (fireIsLit)
             return;
 
-        if (PlayerController.Instance == null)
-            return;
-
-        float distance = Vector3.Distance(
-            transform.position,
-            PlayerController.Instance.transform.position
-        );
-
-        if (distance > interactionRange)
-            return;
-
-        if (lightFireAction == null ||
-            !lightFireAction.action.WasPressedThisFrame())
-            return;
-
-        if (inventory == null ||
-            !inventory.IsFlintEquipped(flintItem))
-            return;
-
-        if (fuelSlot == null ||
-            !fuelSlot.Hasitem() ||
-            fuelSlot.GetItem() != woodItem)
+        if (fuelSlot == null || !fuelSlot.Hasitem())
         {
-            if (fuelMessage != null)
-            {
-                fuelMessage.text = "I need to get wood for fuel";
-                fuelMessage.gameObject.SetActive(true);
-            }
+            if (inventory != null)
+                inventory.ShowInteractionMessage("I need to get wood for fuel");
 
             return;
         }
+
+        if (fuelSlot.GetItem() != woodItem)
+            return;
+
+        if (inventory == null || !inventory.IsFlintEquipped(flintItem))
+            return;
 
         LightFire();
     }
 
     private void LightFire()
     {
-        if (TimeController.instance == null)
-            return;
-
         fireIsLit = true;
 
-        lastClockTime = TimeController.instance.CurrentTime;
+        DateTime currentTime = TimeController.instance.CurrentTime;
 
-        fireEndTime = lastClockTime.AddHours(
-            Mathf.Max(0.01f, fireDurationInGameHours)
-        );
+        fireEndTime = currentTime.AddHours(fireDurationHours);
+        lastClockTime = currentTime;
 
-        fuelSlot.RemoveAmount(1);
-
-        if (fireMat != null)
-        {
-            fireMat.SetActive(true);
-        }
-
-        if (fireLight != null)
-        {
-            fireLight.enabled = true;
-        }
-
-        if (fireDamageZone != null)
-        {
-            fireDamageZone.SetActive(true);
-        }
-
-        if (protectionZone != null)
-        {
-            protectionZone.SetActive(true);
-        }
-
-        if (fireProtection != null)
-        {
-            fireProtection.SetFire(true);
-        }
+        fuelSlot.ClearSlot();
 
         inventory.UseEquippedDurability();
 
-        if (audioManager != null)
-        {
-            audioManager.PlaySfx(audioManager.FlintLight);
-        }
-
-        ResetParticleScales();
+        SetFireObjects(true);
         SetParticlesActive(true);
-        UpdateFuelMessage();
+        ResetParticleScales();
+
+        if (fireProtect != null)
+            fireProtect.SetFire(true);
     }
 
-    private void TurnFireOff()
+    private void UpdateFire(DateTime currentTime)
+    {
+        if (!fireIsLit)
+            return;
+
+        if (currentTime >= fireEndTime)
+        {
+            ExtinguishFire();
+            return;
+        }
+
+        UpdateFireParticles(currentTime);
+    }
+
+    private void ExtinguishFire()
     {
         fireIsLit = false;
 
-        if (fireMat != null)
-        {
-            fireMat.SetActive(false);
-        }
+        SetFireObjects(false);
+        SetParticlesActive(false);
+        ResetParticleScales();
+
+        if (fireProtect != null)
+            fireProtect.SetFire(false);
+    }
+
+    private void SetFireObjects(bool active)
+    {
+        if (fireVisual != null)
+            fireVisual.SetActive(active);
 
         if (fireLight != null)
-        {
-            fireLight.enabled = false;
-        }
+            fireLight.enabled = active;
 
-        if (fireDamageZone != null)
-        {
-            fireDamageZone.SetActive(false);
-        }
+        if (damageZone != null)
+            damageZone.SetActive(active);
 
         if (protectionZone != null)
-        {
-            protectionZone.SetActive(false);
-        }
-
-        if (fireProtection != null)
-        {
-            fireProtection.SetFire(false);
-        }
-
-        SetParticlesActive(false);
-        SetSpinnerActive(false);
-    }
-
-    private void CacheParticleScales()
-    {
-        if (fireParticles == null)
-            return;
-
-        originalParticleScales =
-            new Vector3[fireParticles.Length];
-
-        for (int i = 0; i < fireParticles.Length; i++)
-        {
-            if (fireParticles[i] != null)
-            {
-                originalParticleScales[i] =
-                    fireParticles[i].transform.localScale;
-            }
-        }
-    }
-
-    private void ResetParticleScales()
-    {
-        if (fireParticles == null ||
-            originalParticleScales == null)
-            return;
-
-        for (int i = 0; i < fireParticles.Length; i++)
-        {
-            if (fireParticles[i] != null)
-            {
-                fireParticles[i].transform.localScale =
-                    originalParticleScales[i];
-            }
-        }
-    }
-
-    private void UpdateParticleScales(DateTime currentTime)
-    {
-        if (fireParticles == null ||
-            originalParticleScales == null)
-            return;
-
-        double remainingHours =
-            (fireEndTime - currentTime).TotalHours;
-
-        float remainingPercentage = Mathf.Clamp01(
-            (float)(remainingHours /
-            Mathf.Max(0.01f, fireDurationInGameHours))
-        );
-
-        float scaleMultiplier = Mathf.Lerp(
-            minimumParticleScale,
-            1f,
-            remainingPercentage
-        );
-
-        for (int i = 0; i < fireParticles.Length; i++)
-        {
-            if (fireParticles[i] != null)
-            {
-                fireParticles[i].transform.localScale =
-                    originalParticleScales[i] * scaleMultiplier;
-            }
-        }
+            protectionZone.SetActive(active);
     }
 
     private void SetParticlesActive(bool active)
     {
-        if (fireParticles == null)
-            return;
+        ParticleSystem[] particles =
+        {
+            fireParticle1,
+            fireParticle2,
+            fireParticle3
+        };
 
-        foreach (ParticleSystem particle in fireParticles)
+        foreach (ParticleSystem particle in particles)
         {
             if (particle == null)
                 continue;
@@ -430,221 +307,205 @@ public class Fireplace : MonoBehaviour
             }
             else
             {
-                particle.Stop();
+                particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
                 particle.gameObject.SetActive(false);
             }
         }
     }
 
+    private void ResetParticleScales()
+    {
+        if (fireParticle1 != null)
+            fireParticle1.transform.localScale = particle1OriginalScale;
+
+        if (fireParticle2 != null)
+            fireParticle2.transform.localScale = particle2OriginalScale;
+
+        if (fireParticle3 != null)
+            fireParticle3.transform.localScale = particle3OriginalScale;
+    }
+
+    private void UpdateFireParticles(DateTime currentTime)
+    {
+        double remainingSeconds = (fireEndTime - currentTime).TotalSeconds;
+
+        float remainingPercentage = Mathf.Clamp01(
+            (float)(remainingSeconds / (fireDurationHours * 3600f))
+        );
+
+        if (fireParticle1 != null)
+            fireParticle1.transform.localScale = particle1OriginalScale * remainingPercentage;
+
+        if (fireParticle2 != null)
+            fireParticle2.transform.localScale = particle2OriginalScale * remainingPercentage;
+
+        if (fireParticle3 != null)
+            fireParticle3.transform.localScale = particle3OriginalScale * remainingPercentage;
+    }
+
     private void UpdateCookingClock(DateTime currentTime)
     {
-        Items currentItem =
-            cookingSlot != null && cookingSlot.Hasitem()
-                ? cookingSlot.GetItem()
-                : null;
+        Items currentCookingItem = cookingSlot != null ? cookingSlot.GetItem() : null;
 
-        if (currentItem != trackedCookingItem)
+        if (currentCookingItem != lastCookingItem)
         {
-            trackedCookingItem = currentItem;
+            lastCookingItem = currentCookingItem;
             cookingElapsedHours = 0f;
             lastClockTime = currentTime;
+
+            if (cookingProgress != null)
+                cookingProgress.fillAmount = 0f;
         }
 
-        if (currentItem == null ||
-            !IsRawCookingItem(currentItem))
+        if (currentCookingItem == null)
+            return;
+
+        if (!fireIsLit)
         {
             lastClockTime = currentTime;
             return;
         }
 
-        if (fireIsLit)
-        {
-            DateTime effectiveTime = currentTime;
+        DateTime effectiveCurrentTime = currentTime;
 
-            if (effectiveTime > fireEndTime)
-            {
-                effectiveTime = fireEndTime;
-            }
+        if (effectiveCurrentTime > fireEndTime)
+            effectiveCurrentTime = fireEndTime;
 
-            if (effectiveTime > lastClockTime)
-            {
-                cookingElapsedHours += (float)(
-                    effectiveTime - lastClockTime
-                ).TotalHours;
-            }
-        }
+        double elapsedSeconds = (effectiveCurrentTime - lastClockTime).TotalSeconds;
 
-        lastClockTime = currentTime;
+        if (elapsedSeconds > 0)
+            cookingElapsedHours += (float)elapsedSeconds / 3600f;
+
+        lastClockTime = effectiveCurrentTime;
     }
 
     private void UpdateCooking()
     {
-        if (cookingSlot == null ||
-            !cookingSlot.Hasitem())
+        if (cookingSlot == null || !cookingSlot.Hasitem())
         {
-            cookingElapsedHours = 0f;
-            trackedCookingItem = null;
+            SetCookingItemVisuals(null);
 
-            if (cookingProgressImage != null)
-            {
-                cookingProgressImage.fillAmount = 0f;
-            }
+            if (cookingProgress != null)
+                cookingProgress.fillAmount = 0f;
 
-            SetSpinnerActive(false);
             return;
         }
 
         Items currentItem = cookingSlot.GetItem();
 
-        if (!IsRawCookingItem(currentItem))
-        {
-            if (cookingProgressImage != null)
-            {
-                cookingProgressImage.fillAmount = 1f;
-            }
+        SetCookingItemVisuals(currentItem);
 
-            SetSpinnerActive(false);
+        if (!IsValidCookingItem(currentItem))
+        {
+            if (cookingProgress != null)
+                cookingProgress.fillAmount = 0f;
+
             return;
         }
 
-        float cookingDuration = Mathf.Max(
-            0.01f,
-            GetCookingDuration(currentItem)
-        );
+        bool isRawFishOrCrab =
+            currentItem == rawFishItem ||
+            currentItem == rawCrabItem;
 
-        float progress = Mathf.Clamp01(
-            cookingElapsedHours / cookingDuration
-        );
-
-        if (cookingProgressImage != null)
+        if (isRawFishOrCrab && fireIsLit && cookingSpinner != null)
         {
-            cookingProgressImage.fillAmount = progress;
+            cookingSpinner.transform.Rotate(
+                Vector3.right,
+                cookingSpinnerSpeed * Time.deltaTime,
+                Space.Self
+            );
         }
 
-        bool shouldRotate =
-            fireIsLit &&
-            (currentItem == fishItem ||
-             currentItem == crabItem);
+        float cookingDuration = GetCookingDuration(currentItem);
 
-        SetSpinnerActive(shouldRotate);
+        float progress = cookingDuration > 0f
+            ? Mathf.Clamp01(cookingElapsedHours / cookingDuration)
+            : 0f;
 
-        if (cookingElapsedHours >= cookingDuration)
+        if (cookingProgress != null)
+            cookingProgress.fillAmount = progress;
+
+        if (fireIsLit && cookingDuration > 0f &&
+            cookingElapsedHours >= cookingDuration)
         {
-            FinishCooking(currentItem);
+            FinishCooking();
         }
     }
 
-    private void FinishCooking(Items rawItem)
+    private void SetCookingItemVisuals(Items item)
     {
-        Items cookedItem = GetCookedResult(rawItem);
+        if (rawFishVisual != null)
+            rawFishVisual.SetActive(item == rawFishItem);
 
-        if (cookedItem == null)
-            return;
+        if (cookedFishVisual != null)
+            cookedFishVisual.SetActive(item == cookedFishItem);
 
-        cookingSlot.SetItem(cookedItem, 1);
+        if (rawCrabVisual != null)
+            rawCrabVisual.SetActive(item == rawCrabItem);
 
-        trackedCookingItem = cookedItem;
-        cookingElapsedHours = 0f;
+        if (cookedCrabVisual != null)
+            cookedCrabVisual.SetActive(item == cookedCrabItem);
 
-        if (cookingProgressImage != null)
-        {
-            cookingProgressImage.fillAmount = 1f;
-        }
+        if (rawWaterVisual != null)
+            rawWaterVisual.SetActive(item == waterItem);
 
-        SetSpinnerActive(false);
+        if (boiledWaterVisual != null)
+            boiledWaterVisual.SetActive(item == boiledWaterItem);
     }
 
-    private bool IsRawCookingItem(Items item)
+    private bool IsValidCookingItem(Items item)
     {
-        return item != null &&
-               (item == fishItem ||
-                item == crabItem ||
-                item == waterItem);
-    }
-
-    private Items GetCookedResult(Items rawItem)
-    {
-        if (rawItem == fishItem)
-            return cookedFishItem;
-
-        if (rawItem == crabItem)
-            return cookedCrabItem;
-
-        if (rawItem == waterItem)
-            return boiledWaterItem;
-
-        return null;
+        return item == waterItem ||
+               item == rawFishItem ||
+               item == rawCrabItem ||
+               item == boiledWaterItem ||
+               item == cookedFishItem ||
+               item == cookedCrabItem;
     }
 
     private float GetCookingDuration(Items item)
     {
-        if (item == fishItem)
-            return fishCookingHours;
+        if (item == rawFishItem)
+            return fishCookingTimeHours;
 
-        if (item == crabItem)
-            return crabCookingHours;
+        if (item == rawCrabItem)
+            return crabCookingTimeHours;
 
         if (item == waterItem)
-            return waterBoilingHours;
+            return waterBoilingTimeHours;
 
         return 0f;
     }
 
-    private void UpdateCookingVisuals()
+    private void FinishCooking()
     {
-        bool hasCookingItem =
-            cookingSlot != null &&
-            cookingSlot.Hasitem();
-
-        if (cookingVisual != null)
-        {
-            cookingVisual.SetActive(hasCookingItem);
-        }
-    }
-
-    private void SetSpinnerActive(bool active)
-    {
-        if (cookingSpinner != null &&
-            cookingSpinner.activeSelf != active)
-        {
-            cookingSpinner.SetActive(active);
-        }
-    }
-
-    private void UpdateFuelMessage()
-    {
-        if (fuelMessage == null)
+        if (cookingSlot == null)
             return;
 
-        bool hasWood =
-            fuelSlot != null &&
-            fuelSlot.Hasitem() &&
-            fuelSlot.GetItem() == woodItem;
+        Items currentItem = cookingSlot.GetItem();
+        Items cookedItem = null;
 
-        if (hasWood)
-        {
-            fuelMessage.gameObject.SetActive(false);
-        }
-    }
+        if (currentItem == rawFishItem)
+            cookedItem = cookedFishItem;
+        else if (currentItem == rawCrabItem)
+            cookedItem = cookedCrabItem;
+        else if (currentItem == waterItem)
+            cookedItem = boiledWaterItem;
 
-    private void LateUpdate()
-    {
-        if (!fireIsLit ||
-            cookingSpinner == null ||
-            !cookingSpinner.activeSelf ||
-            cookingSlot == null ||
-            !cookingSlot.Hasitem())
+        if (cookedItem == null)
             return;
 
-        Items item = cookingSlot.GetItem();
+        int amount = cookingSlot.GetAmount();
+        int durability = cookingSlot.GetDurability();
 
-        if (item != fishItem && item != crabItem)
-            return;
+        cookingSlot.SetItem(cookedItem, amount, durability);
 
-        cookingSpinner.transform.Rotate(
-            Vector3.right,
-            spinnerRotationSpeed * Time.deltaTime,
-            Space.Self
-        );
+        cookingElapsedHours = 0f;
+        lastCookingItem = cookedItem;
+
+        if (cookingProgress != null)
+            cookingProgress.fillAmount = 0f;
+
+        SetCookingItemVisuals(cookedItem);
     }
 }
