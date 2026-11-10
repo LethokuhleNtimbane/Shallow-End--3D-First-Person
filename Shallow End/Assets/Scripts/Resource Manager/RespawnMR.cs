@@ -3,18 +3,15 @@ using UnityEngine;
 
 public class RespawnMR : MonoBehaviour
 {
-   
-
-
     [SerializeField] private float respawnTime = 30f;
 
     private Vector3 originalPosition;
     private Quaternion originalRotation;
+    private Vector3 originalScale;
 
-    private Collider resourceCollider;
+    private Collider[] resourceColliders;
     private Renderer[] renderers;
-
-   
+    private Rigidbody resourceRigidbody;
 
     private bool respawning = false;
 
@@ -22,9 +19,11 @@ public class RespawnMR : MonoBehaviour
     {
         originalPosition = transform.position;
         originalRotation = transform.rotation;
+        originalScale = transform.localScale;
 
-        resourceCollider = GetComponent<Collider>();
-        renderers = GetComponentsInChildren<Renderer>();
+        resourceColliders = GetComponentsInChildren<Collider>(true);
+        renderers = GetComponentsInChildren<Renderer>(true);
+        resourceRigidbody = GetComponent<Rigidbody>();
     }
 
     public void RespawnResource()
@@ -39,42 +38,44 @@ public class RespawnMR : MonoBehaviour
     {
         respawning = true;
 
-       
-
-
         SetResourceVisible(false);
 
-     
-
+        if (resourceRigidbody != null)
+        {
+            resourceRigidbody.linearVelocity = Vector3.zero;
+            resourceRigidbody.angularVelocity = Vector3.zero;
+            resourceRigidbody.isKinematic = true;
+        }
 
         yield return new WaitForSeconds(respawnTime);
 
-  
+        transform.SetPositionAndRotation(originalPosition, originalRotation);
+        transform.localScale = originalScale;
 
-    
-        transform.position = originalPosition;
-        transform.rotation = originalRotation;
+        if (resourceRigidbody != null)
+        {
+            resourceRigidbody.linearVelocity = Vector3.zero;
+            resourceRigidbody.angularVelocity = Vector3.zero;
+            resourceRigidbody.isKinematic = false;
+        }
 
- 
         SetResourceVisible(true);
-
-       
 
         respawning = false;
     }
 
     private void SetResourceVisible(bool visible)
     {
-       
-        if (resourceCollider != null)
+        foreach (Collider resourceCollider in resourceColliders)
         {
-            resourceCollider.enabled = visible;
+            if (resourceCollider != null)
+                resourceCollider.enabled = visible;
         }
-
 
         foreach (Renderer renderer in renderers)
         {
-            renderer.enabled = visible;
+            if (renderer != null)
+                renderer.enabled = visible;
         }
     }
 }

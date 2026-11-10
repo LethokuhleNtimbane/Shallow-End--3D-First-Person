@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 8427261627299533279}
   - component: {fileID: 1146470535400523687}
   - component: {fileID: 6463802012230094254}
-  - component: {fileID: 3631952949752257827}
   - component: {fileID: 8893164136392600599}
   - component: {fileID: 8524305619750953571}
   - component: {fileID: 6232965280725704289}
+  - component: {fileID: 3241553808462682738}
   m_Layer: 9
   m_Name: Rock 3 (1)
   m_TagString: Rocks
@@ -94,22 +94,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3631952949752257827
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5090398925155841278}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8a753f6795be8b46b40262ce33a694d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GroundItem
-  item: {fileID: 11400000, guid: 470dd5c8eb95a294899fbd08233024e0, type: 2}
-  amount: 1
-  currentDurability: -1
-  sourcePrefab: {fileID: 0}
 --- !u!54 &8893164136392600599
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -171,3 +155,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RespawnMR
   respawnTime: 30
+--- !u!114 &3241553808462682738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5090398925155841278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8a753f6795be8b46b40262ce33a694d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GroundItem
+  item: {fileID: 11400000, guid: 470dd5c8eb95a294899fbd08233024e0, type: 2}
+  amount: 1
+  currentDurability: -1
+  sourcePrefab: {fileID: 0}
