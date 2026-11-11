@@ -1,4 +1,3 @@
-
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -25,12 +24,16 @@ public class FoodScript : MonoBehaviour
     [Header("Water Bucket Items")]
     [SerializeField] private Items emptyWaterBucketItem;
     [SerializeField] private Items filledWaterBucketItem;
+    [SerializeField] private Items boiledWaterItem;
 
     [Tooltip("Maximum distance for the water raycast.")]
     [SerializeField] private float waterRaycastDistance = 5f;
 
     [Tooltip("Amount of thirst restored when drinking.")]
     [SerializeField] private float waterThirstIncrease = 65f;
+
+    [Tooltip("Amount of thirst restored when drinking boiled water.")]
+    [SerializeField] private float boiledWaterThirstIncrease = 45f;
 
     [Tooltip("Percentage of current health removed when drinking.")]
     [Range(0f, 100f)]
@@ -155,8 +158,8 @@ public class FoodScript : MonoBehaviour
             TryFillBucket();
         }
 
-        if (selectedItem == filledWaterBucketItem &&
-            filledWaterBucketItem != null &&
+        if ((selectedItem == filledWaterBucketItem ||
+             selectedItem == boiledWaterItem) &&
             WasPressed(drinkWaterAction))
         {
             DrinkWater();
@@ -182,14 +185,15 @@ public class FoodScript : MonoBehaviour
             Debug.LogWarning(
                 "FoodScript: Inventory or player camera is missing."
             );
+
             return;
         }
 
         if (waterLayer == -1)
             return;
 
-        // Make sure the selected empty bucket has durability.
-        int currentDurability = inventory.GetEquippedDurability();
+        int currentDurability =
+            inventory.GetEquippedDurability();
 
         if (currentDurability < 0)
         {
@@ -197,15 +201,17 @@ public class FoodScript : MonoBehaviour
                 "Water bucket has no durability configured. " +
                 "Enable durability on the empty bucket Items asset."
             );
+
             return;
         }
 
-        // Check whether the player is looking at water.
-        Ray ray = playerCamera.ViewportPointToRay(
-            new Vector3(0.5f, 0.5f, 0f)
-        );
+        Ray ray =
+            playerCamera.ViewportPointToRay(
+                new Vector3(0.5f, 0.5f, 0f)
+            );
 
-        int layerMask = 1 << waterLayer;
+        int layerMask =
+            1 << waterLayer;
 
         if (!Physics.Raycast(
                 ray,
@@ -217,20 +223,20 @@ public class FoodScript : MonoBehaviour
             return;
         }
 
-        // Fetching water costs one durability.
-        int remainingDurability = currentDurability - 1;
+        int remainingDurability =
+            currentDurability - 1;
 
-        // If the bucket uses its final durability point,
-        // it breaks instead of producing a filled bucket.
         inventory.RemoveHotbarItem(1);
 
         if (remainingDurability <= 0)
         {
-            Debug.Log("The empty water bucket broke while fetching water!");
+            Debug.Log(
+                "The empty water bucket broke while fetching water!"
+            );
+
             return;
         }
 
-        // Create the filled bucket with the remaining durability.
         inventory.AddItem(
             filledWaterBucketItem,
             1,
@@ -245,38 +251,57 @@ public class FoodScript : MonoBehaviour
 
     private void DrinkWater()
     {
-        if (inventory == null || healthScript == null)
+        if (inventory == null ||
+            healthScript == null)
             return;
 
-        // Read the filled bucket's current durability.
-        int currentDurability = inventory.GetEquippedDurability();
+        Items selectedItem =
+            inventory.GetHotbarItem();
+
+        int currentDurability =
+            inventory.GetEquippedDurability();
 
         if (currentDurability < 0)
         {
             Debug.LogWarning(
-                "Filled water bucket has no durability configured. " +
-                "Enable durability on the filled bucket Items asset."
+                "Water bucket has no durability configured. " +
+                "Enable durability on the water bucket Items asset."
             );
+
             return;
         }
 
-        // Restore thirst.
-        healthScript.AddThirst(waterThirstIncrease);
+        if (selectedItem == boiledWaterItem)
+        {
+            DrinkBoiledWater(currentDurability);
+            return;
+        }
 
-        // Reduce current health and hunger by the configured percentages.
-        float newHealth = healthScript.health *
+        if (selectedItem != filledWaterBucketItem)
+            return;
+
+        healthScript.AddThirst(
+            waterThirstIncrease
+        );
+
+        float newHealth =
+            healthScript.health *
             (1f - waterHealthLossPercent / 100f);
 
-        float hungerToRemove = healthScript.hunger *
+        float hungerToRemove =
+            healthScript.hunger *
             (waterHungerLossPercent / 100f);
 
-        healthScript.SetHealth(newHealth);
-        healthScript.RemoveHunger(hungerToRemove);
+        healthScript.SetHealth(
+            newHealth
+        );
 
-        // Remove the filled bucket without consuming durability.
+        healthScript.RemoveHunger(
+            hungerToRemove
+        );
+
         inventory.RemoveHotbarItem(1);
 
-        // Return the same bucket as empty, keeping its durability.
         inventory.AddItem(
             emptyWaterBucketItem,
             1,
@@ -289,23 +314,49 @@ public class FoodScript : MonoBehaviour
         );
     }
 
+    private void DrinkBoiledWater(int currentDurability)
+    {
+        healthScript.AddThirst(
+            boiledWaterThirstIncrease
+        );
+
+        inventory.RemoveHotbarItem(1);
+
+        inventory.AddItem(
+            emptyWaterBucketItem,
+            1,
+            currentDurability
+        );
+
+        Debug.Log(
+            "Drank boiled water. Thirst restored by " +
+            boiledWaterThirstIncrease +
+            ". Bucket durability preserved at: " +
+            currentDurability
+        );
+    }
+
     private void EatFood()
     {
-        if (inventory == null || healthScript == null)
+        if (inventory == null ||
+            healthScript == null)
             return;
 
-        Items hotbarItem = inventory.GetHotbarItem();
+        Items hotbarItem =
+            inventory.GetHotbarItem();
 
         if (hotbarItem == null)
             return;
 
-        if (mushroomItem != null && hotbarItem == mushroomItem)
+        if (mushroomItem != null &&
+            hotbarItem == mushroomItem)
         {
             EatMushroom();
             return;
         }
 
-        FoodItem food = GetFoodData(hotbarItem);
+        FoodItem food =
+            GetFoodData(hotbarItem);
 
         if (food == null)
             return;
@@ -322,8 +373,13 @@ public class FoodScript : MonoBehaviour
             return;
         }
 
-        healthScript.AddHunger(food.hungerIncrease);
-        healthScript.AddThirst(food.thirstIncrease);
+        healthScript.AddHunger(
+            food.hungerIncrease
+        );
+
+        healthScript.AddThirst(
+            food.thirstIncrease
+        );
 
         inventory.RemoveHotbarItem(1);
     }
@@ -369,18 +425,37 @@ public class FoodScript : MonoBehaviour
                     );
                 }
 
-                ShowMushroomEffect(fasterMovementSprite);
+                ShowMushroomEffect(
+                    fasterMovementSprite
+                );
+
                 break;
 
             case MushroomEffect.FullRecovery:
-                Debug.Log("Mushroom Effect: Full Recovery");
+                Debug.Log(
+                    "Mushroom Effect: Full Recovery"
+                );
 
-                healthScript.SetHealth(healthScript.maxHealth);
-                healthScript.AddHunger(healthScript.maxHunger);
-                healthScript.AddThirst(healthScript.maxThirst);
-                healthScript.SetHealthRegenerationEnabled(true);
+                healthScript.SetHealth(
+                    healthScript.maxHealth
+                );
 
-                ShowMushroomEffect(fullRecoverySprite);
+                healthScript.AddHunger(
+                    healthScript.maxHunger
+                );
+
+                healthScript.AddThirst(
+                    healthScript.maxThirst
+                );
+
+                healthScript.SetHealthRegenerationEnabled(
+                    true
+                );
+
+                ShowMushroomEffect(
+                    fullRecoverySprite
+                );
+
                 break;
         }
 
@@ -394,6 +469,7 @@ public class FoodScript : MonoBehaviour
             Debug.LogWarning(
                 "FoodScript: Mushroom Effect Image is not assigned!"
             );
+
             return;
         }
 
@@ -402,24 +478,33 @@ public class FoodScript : MonoBehaviour
             Debug.LogWarning(
                 "FoodScript: The sprite for this mushroom effect is not assigned!"
             );
+
             return;
         }
 
         if (effectDisplayCoroutine != null)
         {
-            StopCoroutine(effectDisplayCoroutine);
+            StopCoroutine(
+                effectDisplayCoroutine
+            );
         }
 
-        mushroomEffectImage.sprite = effectSprite;
+        mushroomEffectImage.sprite =
+            effectSprite;
+
         SetImageAlpha(1f);
 
         effectDisplayCoroutine =
-            StartCoroutine(HideEffectAfterDelay());
+            StartCoroutine(
+                HideEffectAfterDelay()
+            );
     }
 
     private IEnumerator HideEffectAfterDelay()
     {
-        yield return new WaitForSeconds(effectDisplayDuration);
+        yield return new WaitForSeconds(
+            effectDisplayDuration
+        );
 
         float elapsed = 0f;
 
@@ -427,11 +512,21 @@ public class FoodScript : MonoBehaviour
         {
             elapsed += Time.deltaTime;
 
-            float fadeProgress = fadeOutDuration > 0f
-                ? Mathf.Clamp01(elapsed / fadeOutDuration)
-                : 1f;
+            float fadeProgress =
+                fadeOutDuration > 0f
+                    ? Mathf.Clamp01(
+                        elapsed /
+                        fadeOutDuration
+                    )
+                    : 1f;
 
-            SetImageAlpha(Mathf.Lerp(1f, 0f, fadeProgress));
+            SetImageAlpha(
+                Mathf.Lerp(
+                    1f,
+                    0f,
+                    fadeProgress
+                )
+            );
 
             yield return null;
         }
@@ -445,9 +540,13 @@ public class FoodScript : MonoBehaviour
         if (mushroomEffectImage == null)
             return;
 
-        Color imageColor = mushroomEffectImage.color;
+        Color imageColor =
+            mushroomEffectImage.color;
+
         imageColor.a = alpha;
-        mushroomEffectImage.color = imageColor;
+
+        mushroomEffectImage.color =
+            imageColor;
     }
 
     private FoodItem GetFoodData(Items item)
@@ -457,7 +556,8 @@ public class FoodScript : MonoBehaviour
 
         foreach (FoodItem food in foodItems)
         {
-            if (food != null && food.item == item)
+            if (food != null &&
+                food.item == item)
             {
                 return food;
             }

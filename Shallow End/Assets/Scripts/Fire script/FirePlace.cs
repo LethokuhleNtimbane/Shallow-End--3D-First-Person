@@ -1,4 +1,3 @@
-
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,6 +11,15 @@ public class Fireplace : MonoBehaviour
     [SerializeField] private InputActionReference lightFireAction;
     [SerializeField] private GameObject fireplaceInterface;
     [SerializeField] private GameObject fireplaceBackground;
+    [SerializeField] private GameObject gameUIToHide;
+
+    [Header("Player Scripts")]
+    [SerializeField] private FoodScript foodScript;
+    [SerializeField] private DashScript dash;
+    [SerializeField] private PlayerController playerController;
+    [SerializeField] private TimeController timeController;
+    [SerializeField] private HealthScript healthScript;
+    [SerializeField] private PauseScript pauseScript;
 
     [Header("Inventory")]
     [SerializeField] private Inventory inventory;
@@ -70,6 +78,8 @@ public class Fireplace : MonoBehaviour
     private Vector3 particle2OriginalScale;
     private Vector3 particle3OriginalScale;
 
+    private float spinnerXRotation;
+
     private void Awake()
     {
         if (fireParticle1 != null)
@@ -81,6 +91,9 @@ public class Fireplace : MonoBehaviour
         if (fireParticle3 != null)
             particle3OriginalScale = fireParticle3.transform.localScale;
 
+        if (cookingSpinner != null)
+            spinnerXRotation = cookingSpinner.transform.localEulerAngles.x;
+
         SetFireObjects(false);
         SetParticlesActive(false);
         SetCookingItemVisuals(null);
@@ -90,6 +103,9 @@ public class Fireplace : MonoBehaviour
 
         if (fireplaceBackground != null)
             fireplaceBackground.SetActive(false);
+
+        if (gameUIToHide != null)
+            gameUIToHide.SetActive(true);
 
         if (cookingProgress != null)
             cookingProgress.fillAmount = 0f;
@@ -126,6 +142,9 @@ public class Fireplace : MonoBehaviour
 
         if (inventory != null)
             inventory.UnregisterFireplaceSlots();
+
+        if (interfaceOpen)
+            CloseInterface();
     }
 
     private void Update()
@@ -136,12 +155,7 @@ public class Fireplace : MonoBehaviour
         DateTime currentTime = TimeController.instance.CurrentTime;
 
         CheckInteraction();
-
-        if (interfaceOpen && lightFireAction != null &&
-            lightFireAction.action.WasPressedThisFrame())
-        {
-            CheckFireLighting();
-        }
+        CheckFireLighting();
 
         UpdateFire(currentTime);
         UpdateCookingClock(currentTime);
@@ -159,9 +173,15 @@ public class Fireplace : MonoBehaviour
         if (cam == null)
             return;
 
-        Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+        Ray ray = new Ray(
+            cam.transform.position,
+            cam.transform.forward
+        );
 
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance))
+        if (Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            interactionDistance))
         {
             if (hit.collider.transform == transform ||
                 hit.collider.transform.IsChildOf(transform))
@@ -174,6 +194,78 @@ public class Fireplace : MonoBehaviour
         }
     }
 
+    private void CheckFireLighting()
+    {
+        if (interfaceOpen)
+            return;
+
+        if (lightFireAction == null ||
+            !lightFireAction.action.WasPressedThisFrame())
+            return;
+
+        if (fireIsLit)
+            return;
+
+        if (inventory == null ||
+            !inventory.IsFlintEquipped(flintItem))
+            return;
+
+        Camera cam = Camera.main;
+
+        if (cam == null)
+            return;
+
+        Ray ray = new Ray(
+            cam.transform.position,
+            cam.transform.forward
+        );
+
+        if (!Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            interactionDistance))
+            return;
+
+        if (hit.collider.transform != transform &&
+            !hit.collider.transform.IsChildOf(transform))
+            return;
+
+        if (fuelSlot == null || !fuelSlot.Hasitem())
+        {
+            inventory.ShowInteractionMessage(
+                "I need to get wood for fuel"
+            );
+
+            return;
+        }
+
+        if (fuelSlot.GetItem() != woodItem)
+            return;
+
+        LightFire();
+    }
+
+    private void SetPlayerScriptsEnabled(bool enabled)
+    {
+        if (foodScript != null)
+            foodScript.enabled = enabled;
+
+        if (dash != null)
+            dash.enabled = enabled;
+
+        if (playerController != null)
+            playerController.enabled = enabled;
+
+        if (timeController != null)
+            timeController.enabled = enabled;
+
+        if (healthScript != null)
+            healthScript.enabled = enabled;
+
+        if (pauseScript != null)
+            pauseScript.enabled = enabled;
+    }
+
     private void OpenInterface()
     {
         interfaceOpen = true;
@@ -183,6 +275,11 @@ public class Fireplace : MonoBehaviour
 
         if (fireplaceBackground != null)
             fireplaceBackground.SetActive(true);
+
+        if (gameUIToHide != null)
+            gameUIToHide.SetActive(false);
+
+        SetPlayerScriptsEnabled(false);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -198,39 +295,25 @@ public class Fireplace : MonoBehaviour
         if (fireplaceBackground != null)
             fireplaceBackground.SetActive(false);
 
+        if (gameUIToHide != null)
+            gameUIToHide.SetActive(true);
+
+        SetPlayerScriptsEnabled(true);
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-    }
-
-    private void CheckFireLighting()
-    {
-        if (fireIsLit)
-            return;
-
-        if (fuelSlot == null || !fuelSlot.Hasitem())
-        {
-            if (inventory != null)
-                inventory.ShowInteractionMessage("I need to get wood for fuel");
-
-            return;
-        }
-
-        if (fuelSlot.GetItem() != woodItem)
-            return;
-
-        if (inventory == null || !inventory.IsFlintEquipped(flintItem))
-            return;
-
-        LightFire();
     }
 
     private void LightFire()
     {
         fireIsLit = true;
 
-        DateTime currentTime = TimeController.instance.CurrentTime;
+        DateTime currentTime =
+            TimeController.instance.CurrentTime;
 
-        fireEndTime = currentTime.AddHours(fireDurationHours);
+        fireEndTime =
+            currentTime.AddHours(fireDurationHours);
+
         lastClockTime = currentTime;
 
         fuelSlot.ClearSlot();
@@ -307,7 +390,11 @@ public class Fireplace : MonoBehaviour
             }
             else
             {
-                particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                particle.Stop(
+                    true,
+                    ParticleSystemStopBehavior.StopEmittingAndClear
+                );
+
                 particle.gameObject.SetActive(false);
             }
         }
@@ -316,36 +403,53 @@ public class Fireplace : MonoBehaviour
     private void ResetParticleScales()
     {
         if (fireParticle1 != null)
-            fireParticle1.transform.localScale = particle1OriginalScale;
+            fireParticle1.transform.localScale =
+                particle1OriginalScale;
 
         if (fireParticle2 != null)
-            fireParticle2.transform.localScale = particle2OriginalScale;
+            fireParticle2.transform.localScale =
+                particle2OriginalScale;
 
         if (fireParticle3 != null)
-            fireParticle3.transform.localScale = particle3OriginalScale;
+            fireParticle3.transform.localScale =
+                particle3OriginalScale;
     }
 
     private void UpdateFireParticles(DateTime currentTime)
     {
-        double remainingSeconds = (fireEndTime - currentTime).TotalSeconds;
+        double remainingSeconds =
+            (fireEndTime - currentTime).TotalSeconds;
 
-        float remainingPercentage = Mathf.Clamp01(
-            (float)(remainingSeconds / (fireDurationHours * 3600f))
-        );
+        float remainingPercentage =
+            Mathf.Clamp01(
+                (float)(
+                    remainingSeconds /
+                    (fireDurationHours * 3600f)
+                )
+            );
 
         if (fireParticle1 != null)
-            fireParticle1.transform.localScale = particle1OriginalScale * remainingPercentage;
+            fireParticle1.transform.localScale =
+                particle1OriginalScale *
+                remainingPercentage;
 
         if (fireParticle2 != null)
-            fireParticle2.transform.localScale = particle2OriginalScale * remainingPercentage;
+            fireParticle2.transform.localScale =
+                particle2OriginalScale *
+                remainingPercentage;
 
         if (fireParticle3 != null)
-            fireParticle3.transform.localScale = particle3OriginalScale * remainingPercentage;
+            fireParticle3.transform.localScale =
+                particle3OriginalScale *
+                remainingPercentage;
     }
 
     private void UpdateCookingClock(DateTime currentTime)
     {
-        Items currentCookingItem = cookingSlot != null ? cookingSlot.GetItem() : null;
+        Items currentCookingItem =
+            cookingSlot != null
+                ? cookingSlot.GetItem()
+                : null;
 
         if (currentCookingItem != lastCookingItem)
         {
@@ -366,22 +470,29 @@ public class Fireplace : MonoBehaviour
             return;
         }
 
-        DateTime effectiveCurrentTime = currentTime;
+        DateTime effectiveCurrentTime =
+            currentTime;
 
         if (effectiveCurrentTime > fireEndTime)
             effectiveCurrentTime = fireEndTime;
 
-        double elapsedSeconds = (effectiveCurrentTime - lastClockTime).TotalSeconds;
+        double elapsedSeconds =
+            (effectiveCurrentTime - lastClockTime).TotalSeconds;
 
         if (elapsedSeconds > 0)
-            cookingElapsedHours += (float)elapsedSeconds / 3600f;
+        {
+            cookingElapsedHours +=
+                (float)elapsedSeconds /
+                3600f;
+        }
 
         lastClockTime = effectiveCurrentTime;
     }
 
     private void UpdateCooking()
     {
-        if (cookingSlot == null || !cookingSlot.Hasitem())
+        if (cookingSlot == null ||
+            !cookingSlot.Hasitem())
         {
             SetCookingItemVisuals(null);
 
@@ -391,7 +502,8 @@ public class Fireplace : MonoBehaviour
             return;
         }
 
-        Items currentItem = cookingSlot.GetItem();
+        Items currentItem =
+            cookingSlot.GetItem();
 
         SetCookingItemVisuals(currentItem);
 
@@ -407,26 +519,43 @@ public class Fireplace : MonoBehaviour
             currentItem == rawFishItem ||
             currentItem == rawCrabItem;
 
-        if (isRawFishOrCrab && fireIsLit && cookingSpinner != null)
+        if (isRawFishOrCrab &&
+            fireIsLit &&
+            cookingSpinner != null)
         {
-            cookingSpinner.transform.Rotate(
-                Vector3.right,
-                cookingSpinnerSpeed * Time.deltaTime,
-                Space.Self
-            );
+            spinnerXRotation +=
+                cookingSpinnerSpeed *
+                Time.deltaTime;
+
+            Vector3 currentRotation =
+                cookingSpinner.transform.localEulerAngles;
+
+            currentRotation.x =
+                spinnerXRotation;
+
+            cookingSpinner.transform.localEulerAngles =
+                currentRotation;
         }
 
-        float cookingDuration = GetCookingDuration(currentItem);
+        float cookingDuration =
+            GetCookingDuration(currentItem);
 
-        float progress = cookingDuration > 0f
-            ? Mathf.Clamp01(cookingElapsedHours / cookingDuration)
-            : 0f;
+        float progress =
+            cookingDuration > 0f
+                ? Mathf.Clamp01(
+                    cookingElapsedHours /
+                    cookingDuration
+                )
+                : 0f;
 
         if (cookingProgress != null)
-            cookingProgress.fillAmount = progress;
+            cookingProgress.fillAmount =
+                progress;
 
-        if (fireIsLit && cookingDuration > 0f &&
-            cookingElapsedHours >= cookingDuration)
+        if (fireIsLit &&
+            cookingDuration > 0f &&
+            cookingElapsedHours >=
+                cookingDuration)
         {
             FinishCooking();
         }
@@ -435,22 +564,34 @@ public class Fireplace : MonoBehaviour
     private void SetCookingItemVisuals(Items item)
     {
         if (rawFishVisual != null)
-            rawFishVisual.SetActive(item == rawFishItem);
+            rawFishVisual.SetActive(
+                item == rawFishItem
+            );
 
         if (cookedFishVisual != null)
-            cookedFishVisual.SetActive(item == cookedFishItem);
+            cookedFishVisual.SetActive(
+                item == cookedFishItem
+            );
 
         if (rawCrabVisual != null)
-            rawCrabVisual.SetActive(item == rawCrabItem);
+            rawCrabVisual.SetActive(
+                item == rawCrabItem
+            );
 
         if (cookedCrabVisual != null)
-            cookedCrabVisual.SetActive(item == cookedCrabItem);
+            cookedCrabVisual.SetActive(
+                item == cookedCrabItem
+            );
 
         if (rawWaterVisual != null)
-            rawWaterVisual.SetActive(item == waterItem);
+            rawWaterVisual.SetActive(
+                item == waterItem
+            );
 
         if (boiledWaterVisual != null)
-            boiledWaterVisual.SetActive(item == boiledWaterItem);
+            boiledWaterVisual.SetActive(
+                item == boiledWaterItem
+            );
     }
 
     private bool IsValidCookingItem(Items item)
@@ -482,7 +623,9 @@ public class Fireplace : MonoBehaviour
         if (cookingSlot == null)
             return;
 
-        Items currentItem = cookingSlot.GetItem();
+        Items currentItem =
+            cookingSlot.GetItem();
+
         Items cookedItem = null;
 
         if (currentItem == rawFishItem)
@@ -495,10 +638,17 @@ public class Fireplace : MonoBehaviour
         if (cookedItem == null)
             return;
 
-        int amount = cookingSlot.GetAmount();
-        int durability = cookingSlot.GetDurability();
+        int amount =
+            cookingSlot.GetAmount();
 
-        cookingSlot.SetItem(cookedItem, amount, durability);
+        int durability =
+            cookingSlot.GetDurability();
+
+        cookingSlot.SetItem(
+            cookedItem,
+            amount,
+            durability
+        );
 
         cookingElapsedHours = 0f;
         lastCookingItem = cookedItem;
