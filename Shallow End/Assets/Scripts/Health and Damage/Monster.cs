@@ -24,6 +24,11 @@ public class Monster : MonoBehaviour
     [SerializeField] private float patrolRadius = 8f;
     [SerializeField] private float patrolWaitTime = 2f;
 
+    [Header("Monster Separation")]
+    [SerializeField] private float separationRadius = 2f;
+    [SerializeField] private float separationStrength = 1.5f;
+
+
     private Vector3 patrolCenter;
     private Vector3 patrolTarget;
     private float patrolWaitTimer;
@@ -193,8 +198,49 @@ public class Monster : MonoBehaviour
 
         direction.Normalize();
 
+        // Calculate da separation from othr monsters
+        Vector3 separation = GetSeparationDirection();
+
+        // Combines the player movement with monster avoidance
+        direction = (direction + separation * separationStrength).normalized;
+
+        // Move towards player while avoiding other monsters so dey dont merge together
         transform.position += direction * moveSpeed * Time.deltaTime;
+
         transform.rotation = Quaternion.LookRotation(direction);
+    }
+
+    private Vector3 GetSeparationDirection()
+    {
+        Vector3 separation = Vector3.zero;
+
+        Collider[] nearbyColliders = Physics.OverlapSphere(
+            transform.position,
+            separationRadius
+        );
+
+        foreach (Collider col in nearbyColliders)
+        {
+            Monster otherMonster = col.GetComponentInParent<Monster>();
+
+            if (otherMonster == null || otherMonster == this)
+                continue;
+
+            Vector3 awayDirection =
+                transform.position - otherMonster.transform.position;
+
+            awayDirection.y = 0f;
+
+            float distance = awayDirection.magnitude;
+
+            if (distance > 0.01f)
+            {
+                separation += awayDirection.normalized *
+                    (1f - distance / separationRadius);
+            }
+        }
+
+        return separation;
     }
 
     private void Patrol()

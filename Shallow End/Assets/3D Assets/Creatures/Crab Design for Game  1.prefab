@@ -1,0 +1,180 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &2577696480599281334
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -11.431939
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -9.393
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -7.433771
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -2484921068739079471, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      propertyPath: m_Name
+      value: Crab Design for Game  1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8151452023550665784}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 568538859026561400}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8244740795458052035}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 635150148872263154}
+  m_SourcePrefab: {fileID: 100100000, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+--- !u!1 &3388035797107618791 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+  m_PrefabInstance: {fileID: 2577696480599281334}
+  m_PrefabAsset: {fileID: 0}
+--- !u!54 &8151452023550665784
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3388035797107618791}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 112
+  m_CollisionDetection: 0
+--- !u!65 &568538859026561400
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3388035797107618791}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!95 &8244740795458052035
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3388035797107618791}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: d1cdbfea91969da4a964d125a806139c, type: 3}
+  m_Controller: {fileID: 9100000, guid: 0ea5144912389294897c54469b07c781, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &635150148872263154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3388035797107618791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52abfe8835bb2174285bf57133a4c409, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CrabMovement
+  moveSpeed: 2
+  rotationSpeed: 5
+  minMoveTime: 1
+  maxMoveTime: 4
+  minWaitTime: 0.5
+  maxWaitTime: 2

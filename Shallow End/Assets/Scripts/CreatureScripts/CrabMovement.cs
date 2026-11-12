@@ -28,13 +28,14 @@ public class CrabMovement : MonoBehaviour
         if (moving)
         {
             
-            transform.position += moveDirection * moveSpeed * Time.deltaTime; 
+            transform.position -= moveDirection * moveSpeed * Time.deltaTime; 
 
            
             if (moveDirection != Vector3.zero) 
             {
                 Quaternion targetRotation =
                     Quaternion.LookRotation(moveDirection, Vector3.up);
+                
 
                 transform.rotation = Quaternion.Slerp(
                     transform.rotation,
