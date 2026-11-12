@@ -15,6 +15,9 @@ public class AudioManager : MonoBehaviour
     public AudioClip backgroundDaytime;
     public AudioClip backgroundNightTime;
 
+    [Header("Main Menu Intro")]
+    [SerializeField] private AudioClip mainMenuIntro;
+
     [Header("Audio Settings")]
     [SerializeField] private float fadeDuration = 2f;
     [SerializeField] private float musicVolume = 1f;
@@ -35,8 +38,12 @@ public class AudioManager : MonoBehaviour
     private const string MENU_SCENE = "MainMenuScene";
 
     private Coroutine musicFadeCoroutine;
+    private Coroutine introCoroutine;
     private float musicFadeMultiplier = 1f;
     private AudioClip targetMusicClip;
+
+    private bool introPlayed;
+    private bool introPlaying;
 
     private void Awake()
     {
@@ -64,33 +71,85 @@ public class AudioManager : MonoBehaviour
 
     private void Update()
     {
-        AudioClip desiredMusic;
-
         if (SceneManager.GetActiveScene().name == MENU_SCENE)
         {
-            desiredMusic = backgroundDaytime;
-        }
-        else
-        {
-            bool isNight = false;
-
-            if (TimeController.instance != null)
+            if (!introPlayed)
             {
-                float currentHour = TimeController.instance.CurrentHour;
-                isNight = currentHour >= 21f || currentHour < 6f;
+                StartMenuIntro();
+                return;
             }
 
-            desiredMusic = isNight
-                ? backgroundNightTime
-                : backgroundDaytime;
+            if (introPlaying)
+                return;
+
+            PlayMusicIfNeeded(backgroundDaytime);
+            return;
         }
 
-        PlayMusicIfNeeded(desiredMusic);
+        PlayMusicIfNeeded(GetCurrentGameMusic());
+    }
+
+    private AudioClip GetCurrentGameMusic()
+    {
+        if (TimeController.instance != null)
+        {
+            float currentHour = TimeController.instance.CurrentHour;
+
+            if (currentHour >= 21f || currentHour < 6f)
+                return backgroundNightTime;
+        }
+
+        return backgroundDaytime;
+    }
+
+    private void StartMenuIntro()
+    {
+        if (introPlaying || introPlayed)
+            return;
+
+        introPlayed = true;
+        introPlaying = true;
+
+        if (musicFadeCoroutine != null)
+        {
+            StopCoroutine(musicFadeCoroutine);
+            musicFadeCoroutine = null;
+        }
+
+        targetMusicClip = backgroundDaytime;
+
+        if (musicSource != null)
+        {
+            musicSource.Stop();
+            musicSource.clip = null;
+        }
+
+        if (mainMenuIntro == null)
+        {
+            introPlaying = false;
+            return;
+        }
+
+        introCoroutine = StartCoroutine(PlayMenuIntro());
+    }
+
+    private IEnumerator PlayMenuIntro()
+    {
+        if (SFXSource != null)
+        {
+            SFXSource.PlayOneShot(mainMenuIntro);
+            yield return new WaitForSecondsRealtime(mainMenuIntro.length);
+        }
+
+        introPlaying = false;
+        introCoroutine = null;
+
+        PlayMusicIfNeeded(backgroundDaytime);
     }
 
     private void PlayMusicIfNeeded(AudioClip newClip)
     {
-        if (newClip == null || musicSource == null)
+        if (newClip == null || musicSource == null || introPlaying)
             return;
 
         if (targetMusicClip == newClip)
@@ -105,13 +164,9 @@ public class AudioManager : MonoBehaviour
         targetMusicClip = newClip;
 
         if (!musicSource.isPlaying || musicSource.clip == null)
-        {
             StartMusic(newClip);
-        }
         else
-        {
             ChangeMusic(newClip);
-        }
     }
 
     private void StartMusic(AudioClip newClip)

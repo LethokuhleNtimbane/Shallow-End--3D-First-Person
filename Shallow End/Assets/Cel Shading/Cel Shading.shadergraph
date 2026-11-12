@@ -17,6 +17,9 @@
         },
         {
             "m_Id": "17fbeb2bacd4449b84b4f57ebd90facb"
+        },
+        {
+            "m_Id": "957c7312f985489e8eb4ddb5309f2099"
         }
     ],
     "m_Keywords": [],
@@ -738,10 +741,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1384.6666259765625,
-            "y": -224.00001525878907,
+            "x": -1428.6666259765625,
+            "y": -594.6666259765625,
             "width": 209.333251953125,
-            "height": 317.3334045410156
+            "height": 317.33331298828127
         }
     },
     "m_Slots": [
@@ -1649,6 +1652,43 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
+    "m_ObjectId": "957c7312f985489e8eb4ddb5309f2099",
+    "m_Guid": {
+        "m_GuidSerialized": "f3bf58d2-3b1a-4a32-a19f-f254a25d9034"
+    },
+    "promotedFromAssetID": "",
+    "promotedFromCategoryName": "",
+    "promotedOrdering": -1,
+    "m_Name": "Normal Map",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "Normal Map",
+    "m_DefaultReferenceName": "_Normal_Map",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
+    "m_Value": {
+        "m_SerializedTexture": "",
+        "m_Guid": ""
+    },
+    "isMainTexture": false,
+    "useTilingAndOffset": false,
+    "useTexelSize": true,
+    "isHDR": false,
+    "m_Modifiable": true,
+    "m_DefaultType": 0
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.CategoryData",
     "m_ObjectId": "95c6d9c49ad14dfb9bfa971d3aeea693",
     "m_Name": "",
@@ -1667,6 +1707,9 @@
         },
         {
             "m_Id": "17fbeb2bacd4449b84b4f57ebd90facb"
+        },
+        {
+            "m_Id": "957c7312f985489e8eb4ddb5309f2099"
         }
     ]
 }
