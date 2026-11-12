@@ -1,4 +1,3 @@
-
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,6 +16,10 @@ public class AudioManager : MonoBehaviour
 
     [Header("Main Menu Intro")]
     [SerializeField] private AudioClip mainMenuIntro;
+
+    [Header("Opening Animation")]
+    [SerializeField] private Animator openingAnimator;
+    [SerializeField] private string openingAnimationTrigger = "PlayOpeningAnimation";
 
     [Header("Audio Settings")]
     [SerializeField] private float fadeDuration = 2f;
@@ -39,6 +42,7 @@ public class AudioManager : MonoBehaviour
 
     private Coroutine musicFadeCoroutine;
     private Coroutine introCoroutine;
+
     private float musicFadeMultiplier = 1f;
     private AudioClip targetMusicClip;
 
@@ -73,12 +77,14 @@ public class AudioManager : MonoBehaviour
     {
         if (SceneManager.GetActiveScene().name == MENU_SCENE)
         {
+            // Play the opening sequence only once per game launch
             if (!introPlayed)
             {
                 StartMenuIntro();
                 return;
             }
 
+            // Do not start normal menu music during the opening sequence
             if (introPlaying)
                 return;
 
@@ -86,6 +92,7 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
+        // Normal game music
         PlayMusicIfNeeded(GetCurrentGameMusic());
     }
 
@@ -118,16 +125,11 @@ public class AudioManager : MonoBehaviour
 
         targetMusicClip = backgroundDaytime;
 
+        // Stop normal background music
         if (musicSource != null)
         {
             musicSource.Stop();
             musicSource.clip = null;
-        }
-
-        if (mainMenuIntro == null)
-        {
-            introPlaying = false;
-            return;
         }
 
         introCoroutine = StartCoroutine(PlayMenuIntro());
@@ -135,15 +137,37 @@ public class AudioManager : MonoBehaviour
 
     private IEnumerator PlayMenuIntro()
     {
-        if (SFXSource != null)
+        // Play the opening song
+        if (mainMenuIntro != null && SFXSource != null)
         {
-            SFXSource.PlayOneShot(mainMenuIntro);
+            SFXSource.Stop();
+
+            SFXSource.clip = mainMenuIntro;
+            SFXSource.volume = sfxVolume;
+            SFXSource.loop = false;
+
+            SFXSource.Play();
+
+            // Wait for the exact length of the audio clip.
+            //
+            // Your clip is 10.030 seconds, so this waits approximately:
+            // 00:10:030
+            //
+            // The animation trigger happens immediately after this wait.
             yield return new WaitForSecondsRealtime(mainMenuIntro.length);
+        }
+
+        // Opening song has finished.
+        // Play the animation immediately.
+        if (openingAnimator != null)
+        {
+            openingAnimator.SetTrigger(openingAnimationTrigger);
         }
 
         introPlaying = false;
         introCoroutine = null;
 
+        // Start normal menu music
         PlayMusicIfNeeded(backgroundDaytime);
     }
 
@@ -197,6 +221,7 @@ public class AudioManager : MonoBehaviour
         float timer = 0f;
         float startMultiplier = musicFadeMultiplier;
 
+        // Fade out
         while (timer < fadeDuration)
         {
             timer += Time.unscaledDeltaTime;
@@ -219,6 +244,7 @@ public class AudioManager : MonoBehaviour
 
         timer = 0f;
 
+        // Fade in
         while (timer < fadeDuration)
         {
             timer += Time.unscaledDeltaTime;
