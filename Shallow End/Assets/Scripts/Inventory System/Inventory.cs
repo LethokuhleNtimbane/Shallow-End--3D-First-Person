@@ -26,6 +26,9 @@ public class Inventory : MonoBehaviour
     [SerializeField] private Items RockItem;
     [SerializeField] private Items Bucket;
     [SerializeField] private Items WaterBucket;
+    [SerializeField] private Items CookedFish;
+    [SerializeField] private Items CookedCrab;
+    [SerializeField] private Items BoiledWaterBucket;
 
     [Header("Input Action")]
     [SerializeField] private InputActionReference pickupobj;
@@ -58,6 +61,9 @@ public class Inventory : MonoBehaviour
     [SerializeField] private GameObject WholeCoconutHandItem;
     [SerializeField] private GameObject CoconutHandItem;
     [SerializeField] private GameObject fishingRodHandItem;
+    [SerializeField] private GameObject CookedFishHandItem;
+    [SerializeField] private GameObject CookedCrabHandItem;
+    [SerializeField] private GameObject BoiledWaterBucketHandItem;
     public GameObject fish;
     public GameObject mushroom;
     private GameObject currentHandItem;
@@ -289,6 +295,9 @@ public class Inventory : MonoBehaviour
         VineHandItem.SetActive(false);
         WholeCoconutHandItem.SetActive(false);
         CoconutHandItem.SetActive(false);
+        CookedFishHandItem.SetActive(false);
+        CookedCrabHandItem.SetActive(false);
+        BoiledWaterBucketHandItem.SetActive(false);
 
         if (equippedHotBarIndex < 0 ||
             equippedHotBarIndex >= hotbarSlots.Count)
@@ -320,6 +329,15 @@ public class Inventory : MonoBehaviour
 
         if (item == Fish)
             fish.SetActive(true);
+
+        if (item == CookedFish)
+            CookedFishHandItem.SetActive(true);
+
+        if (item == CookedCrab)
+            CookedCrabHandItem.SetActive(true);
+
+        if (item == BoiledWaterBucket)
+            BoiledWaterBucketHandItem.SetActive(true);
 
         if (item == Spear)
             spearHandItem.SetActive(true);

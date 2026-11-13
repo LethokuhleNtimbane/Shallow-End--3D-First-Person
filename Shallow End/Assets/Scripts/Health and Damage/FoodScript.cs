@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,13 +13,8 @@ public class FoodScript : MonoBehaviour
     [SerializeField] private PlayerController playerController;
 
     [Header("Water Bucket Input")]
-    [Tooltip("Left-click to fill an empty bucket when aiming at water.")]
     [SerializeField] private InputActionReference fillWaterAction;
-
-    [Tooltip("Right-click to drink from a filled bucket.")]
     [SerializeField] private InputActionReference drinkWaterAction;
-
-    [Tooltip("Layer name used by water objects.")]
     [SerializeField] private string waterLayerName = "Water";
 
     [Header("Water Bucket Items")]
@@ -26,20 +22,13 @@ public class FoodScript : MonoBehaviour
     [SerializeField] private Items filledWaterBucketItem;
     [SerializeField] private Items boiledWaterItem;
 
-    [Tooltip("Maximum distance for the water raycast.")]
     [SerializeField] private float waterRaycastDistance = 5f;
-
-    [Tooltip("Amount of thirst restored when drinking.")]
     [SerializeField] private float waterThirstIncrease = 65f;
-
-    [Tooltip("Amount of thirst restored when drinking boiled water.")]
     [SerializeField] private float boiledWaterThirstIncrease = 45f;
 
-    [Tooltip("Percentage of current health removed when drinking.")]
     [Range(0f, 100f)]
     [SerializeField] private float waterHealthLossPercent = 65f;
 
-    [Tooltip("Percentage of current hunger removed when drinking.")]
     [Range(0f, 100f)]
     [SerializeField] private float waterHungerLossPercent = 65f;
 
@@ -56,6 +45,19 @@ public class FoodScript : MonoBehaviour
     [Header("Mushroom")]
     [SerializeField] private Items mushroomItem;
 
+    [Header("Mushroom Effect Chances")]
+    [Range(0f, 100f)]
+    [SerializeField] private float poisonChance = 65f;
+
+    [Range(0f, 100f)]
+    [SerializeField] private float neutralChance = 20f;
+
+    [Range(0f, 100f)]
+    [SerializeField] private float fasterMovementChance = 10f;
+
+    [Range(0f, 100f)]
+    [SerializeField] private float fullRecoveryChance = 5f;
+
     [Header("Mushroom Effect UI")]
     [SerializeField] private Image mushroomEffectImage;
     [SerializeField] private Sprite neutralSprite;
@@ -63,10 +65,7 @@ public class FoodScript : MonoBehaviour
     [SerializeField] private Sprite fasterMovementSprite;
     [SerializeField] private Sprite fullRecoverySprite;
 
-    [Tooltip("How long the symbol stays fully visible.")]
     [SerializeField] private float effectDisplayDuration = 3f;
-
-    [Tooltip("How long the symbol takes to fade out.")]
     [SerializeField] private float fadeOutDuration = 1f;
 
     [Header("Mushroom Speed Boost")]
@@ -91,9 +90,7 @@ public class FoodScript : MonoBehaviour
         waterLayer = LayerMask.NameToLayer(waterLayerName);
 
         if (mushroomEffectImage != null)
-        {
             SetImageAlpha(0f);
-        }
 
         if (waterLayer == -1)
         {
@@ -124,25 +121,19 @@ public class FoodScript : MonoBehaviour
         }
 
         if (mushroomEffectImage != null)
-        {
             SetImageAlpha(0f);
-        }
     }
 
     private void EnableAction(InputActionReference actionReference)
     {
         if (actionReference != null && actionReference.action != null)
-        {
             actionReference.action.Enable();
-        }
     }
 
     private void DisableAction(InputActionReference actionReference)
     {
         if (actionReference != null && actionReference.action != null)
-        {
             actionReference.action.Disable();
-        }
     }
 
     private void Update()
@@ -166,9 +157,7 @@ public class FoodScript : MonoBehaviour
         }
 
         if (WasPressed(eatAct))
-        {
             EatFood();
-        }
     }
 
     private bool WasPressed(InputActionReference actionReference)
@@ -185,15 +174,13 @@ public class FoodScript : MonoBehaviour
             Debug.LogWarning(
                 "FoodScript: Inventory or player camera is missing."
             );
-
             return;
         }
 
         if (waterLayer == -1)
             return;
 
-        int currentDurability =
-            inventory.GetEquippedDurability();
+        int currentDurability = inventory.GetEquippedDurability();
 
         if (currentDurability < 0)
         {
@@ -201,17 +188,14 @@ public class FoodScript : MonoBehaviour
                 "Water bucket has no durability configured. " +
                 "Enable durability on the empty bucket Items asset."
             );
-
             return;
         }
 
-        Ray ray =
-            playerCamera.ViewportPointToRay(
-                new Vector3(0.5f, 0.5f, 0f)
-            );
+        Ray ray = playerCamera.ViewportPointToRay(
+            new Vector3(0.5f, 0.5f, 0f)
+        );
 
-        int layerMask =
-            1 << waterLayer;
+        int layerMask = 1 << waterLayer;
 
         if (!Physics.Raycast(
                 ray,
@@ -223,8 +207,7 @@ public class FoodScript : MonoBehaviour
             return;
         }
 
-        int remainingDurability =
-            currentDurability - 1;
+        int remainingDurability = currentDurability - 1;
 
         inventory.RemoveHotbarItem(1);
 
@@ -233,7 +216,6 @@ public class FoodScript : MonoBehaviour
             Debug.Log(
                 "The empty water bucket broke while fetching water!"
             );
-
             return;
         }
 
@@ -251,15 +233,11 @@ public class FoodScript : MonoBehaviour
 
     private void DrinkWater()
     {
-        if (inventory == null ||
-            healthScript == null)
+        if (inventory == null || healthScript == null)
             return;
 
-        Items selectedItem =
-            inventory.GetHotbarItem();
-
-        int currentDurability =
-            inventory.GetEquippedDurability();
+        Items selectedItem = inventory.GetHotbarItem();
+        int currentDurability = inventory.GetEquippedDurability();
 
         if (currentDurability < 0)
         {
@@ -267,7 +245,6 @@ public class FoodScript : MonoBehaviour
                 "Water bucket has no durability configured. " +
                 "Enable durability on the water bucket Items asset."
             );
-
             return;
         }
 
@@ -280,25 +257,16 @@ public class FoodScript : MonoBehaviour
         if (selectedItem != filledWaterBucketItem)
             return;
 
-        healthScript.AddThirst(
-            waterThirstIncrease
-        );
+        healthScript.AddThirst(waterThirstIncrease);
 
-        float newHealth =
-            healthScript.health *
+        float newHealth = healthScript.health *
             (1f - waterHealthLossPercent / 100f);
 
-        float hungerToRemove =
-            healthScript.hunger *
+        float hungerToRemove = healthScript.hunger *
             (waterHungerLossPercent / 100f);
 
-        healthScript.SetHealth(
-            newHealth
-        );
-
-        healthScript.RemoveHunger(
-            hungerToRemove
-        );
+        healthScript.SetHealth(newHealth);
+        healthScript.RemoveHunger(hungerToRemove);
 
         inventory.RemoveHotbarItem(1);
 
@@ -316,10 +284,7 @@ public class FoodScript : MonoBehaviour
 
     private void DrinkBoiledWater(int currentDurability)
     {
-        healthScript.AddThirst(
-            boiledWaterThirstIncrease
-        );
-
+        healthScript.AddThirst(boiledWaterThirstIncrease);
         inventory.RemoveHotbarItem(1);
 
         inventory.AddItem(
@@ -338,56 +303,76 @@ public class FoodScript : MonoBehaviour
 
     private void EatFood()
     {
-        if (inventory == null ||
-            healthScript == null)
+        if (inventory == null || healthScript == null)
             return;
 
-        Items hotbarItem =
-            inventory.GetHotbarItem();
+        Items hotbarItem = inventory.GetHotbarItem();
 
         if (hotbarItem == null)
             return;
 
-        if (mushroomItem != null &&
-            hotbarItem == mushroomItem)
+        if (mushroomItem != null && hotbarItem == mushroomItem)
         {
             EatMushroom();
             return;
         }
 
-        FoodItem food =
-            GetFoodData(hotbarItem);
+        FoodItem food = GetFoodData(hotbarItem);
 
         if (food == null)
             return;
 
         if (food.hungerIncrease > 0f &&
             healthScript.PlayerIsFullHunger())
-        {
             return;
-        }
 
         if (food.thirstIncrease > 0f &&
             healthScript.PlayerIsFullThirst())
-        {
             return;
-        }
 
-        healthScript.AddHunger(
-            food.hungerIncrease
-        );
-
-        healthScript.AddThirst(
-            food.thirstIncrease
-        );
+        healthScript.AddHunger(food.hungerIncrease);
+        healthScript.AddThirst(food.thirstIncrease);
 
         inventory.RemoveHotbarItem(1);
     }
 
+    private MushroomEffect GetRandomMushroomEffect()
+    {
+        float totalChance = poisonChance +
+                            neutralChance +
+                            fasterMovementChance +
+                            fullRecoveryChance;
+
+        if (totalChance <= 0f)
+        {
+            Debug.LogWarning(
+                "FoodScript: Mushroom effect chances total 0%. " +
+                "Using Neutral effect."
+            );
+            return MushroomEffect.Neutral;
+        }
+
+        float roll = Random.Range(0f, totalChance);
+
+        if (roll < poisonChance)
+            return MushroomEffect.Poison;
+
+        roll -= poisonChance;
+
+        if (roll < neutralChance)
+            return MushroomEffect.Neutral;
+
+        roll -= neutralChance;
+
+        if (roll < fasterMovementChance)
+            return MushroomEffect.FasterMovement;
+
+        return MushroomEffect.FullRecovery;
+    }
+
     private void EatMushroom()
     {
-        MushroomEffect effect =
-            (MushroomEffect)Random.Range(0, 4);
+        MushroomEffect effect = GetRandomMushroomEffect();
 
         switch (effect)
         {
@@ -398,11 +383,7 @@ public class FoodScript : MonoBehaviour
 
             case MushroomEffect.Poison:
                 Debug.Log("Mushroom Effect: Poison");
-
-                healthScript.SetHealth(
-                    healthScript.health * 0.5f
-                );
-
+                healthScript.SetHealth(healthScript.health * 0.5f);
                 ShowMushroomEffect(poisonSprite);
                 break;
 
@@ -425,37 +406,18 @@ public class FoodScript : MonoBehaviour
                     );
                 }
 
-                ShowMushroomEffect(
-                    fasterMovementSprite
-                );
-
+                ShowMushroomEffect(fasterMovementSprite);
                 break;
 
             case MushroomEffect.FullRecovery:
-                Debug.Log(
-                    "Mushroom Effect: Full Recovery"
-                );
+                Debug.Log("Mushroom Effect: Full Recovery");
 
-                healthScript.SetHealth(
-                    healthScript.maxHealth
-                );
+                healthScript.SetHealth(healthScript.maxHealth);
+                healthScript.AddHunger(healthScript.maxHunger);
+                healthScript.AddThirst(healthScript.maxThirst);
+                healthScript.SetHealthRegenerationEnabled(true);
 
-                healthScript.AddHunger(
-                    healthScript.maxHunger
-                );
-
-                healthScript.AddThirst(
-                    healthScript.maxThirst
-                );
-
-                healthScript.SetHealthRegenerationEnabled(
-                    true
-                );
-
-                ShowMushroomEffect(
-                    fullRecoverySprite
-                );
-
+                ShowMushroomEffect(fullRecoverySprite);
                 break;
         }
 
@@ -469,7 +431,6 @@ public class FoodScript : MonoBehaviour
             Debug.LogWarning(
                 "FoodScript: Mushroom Effect Image is not assigned!"
             );
-
             return;
         }
 
@@ -478,33 +439,21 @@ public class FoodScript : MonoBehaviour
             Debug.LogWarning(
                 "FoodScript: The sprite for this mushroom effect is not assigned!"
             );
-
             return;
         }
 
         if (effectDisplayCoroutine != null)
-        {
-            StopCoroutine(
-                effectDisplayCoroutine
-            );
-        }
+            StopCoroutine(effectDisplayCoroutine);
 
-        mushroomEffectImage.sprite =
-            effectSprite;
-
+        mushroomEffectImage.sprite = effectSprite;
         SetImageAlpha(1f);
 
-        effectDisplayCoroutine =
-            StartCoroutine(
-                HideEffectAfterDelay()
-            );
+        effectDisplayCoroutine = StartCoroutine(HideEffectAfterDelay());
     }
 
     private IEnumerator HideEffectAfterDelay()
     {
-        yield return new WaitForSeconds(
-            effectDisplayDuration
-        );
+        yield return new WaitForSeconds(effectDisplayDuration);
 
         float elapsed = 0f;
 
@@ -512,20 +461,12 @@ public class FoodScript : MonoBehaviour
         {
             elapsed += Time.deltaTime;
 
-            float fadeProgress =
-                fadeOutDuration > 0f
-                    ? Mathf.Clamp01(
-                        elapsed /
-                        fadeOutDuration
-                    )
-                    : 1f;
+            float fadeProgress = fadeOutDuration > 0f
+                ? Mathf.Clamp01(elapsed / fadeOutDuration)
+                : 1f;
 
             SetImageAlpha(
-                Mathf.Lerp(
-                    1f,
-                    0f,
-                    fadeProgress
-                )
+                Mathf.Lerp(1f, 0f, fadeProgress)
             );
 
             yield return null;
@@ -540,13 +481,9 @@ public class FoodScript : MonoBehaviour
         if (mushroomEffectImage == null)
             return;
 
-        Color imageColor =
-            mushroomEffectImage.color;
-
+        Color imageColor = mushroomEffectImage.color;
         imageColor.a = alpha;
-
-        mushroomEffectImage.color =
-            imageColor;
+        mushroomEffectImage.color = imageColor;
     }
 
     private FoodItem GetFoodData(Items item)
@@ -556,11 +493,8 @@ public class FoodScript : MonoBehaviour
 
         foreach (FoodItem food in foodItems)
         {
-            if (food != null &&
-                food.item == item)
-            {
+            if (food != null && food.item == item)
                 return food;
-            }
         }
 
         return null;
