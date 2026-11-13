@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -14,6 +15,9 @@ public class SleepManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI sleepWarningText;
     [SerializeField] private float warningDuration = 2f;
 
+    [Header("Rain Weather")]
+    [SerializeField] private RainWeatherController rainWeatherController;
+
     [SerializeField] private float sleepTimeMultiplier = 240f;
     [SerializeField] private float normalTimeMultiplier = 60f;
 
@@ -29,6 +33,9 @@ public class SleepManager : MonoBehaviour
 
     private void Start()
     {
+        if (rainWeatherController == null)
+            rainWeatherController = FindFirstObjectByType<RainWeatherController>();
+
         if (sleepCamera != null)
             sleepCamera.gameObject.SetActive(false);
 
@@ -44,7 +51,6 @@ public class SleepManager : MonoBehaviour
         if (!sleeping)
             return;
 
-    
         if (Keyboard.current != null &&
             Keyboard.current.spaceKey.wasPressedThisFrame)
         {
@@ -57,7 +63,6 @@ public class SleepManager : MonoBehaviour
         if (time == null)
             return;
 
-      
         if (time.CurrentTime.Hour >= 6 &&
             time.CurrentTime.Hour < 21)
         {
@@ -70,6 +75,13 @@ public class SleepManager : MonoBehaviour
         if (sleeping)
             return;
 
+        if (rainWeatherController != null &&
+            rainWeatherController.IsRaining)
+        {
+            ShowSleepWarning("I cant fall asleep there is a storm");
+            return;
+        }
+
         TimeController time = TimeController.instance;
 
         if (time == null)
@@ -79,19 +91,19 @@ public class SleepManager : MonoBehaviour
 
         if (hour >= 6 && hour < 21)
         {
-            ShowSleepWarning();
+            ShowSleepWarning("I can only sleep at 21:00");
             return;
         }
 
         StartSleeping();
     }
 
-    private void ShowSleepWarning()
+    private void ShowSleepWarning(string message)
     {
         if (sleepWarningText == null)
             return;
 
-        sleepWarningText.text = "I can only sleep at 21:00";
+        sleepWarningText.text = message;
         sleepWarningText.gameObject.SetActive(true);
 
         if (warningCoroutine != null)
@@ -126,10 +138,8 @@ public class SleepManager : MonoBehaviour
         if (sleepCamera != null)
             sleepCamera.gameObject.SetActive(true);
 
-    
         DisableAllMonsters();
 
-   
         if (TimeController.instance != null)
         {
             TimeController.instance.SetTimeMultiplier(
@@ -149,10 +159,7 @@ public class SleepManager : MonoBehaviour
         foreach (Monster monster in monsters)
         {
             if (monster != null)
-            {
-                
                 monster.gameObject.SetActive(false);
-            }
         }
     }
 
@@ -167,10 +174,7 @@ public class SleepManager : MonoBehaviour
         foreach (Monster monster in monsters)
         {
             if (monster != null)
-            {
-             
                 monster.gameObject.SetActive(true);
-            }
         }
     }
 
@@ -223,7 +227,6 @@ public class SleepManager : MonoBehaviour
         if (PlayerController.Instance != null)
             PlayerController.Instance.PlayerControl(true);
 
-        
         EnableAllMonsters();
     }
 }

@@ -1,7 +1,10 @@
+
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
 
 public class Fireplace : MonoBehaviour
 {
@@ -12,6 +15,11 @@ public class Fireplace : MonoBehaviour
     [SerializeField] private GameObject fireplaceInterface;
     [SerializeField] private GameObject fireplaceBackground;
     [SerializeField] private GameObject gameUIToHide;
+
+    [Header("Rain Weather")]
+    [SerializeField] private RainWeatherController rainWeatherController;
+    [SerializeField] private TextMeshProUGUI fireWarningText;
+    [SerializeField] private float warningDuration = 2f;
 
     [Header("Player Scripts")]
     [SerializeField] private FoodScript foodScript;
@@ -79,9 +87,15 @@ public class Fireplace : MonoBehaviour
     private Vector3 particle3OriginalScale;
 
     private float spinnerXRotation;
+    private Vector3 spinnerOriginalRotation;
+
+    private Coroutine fireWarningCoroutine;
 
     private void Awake()
     {
+        if (rainWeatherController == null)
+            rainWeatherController = FindFirstObjectByType<RainWeatherController>();
+
         if (fireParticle1 != null)
             particle1OriginalScale = fireParticle1.transform.localScale;
 
@@ -92,7 +106,12 @@ public class Fireplace : MonoBehaviour
             particle3OriginalScale = fireParticle3.transform.localScale;
 
         if (cookingSpinner != null)
-            spinnerXRotation = cookingSpinner.transform.localEulerAngles.x;
+        {
+            spinnerOriginalRotation =
+                cookingSpinner.transform.localEulerAngles;
+
+            spinnerXRotation = spinnerOriginalRotation.x;
+        }
 
         SetFireObjects(false);
         SetParticlesActive(false);
@@ -109,6 +128,9 @@ public class Fireplace : MonoBehaviour
 
         if (cookingProgress != null)
             cookingProgress.fillAmount = 0f;
+
+        if (fireWarningText != null)
+            fireWarningText.gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -142,6 +164,15 @@ public class Fireplace : MonoBehaviour
 
         if (inventory != null)
             inventory.UnregisterFireplaceSlots();
+
+        if (fireWarningCoroutine != null)
+        {
+            StopCoroutine(fireWarningCoroutine);
+            fireWarningCoroutine = null;
+        }
+
+        if (fireWarningText != null)
+            fireWarningText.gameObject.SetActive(false);
 
         if (interfaceOpen)
             CloseInterface();
@@ -203,13 +234,6 @@ public class Fireplace : MonoBehaviour
             !lightFireAction.action.WasPressedThisFrame())
             return;
 
-        if (fireIsLit)
-            return;
-
-        if (inventory == null ||
-            !inventory.IsFlintEquipped(flintItem))
-            return;
-
         Camera cam = Camera.main;
 
         if (cam == null)
@@ -230,6 +254,20 @@ public class Fireplace : MonoBehaviour
             !hit.collider.transform.IsChildOf(transform))
             return;
 
+        if (fireIsLit)
+            return;
+
+        if (rainWeatherController != null &&
+            rainWeatherController.IsRaining)
+        {
+            ShowFireRainWarning();
+            return;
+        }
+
+        if (inventory == null ||
+            !inventory.IsFlintEquipped(flintItem))
+            return;
+
         if (fuelSlot == null || !fuelSlot.Hasitem())
         {
             inventory.ShowInteractionMessage(
@@ -243,6 +281,30 @@ public class Fireplace : MonoBehaviour
             return;
 
         LightFire();
+    }
+
+    private void ShowFireRainWarning()
+    {
+        if (fireWarningText == null)
+            return;
+
+        fireWarningText.text = "I cant light a fire";
+        fireWarningText.gameObject.SetActive(true);
+
+        if (fireWarningCoroutine != null)
+            StopCoroutine(fireWarningCoroutine);
+
+        fireWarningCoroutine = StartCoroutine(HideFireRainWarning());
+    }
+
+    private IEnumerator HideFireRainWarning()
+    {
+        yield return new WaitForSeconds(warningDuration);
+
+        if (fireWarningText != null)
+            fireWarningText.gameObject.SetActive(false);
+
+        fireWarningCoroutine = null;
     }
 
     private void SetPlayerScriptsEnabled(bool enabled)
@@ -524,17 +586,16 @@ public class Fireplace : MonoBehaviour
             cookingSpinner != null)
         {
             spinnerXRotation +=
-                cookingSpinnerSpeed *
-                Time.deltaTime;
+                cookingSpinnerSpeed * Time.deltaTime;
 
-            Vector3 currentRotation =
-                cookingSpinner.transform.localEulerAngles;
+            spinnerXRotation %= 360f;
 
-            currentRotation.x =
-                spinnerXRotation;
-
-            cookingSpinner.transform.localEulerAngles =
-                currentRotation;
+            cookingSpinner.transform.localRotation =
+                Quaternion.Euler(
+                    spinnerXRotation,
+                    spinnerOriginalRotation.y,
+                    spinnerOriginalRotation.z
+                );
         }
 
         float cookingDuration =
@@ -554,8 +615,7 @@ public class Fireplace : MonoBehaviour
 
         if (fireIsLit &&
             cookingDuration > 0f &&
-            cookingElapsedHours >=
-                cookingDuration)
+            cookingElapsedHours >= cookingDuration)
         {
             FinishCooking();
         }
@@ -599,6 +659,7 @@ public class Fireplace : MonoBehaviour
         return item == waterItem ||
                item == rawFishItem ||
                item == rawCrabItem ||
+               item == waterItem ||
                item == boiledWaterItem ||
                item == cookedFishItem ||
                item == cookedCrabItem;

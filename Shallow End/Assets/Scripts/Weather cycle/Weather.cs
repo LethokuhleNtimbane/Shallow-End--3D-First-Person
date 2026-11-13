@@ -59,6 +59,14 @@ public class RainWeatherController : MonoBehaviour
 
     private WeatherState currentState = WeatherState.Waiting;
 
+    public bool IsRaining
+    {
+        get
+        {
+            return currentState == WeatherState.Raining;
+        }
+    }
+
     private Color originalLightColour;
     private float originalCloudAlpha;
 
@@ -155,7 +163,6 @@ public class RainWeatherController : MonoBehaviour
             return;
         }
 
-        // Remember the original weather settings.
         originalLightColour = directionalLight.color;
         originalLightColourCaptured = true;
 
@@ -164,7 +171,6 @@ public class RainWeatherController : MonoBehaviour
 
         originalCloudAlphaCaptured = true;
 
-        // Ensure rain does not play automatically.
         if (rainParticleSystem != null)
         {
             rainParticleSystem.Stop(
@@ -172,11 +178,9 @@ public class RainWeatherController : MonoBehaviour
                 ParticleSystemStopBehavior.StopEmittingAndClear);
         }
 
-        // Record the starting game time.
         gameStartTime = timeController.CurrentTime;
         firstDayCompleted = false;
 
-        // No storm can start during the first 24 in-game hours.
         nextStormTime = gameStartTime.AddHours(24f);
 
         initialized = true;
@@ -186,7 +190,6 @@ public class RainWeatherController : MonoBehaviour
 
     private void CheckForStorm(DateTime gameTime)
     {
-        // Protect the first 24 in-game hours.
         if (!firstDayCompleted)
         {
             if (gameTime < gameStartTime.AddHours(24f))
@@ -194,7 +197,6 @@ public class RainWeatherController : MonoBehaviour
 
             firstDayCompleted = true;
 
-            // Once the first day is complete, begin a random waiting period.
             float minimumWait =
                 Mathf.Max(1f, initialMinimumWaitHours);
 
@@ -258,13 +260,11 @@ public class RainWeatherController : MonoBehaviour
         float smoothProgress =
             Mathf.SmoothStep(0f, 1f, progress);
 
-        // Gradually darken the directional light.
         directionalLight.color = Color.Lerp(
             transitionStartLightColour,
             stormLightColour,
             smoothProgress);
 
-        // Gradually increase cloud alpha.
         float newCloudAlpha = Mathf.Lerp(
             transitionStartCloudAlpha,
             stormCloudAlpha,
@@ -274,7 +274,6 @@ public class RainWeatherController : MonoBehaviour
             cloudsAlphaProperty,
             newCloudAlpha);
 
-        // Start rain only after both transitions finish.
         if (progress >= 1f)
         {
             directionalLight.color = stormLightColour;
@@ -361,13 +360,11 @@ public class RainWeatherController : MonoBehaviour
         float smoothProgress =
             Mathf.SmoothStep(0f, 1f, progress);
 
-        // Restore the original light colour.
         directionalLight.color = Color.Lerp(
             transitionStartLightColour,
             originalLightColour,
             smoothProgress);
 
-        // Restore the original cloud alpha.
         cloudMaterial.SetFloat(
             cloudsAlphaProperty,
             Mathf.Lerp(
@@ -391,7 +388,6 @@ public class RainWeatherController : MonoBehaviour
 
     private void ScheduleNextStorm(DateTime gameTime)
     {
-        // Guarantee at least 24 in-game hours between storms.
         float minimumCooldown =
             Mathf.Max(24f, minimumCooldownAfterStormHours);
 
@@ -436,7 +432,6 @@ public class RainWeatherController : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Restore the original settings when this controller is destroyed.
         if (originalLightColourCaptured && directionalLight != null)
         {
             directionalLight.color = originalLightColour;

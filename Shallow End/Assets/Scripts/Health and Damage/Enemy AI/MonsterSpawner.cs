@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +7,10 @@ public class MonsterSpawner : MonoBehaviour
     [Header("Monster")]
     [SerializeField] private GameObject monsterPrefab;
     [SerializeField] private Transform[] spawnPoints;
+
+    [Header("Rain Weather")]
+    [SerializeField] private RainWeatherController rainWeatherController;
+    [SerializeField, Min(1)] private int rainMonstersAddedPerStorm = 2;
 
     [Header("Night Time")]
     [SerializeField] private float firstSpawnTime = 21f;
@@ -48,13 +51,23 @@ public class MonsterSpawner : MonoBehaviour
     [SerializeField] private GameObject[] objectsToHide;
 
     private float nextSpawnTimer;
+
     private bool wasNight = false;
+    private bool wasRaining = false;
 
     private int currentNight = 0;
     private int monstersToSpawn = 0;
     private int monstersSpawned = 0;
 
-    private List<GameObject> spawnedMonsters = new List<GameObject>();
+    private int currentStormNumber = 0;
+    private int rainMonstersToSpawn = 0;
+    private int rainMonstersSpawned = 0;
+
+    private List<GameObject> spawnedMonsters =
+        new List<GameObject>();
+
+    private List<GameObject> rainSpawnedMonsters =
+        new List<GameObject>();
 
     private Material[] originalWaterfallMaterials;
     private Material[] originalPondMaterials;
@@ -93,21 +106,43 @@ public class MonsterSpawner : MonoBehaviour
     {
         nextSpawnTimer = 0f;
 
-        transitionPropertyID = Shader.PropertyToID(transitionProperty);
+        transitionPropertyID =
+            Shader.PropertyToID(transitionProperty);
 
         if (portalEffects != null)
             portalEffects.SetActive(false);
+
+        if (rainWeatherController == null)
+        {
+            rainWeatherController =
+                FindFirstObjectByType<RainWeatherController>();
+        }
 
         if (TimeController.instance != null)
         {
             float hour = GetCurrentHour();
 
-            bool isNight = hour >= firstSpawnTime || hour < lastSpawnTime;
+            bool isNight =
+                hour >= firstSpawnTime ||
+                hour < lastSpawnTime;
 
             if (isNight)
             {
                 StartNight();
+
                 wasNight = true;
+            }
+        }
+
+        if (rainWeatherController != null)
+        {
+            bool isRaining =
+                rainWeatherController.IsRaining;
+
+            if (isRaining)
+            {
+                StartRain();
+                wasRaining = true;
             }
         }
     }
@@ -119,7 +154,13 @@ public class MonsterSpawner : MonoBehaviour
 
         float hour = GetCurrentHour();
 
-        bool isNight = hour >= firstSpawnTime || hour < lastSpawnTime;
+        bool isNight =
+            hour >= firstSpawnTime ||
+            hour < lastSpawnTime;
+
+        bool isRaining =
+            rainWeatherController != null &&
+            rainWeatherController.IsRaining;
 
         if (isNight && !wasNight)
             StartNight();
@@ -127,17 +168,25 @@ public class MonsterSpawner : MonoBehaviour
         if (!isNight && wasNight)
             EndNight();
 
-        wasNight = isNight;
+        if (isRaining && !wasRaining)
+            StartRain();
 
-        if (!isNight)
+        if (!isRaining && wasRaining)
+            EndRain(isNight);
+
+        wasNight = isNight;
+        wasRaining = isRaining;
+
+        if (!isNight && !isRaining)
             return;
 
-        HandleSpawning();
+        HandleSpawning(isNight, isRaining);
     }
 
     private float GetCurrentHour()
     {
-        System.DateTime currentTime = TimeController.instance.CurrentTime;
+        System.DateTime currentTime =
+            TimeController.instance.CurrentTime;
 
         return currentTime.Hour +
                currentTime.Minute / 60f +
@@ -146,9 +195,12 @@ public class MonsterSpawner : MonoBehaviour
 
     private int GetCurrentNightNumber()
     {
-        System.DateTime currentTime = TimeController.instance.CurrentTime;
+        System.DateTime currentTime =
+            TimeController.instance.CurrentTime;
 
-        int gameDay = (currentTime.Date - new System.DateTime(2000, 1, 1)).Days + 1;
+        int gameDay =
+            (currentTime.Date -
+             new System.DateTime(2000, 1, 1)).Days + 1;
 
         if (GetCurrentHour() < lastSpawnTime)
             gameDay--;
@@ -158,7 +210,8 @@ public class MonsterSpawner : MonoBehaviour
 
     private void StartNight()
     {
-        currentNight = GetCurrentNightNumber();
+        currentNight =
+            GetCurrentNightNumber();
 
         if (currentNight < firstMonsterSpawnNight)
         {
@@ -168,10 +221,12 @@ public class MonsterSpawner : MonoBehaviour
         {
             monstersToSpawn =
                 startingMonsterCount +
-                (currentNight - 1) * monsterIncreasePerNight;
+                (currentNight - 1) *
+                monsterIncreasePerNight;
         }
 
         monstersSpawned = 0;
+
         nextSpawnTimer = 0f;
 
         waterEffectStarted = false;
@@ -184,59 +239,185 @@ public class MonsterSpawner : MonoBehaviour
         if (portalEffects != null)
             portalEffects.SetActive(false);
 
-        RestoreWaterAndObjects();
-
         RemoveNightMonsters();
+
+        if (rainWeatherController == null ||
+            !rainWeatherController.IsRaining)
+        {
+            RestoreWaterAndObjects();
+        }
     }
 
-    private void HandleSpawning()
+    private void StartRain()
     {
-        if (monstersSpawned >= monstersToSpawn)
+        currentStormNumber++;
+
+        rainMonstersToSpawn =
+            currentStormNumber *
+            rainMonstersAddedPerStorm;
+
+        rainMonstersSpawned = 0;
+
+        nextSpawnTimer = 0f;
+
+        waterEffectStarted = false;
+
+        Debug.Log(
+            "[Monster Spawner] Storm "
+            + currentStormNumber
+            + " started. Rain monsters: "
+            + rainMonstersToSpawn
+        );
+    }
+
+    private void EndRain(bool isNight)
+    {
+        nextSpawnTimer = 0f;
+
+        rainMonstersSpawned = 0;
+        rainMonstersToSpawn = 0;
+
+        if (!isNight)
+        {
+            RemoveRainMonsters();
+
+            if (portalEffects != null)
+                portalEffects.SetActive(false);
+
+            RestoreWaterAndObjects();
+        }
+    }
+
+    private void HandleSpawning(
+        bool isNight,
+        bool isRaining)
+    {
+        bool canSpawnNightMonster =
+            isNight &&
+            monstersSpawned < monstersToSpawn;
+
+        bool canSpawnRainMonster =
+            isRaining &&
+            rainMonstersSpawned <
+            rainMonstersToSpawn;
+
+        if (!canSpawnNightMonster &&
+            !canSpawnRainMonster)
+        {
             return;
+        }
 
         if (nextSpawnTimer > 0f)
         {
-            nextSpawnTimer -= Time.deltaTime;
+            nextSpawnTimer -=
+                Time.deltaTime;
+
             return;
         }
 
-        SpawnMonster();
+        bool spawnRainMonster = false;
 
-        monstersSpawned++;
-
-        if (monstersSpawned < monstersToSpawn)
+        if (canSpawnRainMonster &&
+            !canSpawnNightMonster)
         {
-            nextSpawnTimer = Random.Range(
-                minimumSpawnDelay,
-                maximumSpawnDelay
-            );
+            spawnRainMonster = true;
+        }
+        else if (canSpawnNightMonster &&
+                 !canSpawnRainMonster)
+        {
+            spawnRainMonster = false;
+        }
+        else
+        {
+            /*
+             * Both systems can spawn at the same time.
+             * Alternate between the two systems so that
+             * rain monsters and night monsters remain separate.
+             */
+            spawnRainMonster =
+                rainMonstersSpawned <=
+                monstersSpawned;
+        }
+
+        SpawnMonster(spawnRainMonster);
+
+        if (spawnRainMonster)
+        {
+            rainMonstersSpawned++;
+        }
+        else
+        {
+            monstersSpawned++;
+        }
+
+        bool moreNightMonsters =
+            isNight &&
+            monstersSpawned <
+            monstersToSpawn;
+
+        bool moreRainMonsters =
+            isRaining &&
+            rainMonstersSpawned <
+            rainMonstersToSpawn;
+
+        if (moreNightMonsters ||
+            moreRainMonsters)
+        {
+            nextSpawnTimer =
+                Random.Range(
+                    minimumSpawnDelay,
+                    maximumSpawnDelay
+                );
         }
     }
 
-    private void SpawnMonster()
+    private void SpawnMonster(
+        bool isRainMonster)
     {
         if (monsterPrefab == null)
             return;
 
-        if (spawnPoints == null || spawnPoints.Length == 0)
+        if (spawnPoints == null ||
+            spawnPoints.Length == 0)
+        {
             return;
+        }
 
-        Transform spawnPoint = spawnPoints[
-            Random.Range(0, spawnPoints.Length)
-        ];
+        Transform spawnPoint =
+            spawnPoints[
+                Random.Range(
+                    0,
+                    spawnPoints.Length
+                )
+            ];
 
-        GameObject newMonster = Instantiate(
-            monsterPrefab,
-            spawnPoint.position,
-            spawnPoint.rotation
-        );
+        GameObject newMonster =
+            Instantiate(
+                monsterPrefab,
+                spawnPoint.position,
+                spawnPoint.rotation
+            );
 
         if (newMonster == null)
             return;
 
-        spawnedMonsters.Add(newMonster);
+        spawnedMonsters.Add(
+            newMonster
+        );
 
-        StartCoroutine(SpawnMonsterSequence(newMonster, spawnPoint));
+        if (isRainMonster)
+        {
+            rainSpawnedMonsters.Add(
+                newMonster
+            );
+        }
+
+        StartCoroutine(
+            SpawnMonsterSequence(
+                newMonster,
+                spawnPoint
+            )
+        );
     }
 
     private IEnumerator SpawnMonsterSequence(
@@ -245,114 +426,183 @@ public class MonsterSpawner : MonoBehaviour
     {
         monster.SetActive(false);
 
-        Vector3 portalPosition = spawnPoint.position;
+        Vector3 portalPosition =
+            spawnPoint.position;
 
         Vector3 finalPosition =
-            portalPosition + Vector3.up * monsterRiseHeight;
+            portalPosition +
+            Vector3.up *
+            monsterRiseHeight;
 
-        monster.transform.position = portalPosition;
+        monster.transform.position =
+            portalPosition;
 
         if (!waterEffectStarted)
         {
             waterEffectStarted = true;
+
             BeginWaterEffect();
         }
 
         if (portalEffects != null)
         {
-            portalEffects.transform.position = portalPosition;
+            portalEffects.transform.position =
+                portalPosition;
+
             portalEffects.SetActive(true);
         }
 
-        yield return new WaitForSeconds(monsterInactiveTime);
+        yield return new WaitForSeconds(
+            monsterInactiveTime
+        );
+
+        if (monster == null)
+            yield break;
 
         monster.SetActive(true);
 
-        Monster monsterScript = monster.GetComponent<Monster>();
+        Monster monsterScript =
+            monster.GetComponent<Monster>();
 
         if (monsterScript != null)
             monsterScript.enabled = false;
 
         float elapsed = 0f;
 
-        Vector3 startPosition = portalPosition;
+        Vector3 startPosition =
+            portalPosition;
 
-        while (elapsed < monsterRiseDuration)
+        while (elapsed <
+               monsterRiseDuration)
         {
-            elapsed += Time.deltaTime;
+            if (monster == null)
+                yield break;
 
-            float t = Mathf.Clamp01(elapsed / monsterRiseDuration);
+            elapsed +=
+                Time.deltaTime;
 
-            float smoothT = Mathf.SmoothStep(0f, 1f, t);
+            float t =
+                Mathf.Clamp01(
+                    elapsed /
+                    monsterRiseDuration
+                );
 
-            monster.transform.position = Vector3.Lerp(
-                startPosition,
-                finalPosition,
-                smoothT
-            );
+            float smoothT =
+                Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    t
+                );
+
+            monster.transform.position =
+                Vector3.Lerp(
+                    startPosition,
+                    finalPosition,
+                    smoothT
+                );
 
             yield return null;
         }
 
-        monster.transform.position = finalPosition;
+        if (monster == null)
+            yield break;
+
+        monster.transform.position =
+            finalPosition;
 
         if (portalEffects != null)
             portalEffects.SetActive(false);
 
         if (monsterScript != null)
         {
-            monsterScript.SetSpawnerControlled(false);
+            monsterScript.SetSpawnerControlled(
+                false
+            );
+
             monsterScript.enabled = true;
         }
     }
 
     private void BeginWaterEffect()
     {
-        if (waterfall != null && waterfallAlteredMaterial != null)
+        if (waterfall != null &&
+            waterfallAlteredMaterial != null)
         {
-            originalWaterfallMaterials = waterfall.sharedMaterials;
+            originalWaterfallMaterials =
+                waterfall.sharedMaterials;
 
-            originalWaterfallBlock = new MaterialPropertyBlock();
+            originalWaterfallBlock =
+                new MaterialPropertyBlock();
 
-            waterfall.GetPropertyBlock(originalWaterfallBlock);
+            waterfall.GetPropertyBlock(
+                originalWaterfallBlock
+            );
 
-            waterfall.sharedMaterial = waterfallAlteredMaterial;
+            waterfall.sharedMaterial =
+                waterfallAlteredMaterial;
 
-            SetWaterTransition(waterfall, 0f);
+            SetWaterTransition(
+                waterfall,
+                0f
+            );
         }
 
-        if (pond != null && pondAlteredMaterial != null)
+        if (pond != null &&
+            pondAlteredMaterial != null)
         {
-            originalPondMaterials = pond.sharedMaterials;
+            originalPondMaterials =
+                pond.sharedMaterials;
 
-            originalPondBlock = new MaterialPropertyBlock();
+            originalPondBlock =
+                new MaterialPropertyBlock();
 
-            pond.GetPropertyBlock(originalPondBlock);
+            pond.GetPropertyBlock(
+                originalPondBlock
+            );
 
-            pond.sharedMaterial = pondAlteredMaterial;
+            pond.sharedMaterial =
+                pondAlteredMaterial;
 
-            SetWaterTransition(pond, 0f);
+            SetWaterTransition(
+                pond,
+                0f
+            );
         }
 
         if (objectsToHide != null)
         {
-            originalObjectStates = new bool[objectsToHide.Length];
+            originalObjectStates =
+                new bool[
+                    objectsToHide.Length
+                ];
 
-            for (int i = 0; i < objectsToHide.Length; i++)
+            for (int i = 0;
+                 i < objectsToHide.Length;
+                 i++)
             {
                 if (objectsToHide[i] == null)
                     continue;
 
-                originalObjectStates[i] = objectsToHide[i].activeSelf;
+                originalObjectStates[i] =
+                    objectsToHide[i]
+                        .activeSelf;
 
-                objectsToHide[i].SetActive(false);
+                objectsToHide[i]
+                    .SetActive(false);
             }
         }
 
         if (waterFadeCoroutine != null)
-            StopCoroutine(waterFadeCoroutine);
+        {
+            StopCoroutine(
+                waterFadeCoroutine
+            );
+        }
 
-        waterFadeCoroutine = StartCoroutine(FadeWater());
+        waterFadeCoroutine =
+            StartCoroutine(
+                FadeWater()
+            );
     }
 
     private IEnumerator FadeWater()
@@ -361,104 +611,218 @@ public class MonsterSpawner : MonoBehaviour
 
         if (waterFadeDuration <= 0f)
         {
-            SetWaterTransition(waterfall, 1f);
-            SetWaterTransition(pond, 1f);
-            waterFadeCoroutine = null;
+            SetWaterTransition(
+                waterfall,
+                1f
+            );
+
+            SetWaterTransition(
+                pond,
+                1f
+            );
+
+            waterFadeCoroutine =
+                null;
+
             yield break;
         }
 
-        while (elapsed < waterFadeDuration)
+        while (elapsed <
+               waterFadeDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed +=
+                Time.deltaTime;
 
-            float progress = Mathf.Clamp01(elapsed / waterFadeDuration);
+            float progress =
+                Mathf.Clamp01(
+                    elapsed /
+                    waterFadeDuration
+                );
 
-            progress = Mathf.SmoothStep(0f, 1f, progress);
+            progress =
+                Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    progress
+                );
 
-            SetWaterTransition(waterfall, progress);
-            SetWaterTransition(pond, progress);
+            SetWaterTransition(
+                waterfall,
+                progress
+            );
+
+            SetWaterTransition(
+                pond,
+                progress
+            );
 
             yield return null;
         }
 
-        SetWaterTransition(waterfall, 1f);
-        SetWaterTransition(pond, 1f);
+        SetWaterTransition(
+            waterfall,
+            1f
+        );
 
-        waterFadeCoroutine = null;
+        SetWaterTransition(
+            pond,
+            1f
+        );
+
+        waterFadeCoroutine =
+            null;
     }
 
-    private void SetWaterTransition(Renderer waterRenderer, float value)
+    private void SetWaterTransition(
+        Renderer waterRenderer,
+        float value)
     {
         if (waterRenderer == null)
             return;
 
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        MaterialPropertyBlock block =
+            new MaterialPropertyBlock();
 
-        waterRenderer.GetPropertyBlock(block);
+        waterRenderer.GetPropertyBlock(
+            block
+        );
 
-        block.SetFloat(transitionPropertyID, value);
+        block.SetFloat(
+            transitionPropertyID,
+            value
+        );
 
-        waterRenderer.SetPropertyBlock(block);
+        waterRenderer.SetPropertyBlock(
+            block
+        );
     }
 
     private void RestoreWaterAndObjects()
     {
         if (waterFadeCoroutine != null)
         {
-            StopCoroutine(waterFadeCoroutine);
-            waterFadeCoroutine = null;
+            StopCoroutine(
+                waterFadeCoroutine
+            );
+
+            waterFadeCoroutine =
+                null;
         }
 
-        if (waterfall != null && originalWaterfallMaterials != null)
+        if (waterfall != null &&
+            originalWaterfallMaterials != null)
         {
-            waterfall.sharedMaterials = originalWaterfallMaterials;
+            waterfall.sharedMaterials =
+                originalWaterfallMaterials;
 
             if (originalWaterfallBlock != null)
-                waterfall.SetPropertyBlock(originalWaterfallBlock);
+            {
+                waterfall.SetPropertyBlock(
+                    originalWaterfallBlock
+                );
+            }
         }
 
-        if (pond != null && originalPondMaterials != null)
+        if (pond != null &&
+            originalPondMaterials != null)
         {
-            pond.sharedMaterials = originalPondMaterials;
+            pond.sharedMaterials =
+                originalPondMaterials;
 
             if (originalPondBlock != null)
-                pond.SetPropertyBlock(originalPondBlock);
+            {
+                pond.SetPropertyBlock(
+                    originalPondBlock
+                );
+            }
         }
 
-        if (objectsToHide != null && originalObjectStates != null)
+        if (objectsToHide != null &&
+            originalObjectStates != null)
         {
-            for (int i = 0; i < objectsToHide.Length; i++)
+            for (int i = 0;
+                 i < objectsToHide.Length;
+                 i++)
             {
                 if (objectsToHide[i] == null)
                     continue;
 
-                objectsToHide[i].SetActive(originalObjectStates[i]);
+                objectsToHide[i]
+                    .SetActive(
+                        originalObjectStates[i]
+                    );
             }
         }
 
-        originalWaterfallMaterials = null;
-        originalPondMaterials = null;
-        originalWaterfallBlock = null;
-        originalPondBlock = null;
-        originalObjectStates = null;
+        originalWaterfallMaterials =
+            null;
 
-        waterEffectStarted = false;
+        originalPondMaterials =
+            null;
+
+        originalWaterfallBlock =
+            null;
+
+        originalPondBlock =
+            null;
+
+        originalObjectStates =
+            null;
+
+        waterEffectStarted =
+            false;
     }
 
     private void RemoveNightMonsters()
     {
-        for (int i = spawnedMonsters.Count - 1; i >= 0; i--)
+        for (int i =
+             spawnedMonsters.Count - 1;
+             i >= 0;
+             i--)
         {
             if (spawnedMonsters[i] != null)
-                Destroy(spawnedMonsters[i]);
+            {
+                Destroy(
+                    spawnedMonsters[i]
+                );
+            }
         }
 
         spawnedMonsters.Clear();
+
+        rainSpawnedMonsters.Clear();
     }
 
-    public void StopSpawnedMonsters(bool stopped)
+    private void RemoveRainMonsters()
     {
-        for (int i = spawnedMonsters.Count - 1; i >= 0; i--)
+        for (int i =
+             rainSpawnedMonsters.Count - 1;
+             i >= 0;
+             i--)
+        {
+            GameObject monster =
+                rainSpawnedMonsters[i];
+
+            if (monster != null)
+            {
+                spawnedMonsters.Remove(
+                    monster
+                );
+
+                Destroy(monster);
+            }
+        }
+
+        rainSpawnedMonsters.Clear();
+    }
+
+    public void StopSpawnedMonsters(
+        bool stopped)
+    {
+        for (int i =
+             spawnedMonsters.Count - 1;
+             i >= 0;
+             i--)
         {
             if (spawnedMonsters[i] == null)
             {
@@ -466,10 +830,13 @@ public class MonsterSpawner : MonoBehaviour
                 continue;
             }
 
-            Monster monster = spawnedMonsters[i].GetComponent<Monster>();
+            Monster monster =
+                spawnedMonsters[i]
+                    .GetComponent<Monster>();
 
             if (monster != null)
-                monster.enabled = !stopped;
+                monster.enabled =
+                    !stopped;
         }
     }
 }

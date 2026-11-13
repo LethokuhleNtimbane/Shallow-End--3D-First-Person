@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -11,13 +12,13 @@ public class TaskManager : MonoBehaviour
         SpeakToThomasFirst,
         SearchWoodenBox,
         ReadJournal,
-        GatherResources,
-        CraftTools,
-        FindFood,
+        SpeakToThomasResources,
+        OpenCraftingBench,
+        SpeakToThomasNight,
         SurviveNight,
         CraftTent,
         BuildRaft,
-        SpeakToThomasSecond
+        SpeakToThomasEnding
     }
 
     [System.Serializable]
@@ -44,35 +45,67 @@ public class TaskManager : MonoBehaviour
     [Header("Display")]
     [SerializeField] private float completedTaskDisplayTime = 2f;
 
+    [Header("Progression References")]
+    [SerializeField] private TimeController timeController;
+    [SerializeField] private BuildItems tentBuildItem;
+    [SerializeField] private BuildItems raftBuildItem;
+
+    [Header("Game Ending")]
+    [SerializeField] private CanvasGroup endingCanvasGroup;
+    [SerializeField] private float endingFadeDuration = 4f;
+
     private TaskData[] tasks;
     private int currentTaskIndex;
 
     private bool showingCompletedTask;
     private Coroutine completedTaskCoroutine;
 
+    private bool journalOpenRequested;
+    private bool journalWasOpen;
+    private bool journalFinished;
+
+    private bool gameEndingTriggered;
+
     private readonly HashSet<TaskID> completedTasks =
         new HashSet<TaskID>();
 
-    private int woodCollected;
-    private int vinesCollected;
-    private int rocksCollected;
-
-    private bool hammerCrafted;
-    private bool spearCrafted;
-    private bool coconutOpened;
-    private bool crabCaught;
-    private bool firstNightSurvived;
-    private bool tentBuilt;
-    private bool raftBuilt;
+    private readonly DateTime dayTwoSixAM =
+        new DateTime(2000, 1, 2, 6, 0, 0);
 
     private void Start()
     {
+        if (timeController == null)
+            timeController = TimeController.instance;
+
         CreateTasks();
+
         currentTaskIndex = 0;
 
-        SkipAlreadyCompletedTasks();
+        if (endingCanvasGroup != null)
+        {
+            endingCanvasGroup.alpha = 0f;
+            endingCanvasGroup.interactable = false;
+            endingCanvasGroup.blocksRaycasts = false;
+        }
+
         UpdateTaskUI();
         TryCompleteCurrentTask();
+    }
+
+    private void Update()
+    {
+        if (timeController == null)
+        {
+            timeController = TimeController.instance;
+
+            if (timeController == null)
+                timeController = FindFirstObjectByType<TimeController>();
+        }
+
+        CheckJournalReading();
+        CheckCraftingBench();
+        CheckSurviveNight();
+        CheckBuildProgress();
     }
 
     private void CreateTasks()
@@ -81,30 +114,51 @@ public class TaskManager : MonoBehaviour
         {
             new TaskData(
                 TaskID.SpeakToThomasFirst,
-                "Go find Thomas Montgomery"
+                "Talk to Thomas Montgomery"
             ),
+
             new TaskData(
                 TaskID.SearchWoodenBox,
-                "Find Thomas's chest and retrieve the axe"
+                "Search Thomas's wooden box"
             ),
+
             new TaskData(
                 TaskID.ReadJournal,
-                "Read the journal"
+                "Read Thomas's journal"
             ),
+
+            new TaskData(
+                TaskID.SpeakToThomasResources,
+                "Speak to Thomas"
+            ),
+
+            new TaskData(
+                TaskID.OpenCraftingBench,
+                "Open the crafting bench"
+            ),
+
+            new TaskData(
+                TaskID.SpeakToThomasNight,
+                "Speak to Thomas"
+            ),
+
             new TaskData(
                 TaskID.SurviveNight,
-                "Survive the night"
+                "Survive until Day 2, 06:00"
             ),
+
             new TaskData(
                 TaskID.CraftTent,
                 "Build a tent"
             ),
+
             new TaskData(
                 TaskID.BuildRaft,
                 "Build a raft"
             ),
+
             new TaskData(
-                TaskID.SpeakToThomasSecond,
+                TaskID.SpeakToThomasEnding,
                 "Say goodbye to Thomas"
             )
         };
@@ -112,7 +166,11 @@ public class TaskManager : MonoBehaviour
 
     public void CompleteTask(TaskID taskID)
     {
+        if (!Enum.IsDefined(typeof(TaskID), taskID))
+            return;
+
         completedTasks.Add(taskID);
+
         TryCompleteCurrentTask();
     }
 
@@ -128,115 +186,83 @@ public class TaskManager : MonoBehaviour
 
     public void RegisterJournalRead()
     {
+        if (journalFinished)
+            return;
+
+        journalOpenRequested = true;
+
+        if (BookManager.IsBookOpen)
+            journalWasOpen = true;
+    }
+
+    private void CheckJournalReading()
+    {
+        if (!journalOpenRequested || journalFinished)
+            return;
+
+        if (BookManager.IsBookOpen)
+        {
+            journalWasOpen = true;
+            return;
+        }
+
+        if (!journalWasOpen)
+            return;
+
+        journalFinished = true;
+
         CompleteTask(TaskID.ReadJournal);
     }
 
-    public void RegisterWoodCollected(int amount = 1)
+    private void CheckCraftingBench()
     {
-        woodCollected += Mathf.Max(0, amount);
-    }
-
-    public void RegisterVinesCollected(int amount = 1)
-    {
-        vinesCollected += Mathf.Max(0, amount);
-    }
-
-    public void RegisterRocksCollected(int amount = 1)
-    {
-        rocksCollected += Mathf.Max(0, amount);
-    }
-
-    public void RegisterItemCrafted(string itemName)
-    {
-        if (string.IsNullOrWhiteSpace(itemName))
+        if (!IsCurrentTask(TaskID.OpenCraftingBench))
             return;
 
-        string item = itemName.Trim().ToLowerInvariant();
+        if (CraftingBench.IsCraftingOpen)
+            CompleteTask(TaskID.OpenCraftingBench);
+    }
 
-        if (item == "hammer")
-            hammerCrafted = true;
-        else if (item == "spear")
-            spearCrafted = true;
-        else if (item == "tent")
+    private void CheckSurviveNight()
+    {
+        if (!IsCurrentTask(TaskID.SurviveNight))
+            return;
+
+        if (timeController == null)
+            return;
+
+        if (timeController.CurrentTime >= dayTwoSixAM)
+            CompleteTask(TaskID.SurviveNight);
+    }
+
+    private void CheckBuildProgress()
+    {
+        if (IsCurrentTask(TaskID.CraftTent))
         {
-            tentBuilt = true;
-            completedTasks.Add(TaskID.CraftTent);
+            if (tentBuildItem != null && tentBuildItem.IsBuilt)
+                CompleteTask(TaskID.CraftTent);
         }
-        else if (item == "raft")
+
+        if (IsCurrentTask(TaskID.BuildRaft))
         {
-            raftBuilt = true;
-            completedTasks.Add(TaskID.BuildRaft);
+            if (raftBuildItem != null && raftBuildItem.IsBuilt)
+                CompleteTask(TaskID.BuildRaft);
         }
-
-        UpdateTaskUI();
-        TryCompleteCurrentTask();
-    }
-
-    public void RegisterCoconutOpened()
-    {
-        coconutOpened = true;
-    }
-
-    public void RegisterCrabCaught()
-    {
-        crabCaught = true;
-    }
-
-    public void RegisterFirstNightSurvived()
-    {
-        firstNightSurvived = true;
-        TryCompleteCurrentTask();
     }
 
     public void RegisterTentBuilt()
     {
-        tentBuilt = true;
-        completedTasks.Add(TaskID.CraftTent);
-        TryCompleteCurrentTask();
+        CompleteTask(TaskID.CraftTent);
     }
 
     public void RegisterRaftBuilt()
     {
-        raftBuilt = true;
-        completedTasks.Add(TaskID.BuildRaft);
-        TryCompleteCurrentTask();
+        CompleteTask(TaskID.BuildRaft);
     }
 
     public void RegisterThomasEndingFinished()
     {
-        CompleteTask(TaskID.SpeakToThomasSecond);
-    }
-
-    private bool IsObjectiveComplete(TaskID taskID)
-    {
-        if (completedTasks.Contains(taskID))
-            return true;
-
-        switch (taskID)
-        {
-            case TaskID.GatherResources:
-                return woodCollected >= 5
-                    && vinesCollected >= 5
-                    && rocksCollected >= 5;
-
-            case TaskID.CraftTools:
-                return hammerCrafted && spearCrafted;
-
-            case TaskID.FindFood:
-                return coconutOpened && crabCaught;
-
-            case TaskID.SurviveNight:
-                return firstNightSurvived;
-
-            case TaskID.CraftTent:
-                return tentBuilt;
-
-            case TaskID.BuildRaft:
-                return raftBuilt;
-
-            default:
-                return false;
-        }
+        CompleteTask(TaskID.SpeakToThomasEnding);
     }
 
     private void TryCompleteCurrentTask()
@@ -249,83 +275,116 @@ public class TaskManager : MonoBehaviour
 
         TaskID currentID = tasks[currentTaskIndex].taskID;
 
-        if (IsObjectiveComplete(currentID))
+        if (!completedTasks.Contains(currentID))
         {
-            if (!completedTasks.Contains(currentID))
-                completedTasks.Add(currentID);
-
-            if (IsCurrentTask(currentID))
-            {
-                showingCompletedTask = true;
-
-                if (completedTaskCoroutine != null)
-                    StopCoroutine(completedTaskCoroutine);
-
-                completedTaskCoroutine =
-                    StartCoroutine(ShowCompletedTask());
-            }
+            UpdateTaskUI();
+            return;
         }
 
-        UpdateTaskUI();
+        showingCompletedTask = true;
+
+        UpdateCompletedTaskUI();
+
+        if (completedTaskCoroutine != null)
+            StopCoroutine(completedTaskCoroutine);
+
+        completedTaskCoroutine =
+            StartCoroutine(ShowCompletedTask());
     }
 
     private IEnumerator ShowCompletedTask()
     {
-        UpdateCompletedTaskUI();
-
-        yield return new WaitForSeconds(completedTaskDisplayTime);
+        if (completedTaskDisplayTime > 0f)
+            yield return new WaitForSeconds(completedTaskDisplayTime);
 
         currentTaskIndex++;
+
         showingCompletedTask = false;
         completedTaskCoroutine = null;
 
-        SkipAlreadyCompletedTasks();
-
         UpdateTaskUI();
+
+        if (currentTaskIndex >= tasks.Length)
+        {
+            TriggerGameEnding();
+            yield break;
+        }
+
         TryCompleteCurrentTask();
     }
 
-    private void SkipAlreadyCompletedTasks()
+    private void TriggerGameEnding()
     {
-        if (tasks == null)
+        if (gameEndingTriggered)
             return;
 
-        while (currentTaskIndex < tasks.Length)
+        gameEndingTriggered = true;
+
+        if (endingCanvasGroup == null)
+            return;
+
+        endingCanvasGroup.gameObject.SetActive(true);
+
+        StartCoroutine(FadeInEndingCanvas());
+    }
+
+    private IEnumerator FadeInEndingCanvas()
+    {
+        endingCanvasGroup.alpha = 0f;
+
+        endingCanvasGroup.interactable = false;
+        endingCanvasGroup.blocksRaycasts = false;
+
+        if (endingFadeDuration <= 0f)
         {
-            TaskID id = tasks[currentTaskIndex].taskID;
-
-            if (!IsObjectiveComplete(id))
-                break;
-
-            completedTasks.Add(id);
-            currentTaskIndex++;
+            endingCanvasGroup.alpha = 1f;
         }
+        else
+        {
+            float elapsed = 0f;
+
+            while (elapsed < endingFadeDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+
+                float progress = Mathf.Clamp01(
+                    elapsed / endingFadeDuration
+                );
+
+                endingCanvasGroup.alpha =
+                    Mathf.SmoothStep(0f, 1f, progress);
+
+                yield return null;
+            }
+
+            endingCanvasGroup.alpha = 1f;
+        }
+
+        endingCanvasGroup.interactable = true;
+        endingCanvasGroup.blocksRaycasts = true;
     }
 
     private void UpdateTaskUI()
     {
-        if (taskText1 == null || taskText2 == null || tasks == null)
+        if (tasks == null)
             return;
 
-        if (currentTaskIndex < tasks.Length)
+        if (taskText1 != null)
         {
-            taskText1.text = tasks[currentTaskIndex].taskText;
-            taskText1.color = activeTaskColour;
-            taskText1.gameObject.SetActive(true);
-        }
-        else
-        {
-            taskText1.text = "";
-            taskText1.gameObject.SetActive(false);
+            if (currentTaskIndex < tasks.Length)
+            {
+                taskText1.text = tasks[currentTaskIndex].taskText;
+                taskText1.color = activeTaskColour;
+                taskText1.gameObject.SetActive(true);
+            }
+            else
+            {
+                taskText1.text = "";
+                taskText1.gameObject.SetActive(false);
+            }
         }
 
-        if (currentTaskIndex + 1 < tasks.Length)
-        {
-            taskText2.text = tasks[currentTaskIndex + 1].taskText;
-            taskText2.color = activeTaskColour;
-            taskText2.gameObject.SetActive(false);
-        }
-        else
+        if (taskText2 != null)
         {
             taskText2.text = "";
             taskText2.gameObject.SetActive(false);
@@ -334,38 +393,46 @@ public class TaskManager : MonoBehaviour
 
     private void UpdateCompletedTaskUI()
     {
-        if (taskText1 == null || taskText2 == null || tasks == null)
+        if (tasks == null)
             return;
 
-        if (currentTaskIndex < tasks.Length)
+        if (taskText1 != null)
         {
-            taskText1.text = tasks[currentTaskIndex].taskText;
-            taskText1.color = completedTaskColour;
-            taskText1.gameObject.SetActive(true);
+            if (currentTaskIndex < tasks.Length)
+            {
+                taskText1.text = tasks[currentTaskIndex].taskText;
+                taskText1.color = completedTaskColour;
+                taskText1.gameObject.SetActive(true);
+            }
         }
 
-        if (currentTaskIndex + 1 < tasks.Length)
+        if (taskText2 != null)
         {
-            taskText2.text = tasks[currentTaskIndex + 1].taskText;
-            taskText2.color = activeTaskColour;
-            taskText2.gameObject.SetActive(true);
-        }
-        else
-        {
-            taskText2.text = "";
-            taskText2.gameObject.SetActive(false);
+            if (currentTaskIndex + 1 < tasks.Length)
+            {
+                taskText2.text = tasks[currentTaskIndex + 1].taskText;
+                taskText2.color = activeTaskColour;
+                taskText2.gameObject.SetActive(true);
+            }
+            else
+            {
+                taskText2.text = "";
+                taskText2.gameObject.SetActive(false);
+            }
         }
     }
 
     public bool IsTaskCompleted(TaskID taskID)
     {
-        return completedTasks.Contains(taskID)
-            || IsObjectiveComplete(taskID);
+        return completedTasks.Contains(taskID);
     }
 
     public bool IsCurrentTask(TaskID taskID)
     {
         if (tasks == null || currentTaskIndex >= tasks.Length)
+            return false;
+
+        if (showingCompletedTask || completedTasks.Contains(taskID))
             return false;
 
         return tasks[currentTaskIndex].taskID == taskID;
@@ -374,15 +441,54 @@ public class TaskManager : MonoBehaviour
     public TaskID GetCurrentTaskID()
     {
         if (tasks == null || currentTaskIndex >= tasks.Length)
-            return TaskID.SpeakToThomasSecond;
+            return TaskID.SpeakToThomasEnding;
 
         return tasks[currentTaskIndex].taskID;
     }
 
-
-
     public bool HasSurvivedFirstNight()
     {
-        return firstNightSurvived;
+        return IsTaskCompleted(TaskID.SurviveNight);
+    }
+
+    public bool HasCompletedAllTasks()
+    {
+        return tasks != null && currentTaskIndex >= tasks.Length;
+    }
+
+    public void RegisterWoodCollected(int amount = 1)
+    {
+    }
+
+    public void RegisterVinesCollected(int amount = 1)
+    {
+    }
+
+    public void RegisterRocksCollected(int amount = 1)
+    {
+    }
+
+    public void RegisterItemCrafted(string itemName)
+    {
+        if (string.Equals(itemName, "tent", StringComparison.OrdinalIgnoreCase))
+        {
+            RegisterTentBuilt();
+            return;
+        }
+
+        if (string.Equals(itemName, "raft", StringComparison.OrdinalIgnoreCase))
+            RegisterRaftBuilt();
+    }
+
+    public void RegisterCoconutOpened()
+    {
+    }
+
+    public void RegisterCrabCaught()
+    {
+    }
+
+    public void RegisterFirstNightSurvived()
+    {
     }
 }

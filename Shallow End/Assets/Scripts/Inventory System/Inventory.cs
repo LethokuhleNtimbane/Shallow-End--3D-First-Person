@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -82,10 +81,16 @@ public class Inventory : MonoBehaviour
     [Header("UI elements")]
     [SerializeField] private float messageDuration = 2f;
     [SerializeField] private TextMeshProUGUI interactionMessage;
+    [SerializeField] private CanvasGroup dropImageCanvasGroup;
+    [SerializeField] private float dropImageFadeDuration = 0.3f;
+    [SerializeField] private float dropImageVisibleDuration = 0.4f;
+
     public Image DragIcon;
     private Slot dragslot = null;
     private bool isDraggin = false;
     private Coroutine messageCoroutine;
+    private Coroutine dropImageCoroutine;
+
     public GameObject Crafting;
     public GameObject hotBar;
     public CraftinSystem craftingSystem;
@@ -198,6 +203,72 @@ public class Inventory : MonoBehaviour
         }
 
         messageCoroutine = null;
+    }
+
+    private void ShowDropImage()
+    {
+        if (dropImageCanvasGroup == null)
+            return;
+
+        if (dropImageCoroutine != null)
+        {
+            StopCoroutine(dropImageCoroutine);
+        }
+
+        dropImageCoroutine = StartCoroutine(DropImageFlash());
+    }
+
+    private IEnumerator DropImageFlash()
+    {
+        dropImageCanvasGroup.alpha = 0f;
+        dropImageCanvasGroup.gameObject.SetActive(true);
+
+        for (int i = 0; i < 3; i++)
+        {
+            yield return StartCoroutine(
+                FadeCanvasGroup(0f, 1f)
+            );
+
+            yield return new WaitForSecondsRealtime(
+                dropImageVisibleDuration
+            );
+
+            yield return StartCoroutine(
+                FadeCanvasGroup(1f, 0f)
+            );
+
+            if (i < 2)
+            {
+                yield return new WaitForSecondsRealtime(
+                    dropImageVisibleDuration
+                );
+            }
+        }
+
+        dropImageCanvasGroup.alpha = 0f;
+        dropImageCanvasGroup.gameObject.SetActive(false);
+
+        dropImageCoroutine = null;
+    }
+
+    private IEnumerator FadeCanvasGroup(float startAlpha, float endAlpha)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < dropImageFadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+
+            float progress =
+                Mathf.Clamp01(elapsed / dropImageFadeDuration);
+
+            dropImageCanvasGroup.alpha =
+                Mathf.Lerp(startAlpha, endAlpha, progress);
+
+            yield return null;
+        }
+
+        dropImageCanvasGroup.alpha = endAlpha;
     }
 
     private void EquippedHandItem()
@@ -562,6 +633,9 @@ public class Inventory : MonoBehaviour
 
         foreach (Slot slot in hotbarSlots)
         {
+            if (remaining <= 0)
+                break;
+
             if (!slot.Hasitem() || slot.GetItem() != itemToAdd)
                 continue;
 
@@ -793,7 +867,11 @@ public class Inventory : MonoBehaviour
             {
                 int move = Mathf.Min(space, from.GetAmount());
 
-                to.SetItem(to.GetItem(), to.GetAmount() + move);
+                to.SetItem(
+                    to.GetItem(),
+                    to.GetAmount() + move
+                );
+
                 from.SetItem(
                     from.GetItem(),
                     from.GetAmount() - move,
@@ -817,7 +895,11 @@ public class Inventory : MonoBehaviour
             from.GetDurability()
         );
 
-        from.SetItem(tempItem, tempAmount, tempDurability);
+        from.SetItem(
+            tempItem,
+            tempAmount,
+            tempDurability
+        );
     }
 
     private void HandleDropIntoFireplace(Slot from, Slot to)
@@ -921,7 +1003,8 @@ public class Inventory : MonoBehaviour
             if (availableStackSpace.ContainsKey(item))
             {
                 int stackSpace = availableStackSpace[item];
-                int amountFromStacks = Mathf.Min(stackSpace, remaining);
+                int amountFromStacks =
+                    Mathf.Min(stackSpace, remaining);
 
                 availableStackSpace[item] -= amountFromStacks;
                 remaining -= amountFromStacks;
@@ -931,6 +1014,7 @@ public class Inventory : MonoBehaviour
                 continue;
 
             int maxStack = Mathf.Max(1, item.maxStack);
+
             int slotsNeeded = Mathf.CeilToInt(
                 (float)remaining / maxStack
             );
@@ -972,7 +1056,10 @@ public class Inventory : MonoBehaviour
         );
 
         if (!pickedUp)
+        {
+            ShowDropImage();
             return;
+        }
 
         if (audioManager != null)
         {

@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -79,11 +78,17 @@ public class ForDialog : MonoBehaviour
     private Coroutine typingCoroutine;
     private Action dialogueFinishedCallback;
 
-    private readonly List<Behaviour> pausedBehaviours = new List<Behaviour>();
-    private readonly List<bool> previousBehaviourStates = new List<bool>();
+    private readonly List<Behaviour> pausedBehaviours =
+        new List<Behaviour>();
 
-    private readonly List<GameObject> hiddenGameplayUI = new List<GameObject>();
-    private readonly List<bool> previousGameplayUIStates = new List<bool>();
+    private readonly List<bool> previousBehaviourStates =
+        new List<bool>();
+
+    private readonly List<GameObject> hiddenGameplayUI =
+        new List<GameObject>();
+
+    private readonly List<bool> previousGameplayUIStates =
+        new List<bool>();
 
     private Monster[] monsters;
     private bool[] monsterStates;
@@ -118,10 +123,17 @@ public class ForDialog : MonoBehaviour
         if (timeController == null)
             timeController = TimeController.instance;
 
+        if (taskManager == null)
+            taskManager = FindFirstObjectByType<TaskManager>();
+
         if (conversationCamera != null)
         {
-            conversationCameraWasActive = conversationCamera.gameObject.activeSelf;
-            conversationCameraWasEnabled = conversationCamera.enabled;
+            conversationCameraWasActive =
+                conversationCamera.gameObject.activeSelf;
+
+            conversationCameraWasEnabled =
+                conversationCamera.enabled;
+
             conversationCamera.gameObject.SetActive(false);
         }
 
@@ -166,9 +178,15 @@ public class ForDialog : MonoBehaviour
         UpdateNightObject();
 
         if (!playerInRange || dialogueIsPlaying)
+        {
+            HideInteractionUI();
             return;
+        }
 
         UpdateInteractionUI();
+
+        if (!CanInteractWithCurrentTask())
+            return;
 
         if (interactionAction == null)
             return;
@@ -185,6 +203,7 @@ public class ForDialog : MonoBehaviour
             return;
 
         playerInRange = true;
+
         UpdateInteractionUI();
     }
 
@@ -194,7 +213,22 @@ public class ForDialog : MonoBehaviour
             return;
 
         playerInRange = false;
+
         HideInteractionUI();
+    }
+
+    private bool CanInteractWithCurrentTask()
+    {
+        if (taskManager == null)
+            return false;
+
+        return
+            taskManager.IsCurrentTask(TaskManager.TaskID.SpeakToThomasFirst) ||
+            taskManager.IsCurrentTask(TaskManager.TaskID.SearchWoodenBox) ||
+            taskManager.IsCurrentTask(TaskManager.TaskID.SpeakToThomasResources) ||
+            taskManager.IsCurrentTask(TaskManager.TaskID.OpenCraftingBench) ||
+            taskManager.IsCurrentTask(TaskManager.TaskID.SpeakToThomasNight) ||
+            taskManager.IsCurrentTask(TaskManager.TaskID.SpeakToThomasEnding);
     }
 
     private void InteractWithThomas()
@@ -211,29 +245,39 @@ public class ForDialog : MonoBehaviour
             return;
         }
 
-        if (taskManager.IsCurrentTask(TaskManager.TaskID.SpeakToThomasSecond))
+        if (taskManager.IsCurrentTask(TaskManager.TaskID.SearchWoodenBox))
         {
-            if (HasCompletedRequiredTasks())
-                StartSecondDialogue();
-            else
-                ShowRandomDialogue();
-
+            ShowRandomDialogue();
             return;
         }
 
-        ShowRandomDialogue();
-    }
+        if (taskManager.IsCurrentTask(TaskManager.TaskID.SpeakToThomasResources))
+        {
+            StartResourcesDialogue();
+            return;
+        }
 
-    private bool HasCompletedRequiredTasks()
-    {
-        return taskManager.IsTaskCompleted(TaskManager.TaskID.SurviveNight)
-            && taskManager.IsTaskCompleted(TaskManager.TaskID.CraftTent)
-            && taskManager.IsTaskCompleted(TaskManager.TaskID.BuildRaft);
+        if (taskManager.IsCurrentTask(TaskManager.TaskID.OpenCraftingBench))
+        {
+            ShowRandomDialogue();
+            return;
+        }
+
+        if (taskManager.IsCurrentTask(TaskManager.TaskID.SpeakToThomasNight))
+        {
+            StartNightDialogue();
+            return;
+        }
+
+        if (taskManager.IsCurrentTask(TaskManager.TaskID.SpeakToThomasEnding))
+        {
+            StartEndingDialogue();
+        }
     }
 
     private void StartFirstDialogue()
     {
-        ForDialog.DialogueLine[] dialogue =
+        DialogueLine[] dialogue =
         {
             new DialogueLine { speakerName = "Thomas", dialogueText = "Hello stranger", isThomas = true },
             new DialogueLine { speakerName = "Player", dialogueText = "Who are you?", isThomas = false },
@@ -260,28 +304,155 @@ public class ForDialog : MonoBehaviour
         taskManager.CompleteTask(TaskManager.TaskID.SpeakToThomasFirst);
     }
 
-    private void StartSecondDialogue()
+    private void StartResourcesDialogue()
     {
-        ForDialog.DialogueLine[] dialogue =
+        DialogueLine[] dialogue =
         {
-            new DialogueLine { speakerName = "Thomas", dialogueText = "I see you have built yourself a shelter", isThomas = true },
-            new DialogueLine { speakerName = "Player", dialogueText = "I don't plan to stay here for long though", isThomas = false },
-            new DialogueLine { speakerName = "Thomas", dialogueText = "I used to have the same thoughts", isThomas = true },
-            new DialogueLine { speakerName = "Player", dialogueText = "What changed?", isThomas = false },
-            new DialogueLine { speakerName = "Thomas", dialogueText = "Life is simple here.", isThomas = true },
-            new DialogueLine { speakerName = "Player", dialogueText = "There are monsters here!", isThomas = false },
-            new DialogueLine { speakerName = "Thomas", dialogueText = "When you have lived with them for so long, you don't see them that way", isThomas = true },
-            new DialogueLine { speakerName = "Player", dialogueText = "You're crazy!", isThomas = false },
-            new DialogueLine { speakerName = "Thomas", dialogueText = "Please. Let this place become your home. We could all be friends forever", isThomas = true },
-            new DialogueLine { speakerName = "Player", dialogueText = "You're insane. I'm getting off this island.", isThomas = false }
+            new DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "I collected all the resources. how do i use these?",
+                isThomas = false
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Good Job. head to the crafting table to create a hammer that you can use to break open the coconuts good for your thirst, or maybe create a spear to hunt down those annoying little crabsand",
+                isThomas = true
+            }
         };
 
-        StartThomasConversation(dialogue, SecondDialogueFinished);
+        StartThomasConversation(dialogue, ResourcesDialogueFinished);
     }
 
-    private void SecondDialogueFinished()
+    private void ResourcesDialogueFinished()
     {
-        taskManager.CompleteTask(TaskManager.TaskID.SpeakToThomasSecond);
+        taskManager.CompleteTask(TaskManager.TaskID.SpeakToThomasResources);
+    }
+
+    private void StartNightDialogue()
+    {
+        DialogueLine[] dialogue =
+        {
+            new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "A long day full of hard work eh? it only gets worse from here",
+                isThomas = true
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "What do you mean?",
+                isThomas = false
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "At nightfall there are creatures that roam this island. deadly monsters that you have to run away from,",
+                isThomas = true
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Beware they may not appear to you the first night but make no mistake they are coming, where there is no light you shall find them waiting in the shadows.",
+                isThomas = true
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "How do i protect myself from them",
+                isThomas = false
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "Use the dash (shift) to get away if they’re too close.",
+                isThomas = true
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "Is that it? just run away?",
+                isThomas = false
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "You could craft a knife to fight and kill them",
+                isThomas = true
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "Now that’s more like it!",
+                isThomas = false
+            }
+        };
+
+        StartThomasConversation(dialogue, NightDialogueFinished);
+    }
+
+    private void NightDialogueFinished()
+    {
+        taskManager.CompleteTask(TaskManager.TaskID.SpeakToThomasNight);
+    }
+
+    private void StartEndingDialogue()
+    {
+        DialogueLine[] dialogue =
+        {
+            new DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "Thank you thomas, i wouldn’t have survived this long without you",
+                isThomas = false
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "No need to thank, just helping a fellow soul. Safe travels",
+                isThomas = true
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "You’re not coming with me.",
+                isThomas = false
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "I have been here long enough that this place is my home now",
+                isThomas = true
+            },
+
+            new DialogueLine
+            {
+                speakerName = "Player",
+                dialogueText = "I wish you luck, friend.",
+                isThomas = false
+            }
+        };
+
+        StartThomasConversation(dialogue, EndingDialogueFinished);
+    }
+
+    private void EndingDialogueFinished()
+    {
+        taskManager.RegisterThomasEndingFinished();
     }
 
     private void ShowRandomDialogue()
@@ -310,7 +481,9 @@ public class ForDialog : MonoBehaviour
         StartThomasConversation(dialogue);
     }
 
-    private void StartThomasConversation(DialogueLine[] dialogue, Action onComplete = null)
+    private void StartThomasConversation(
+        DialogueLine[] dialogue,
+        Action onComplete = null)
     {
         if (conversationStarted || dialogue == null || dialogue.Length == 0)
             return;
@@ -381,6 +554,7 @@ public class ForDialog : MonoBehaviour
 
         pausedBehaviours.Add(behaviour);
         previousBehaviourStates.Add(behaviour.enabled);
+
         behaviour.enabled = false;
     }
 
@@ -405,6 +579,7 @@ public class ForDialog : MonoBehaviour
 
         hiddenGameplayUI.Add(uiObject);
         previousGameplayUIStates.Add(uiObject.activeSelf);
+
         uiObject.SetActive(false);
     }
 
@@ -504,19 +679,16 @@ public class ForDialog : MonoBehaviour
         }
 
         dialogueText.maxVisibleCharacters = int.MaxValue;
+
         isTyping = false;
         typingCoroutine = null;
     }
 
     private void UpdateDialogue()
     {
-        bool advancePressed = false;
-
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            advancePressed = true;
-
-        if (advanceDialogueAction != null && advanceDialogueAction.action.WasPressedThisFrame())
-            advancePressed = true;
+        bool advancePressed =
+            Mouse.current != null &&
+            Mouse.current.leftButton.wasPressedThisFrame;
 
         if (!advancePressed)
             return;
@@ -526,6 +698,7 @@ public class ForDialog : MonoBehaviour
         else
             ShowNextLine();
     }
+
     private void FinishTyping()
     {
         if (typingCoroutine != null)
@@ -546,6 +719,7 @@ public class ForDialog : MonoBehaviour
             return;
 
         currentLineIndex++;
+
         ShowCurrentLine();
     }
 
@@ -668,6 +842,7 @@ public class ForDialog : MonoBehaviour
     private bool CanInteractAtCurrentTime()
     {
         float currentHour = GetCurrentHour();
+
         return currentHour >= 6f && currentHour < 21f;
     }
 
@@ -684,7 +859,10 @@ public class ForDialog : MonoBehaviour
 
     private void UpdateInteractionUI()
     {
-        if (!playerInRange || dialogueIsPlaying || !CanInteractAtCurrentTime())
+        if (!playerInRange ||
+            dialogueIsPlaying ||
+            !CanInteractAtCurrentTime() ||
+            !CanInteractWithCurrentTask())
         {
             HideInteractionUI();
             return;
