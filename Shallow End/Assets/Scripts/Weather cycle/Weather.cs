@@ -1,4 +1,3 @@
-
 using System;
 using UnityEngine;
 
@@ -67,6 +66,15 @@ public class RainWeatherController : MonoBehaviour
         }
     }
 
+    public bool IsStormActive
+    {
+        get
+        {
+            return currentState == WeatherState.Approaching ||
+                   currentState == WeatherState.Raining;
+        }
+    }
+
     private Color originalLightColour;
     private float originalCloudAlpha;
 
@@ -102,7 +110,8 @@ public class RainWeatherController : MonoBehaviour
         if (timeController == null)
             return;
 
-        DateTime gameTime = timeController.CurrentTime;
+        DateTime gameTime =
+            timeController.CurrentTime;
 
         switch (currentState)
         {
@@ -130,7 +139,8 @@ public class RainWeatherController : MonoBehaviour
             return;
 
         if (timeController == null)
-            timeController = TimeController.instance;
+            timeController =
+                TimeController.instance;
 
         if (timeController == null)
             return;
@@ -153,7 +163,8 @@ public class RainWeatherController : MonoBehaviour
             return;
         }
 
-        if (!cloudMaterial.HasProperty(cloudsAlphaProperty))
+        if (!cloudMaterial.HasProperty(
+            cloudsAlphaProperty))
         {
             Debug.LogWarning(
                 "RainWeatherController: The assigned material does not contain "
@@ -163,50 +174,75 @@ public class RainWeatherController : MonoBehaviour
             return;
         }
 
-        originalLightColour = directionalLight.color;
-        originalLightColourCaptured = true;
+        originalLightColour =
+            directionalLight.color;
+
+        originalLightColourCaptured =
+            true;
 
         originalCloudAlpha =
-            cloudMaterial.GetFloat(cloudsAlphaProperty);
+            cloudMaterial.GetFloat(
+                cloudsAlphaProperty);
 
-        originalCloudAlphaCaptured = true;
+        originalCloudAlphaCaptured =
+            true;
 
         if (rainParticleSystem != null)
         {
             rainParticleSystem.Stop(
                 true,
-                ParticleSystemStopBehavior.StopEmittingAndClear);
+                ParticleSystemStopBehavior
+                    .StopEmittingAndClear);
         }
 
-        gameStartTime = timeController.CurrentTime;
-        firstDayCompleted = false;
+        gameStartTime =
+            timeController.CurrentTime;
 
-        nextStormTime = gameStartTime.AddHours(24f);
+        firstDayCompleted =
+            false;
 
-        initialized = true;
+        nextStormTime =
+            gameStartTime.AddHours(24f);
 
-        Log("Weather initialized. Storms are disabled during the first day.");
+        initialized =
+            true;
+
+        Log(
+            "Weather initialized. Storms are disabled during the first day.");
     }
 
-    private void CheckForStorm(DateTime gameTime)
+    private void CheckForStorm(
+        DateTime gameTime)
     {
         if (!firstDayCompleted)
         {
-            if (gameTime < gameStartTime.AddHours(24f))
+            if (gameTime <
+                gameStartTime.AddHours(24f))
+            {
                 return;
+            }
 
-            firstDayCompleted = true;
+            firstDayCompleted =
+                true;
 
             float minimumWait =
-                Mathf.Max(1f, initialMinimumWaitHours);
+                Mathf.Max(
+                    1f,
+                    initialMinimumWaitHours);
 
             float maximumWait =
-                Mathf.Max(minimumWait, initialMaximumWaitHours);
+                Mathf.Max(
+                    minimumWait,
+                    initialMaximumWaitHours);
 
             float randomWait =
-                UnityEngine.Random.Range(minimumWait, maximumWait);
+                UnityEngine.Random.Range(
+                    minimumWait,
+                    maximumWait);
 
-            nextStormTime = gameTime.AddHours(randomWait);
+            nextStormTime =
+                gameTime.AddHours(
+                    randomWait);
 
             Log(
                 "First day completed. A storm may occur after a random wait of "
@@ -218,28 +254,43 @@ public class RainWeatherController : MonoBehaviour
 
         if (gameTime >= nextStormTime)
         {
-            BeginStormApproach(gameTime);
+            BeginStormApproach(
+                gameTime);
         }
     }
 
-    private void BeginStormApproach(DateTime gameTime)
+    private void BeginStormApproach(
+        DateTime gameTime)
     {
-        currentState = WeatherState.Approaching;
+        currentState =
+            WeatherState.Approaching;
 
-        transitionStartTime = gameTime;
-        transitionStartLightColour = directionalLight.color;
+        transitionStartTime =
+            gameTime;
+
+        transitionStartLightColour =
+            directionalLight.color;
 
         transitionStartCloudAlpha =
-            cloudMaterial.GetFloat(cloudsAlphaProperty);
+            cloudMaterial.GetFloat(
+                cloudsAlphaProperty);
 
         float minimum =
-            Mathf.Clamp(minimumTransitionHours, 0.01f, 1f);
+            Mathf.Clamp(
+                minimumTransitionHours,
+                0.01f,
+                1f);
 
         float maximum =
-            Mathf.Clamp(maximumTransitionHours, minimum, 1f);
+            Mathf.Clamp(
+                maximumTransitionHours,
+                minimum,
+                1f);
 
         currentTransitionDurationHours =
-            UnityEngine.Random.Range(minimum, maximum);
+            UnityEngine.Random.Range(
+                minimum,
+                maximum);
 
         Log(
             "Storm approaching. Transition duration: "
@@ -247,28 +298,39 @@ public class RainWeatherController : MonoBehaviour
             + " in-game hours.");
     }
 
-    private void UpdateStormApproach(DateTime gameTime)
+    private void UpdateStormApproach(
+        DateTime gameTime)
     {
         float elapsedHours =
-            (float)(gameTime - transitionStartTime).TotalHours;
+            (float)(
+                gameTime -
+                transitionStartTime
+            ).TotalHours;
 
-        float progress = currentTransitionDurationHours > 0f
-            ? Mathf.Clamp01(
-                elapsedHours / currentTransitionDurationHours)
-            : 1f;
+        float progress =
+            currentTransitionDurationHours > 0f
+                ? Mathf.Clamp01(
+                    elapsedHours /
+                    currentTransitionDurationHours)
+                : 1f;
 
         float smoothProgress =
-            Mathf.SmoothStep(0f, 1f, progress);
+            Mathf.SmoothStep(
+                0f,
+                1f,
+                progress);
 
-        directionalLight.color = Color.Lerp(
-            transitionStartLightColour,
-            stormLightColour,
-            smoothProgress);
+        directionalLight.color =
+            Color.Lerp(
+                transitionStartLightColour,
+                stormLightColour,
+                smoothProgress);
 
-        float newCloudAlpha = Mathf.Lerp(
-            transitionStartCloudAlpha,
-            stormCloudAlpha,
-            smoothProgress);
+        float newCloudAlpha =
+            Mathf.Lerp(
+                transitionStartCloudAlpha,
+                stormCloudAlpha,
+                smoothProgress);
 
         cloudMaterial.SetFloat(
             cloudsAlphaProperty,
@@ -276,7 +338,8 @@ public class RainWeatherController : MonoBehaviour
 
         if (progress >= 1f)
         {
-            directionalLight.color = stormLightColour;
+            directionalLight.color =
+                stormLightColour;
 
             cloudMaterial.SetFloat(
                 cloudsAlphaProperty,
@@ -286,10 +349,14 @@ public class RainWeatherController : MonoBehaviour
         }
     }
 
-    private void BeginRain(DateTime gameTime)
+    private void BeginRain(
+        DateTime gameTime)
     {
-        currentState = WeatherState.Raining;
-        rainStartTime = gameTime;
+        currentState =
+            WeatherState.Raining;
+
+        rainStartTime =
+            gameTime;
 
         if (rainParticleSystem != null)
         {
@@ -307,63 +374,96 @@ public class RainWeatherController : MonoBehaviour
             + " in-game hours.");
     }
 
-    private void UpdateRain(DateTime gameTime)
+    private void UpdateRain(
+        DateTime gameTime)
     {
         float elapsedHours =
-            (float)(gameTime - rainStartTime).TotalHours;
+            (float)(
+                gameTime -
+                rainStartTime
+            ).TotalHours;
 
-        if (elapsedHours < rainDurationHours)
+        if (elapsedHours <
+            rainDurationHours)
+        {
             return;
+        }
 
         EndRain(gameTime);
     }
 
-    private void EndRain(DateTime gameTime)
+    private void EndRain(
+        DateTime gameTime)
     {
         if (rainParticleSystem != null)
         {
             rainParticleSystem.Stop(
                 true,
-                ParticleSystemStopBehavior.StopEmitting);
+                ParticleSystemStopBehavior
+                    .StopEmitting);
         }
 
-        currentState = WeatherState.Clearing;
+        currentState =
+            WeatherState.Clearing;
 
-        transitionStartTime = gameTime;
-        transitionStartLightColour = directionalLight.color;
+        transitionStartTime =
+            gameTime;
+
+        transitionStartLightColour =
+            directionalLight.color;
 
         transitionStartCloudAlpha =
-            cloudMaterial.GetFloat(cloudsAlphaProperty);
+            cloudMaterial.GetFloat(
+                cloudsAlphaProperty);
 
         float minimum =
-            Mathf.Clamp(minimumTransitionHours, 0.01f, 1f);
+            Mathf.Clamp(
+                minimumTransitionHours,
+                0.01f,
+                1f);
 
         float maximum =
-            Mathf.Clamp(maximumTransitionHours, minimum, 1f);
+            Mathf.Clamp(
+                maximumTransitionHours,
+                minimum,
+                1f);
 
         currentTransitionDurationHours =
-            UnityEngine.Random.Range(minimum, maximum);
+            UnityEngine.Random.Range(
+                minimum,
+                maximum);
 
-        Log("Rain ended. Weather is returning to normal.");
+        Log(
+            "Rain ended. Weather is returning to normal.");
     }
 
-    private void UpdateWeatherRecovery(DateTime gameTime)
+    private void UpdateWeatherRecovery(
+        DateTime gameTime)
     {
         float elapsedHours =
-            (float)(gameTime - transitionStartTime).TotalHours;
+            (float)(
+                gameTime -
+                transitionStartTime
+            ).TotalHours;
 
-        float progress = currentTransitionDurationHours > 0f
-            ? Mathf.Clamp01(
-                elapsedHours / currentTransitionDurationHours)
-            : 1f;
+        float progress =
+            currentTransitionDurationHours > 0f
+                ? Mathf.Clamp01(
+                    elapsedHours /
+                    currentTransitionDurationHours)
+                : 1f;
 
         float smoothProgress =
-            Mathf.SmoothStep(0f, 1f, progress);
+            Mathf.SmoothStep(
+                0f,
+                1f,
+                progress);
 
-        directionalLight.color = Color.Lerp(
-            transitionStartLightColour,
-            originalLightColour,
-            smoothProgress);
+        directionalLight.color =
+            Color.Lerp(
+                transitionStartLightColour,
+                originalLightColour,
+                smoothProgress);
 
         cloudMaterial.SetFloat(
             cloudsAlphaProperty,
@@ -374,49 +474,68 @@ public class RainWeatherController : MonoBehaviour
 
         if (progress >= 1f)
         {
-            directionalLight.color = originalLightColour;
+            directionalLight.color =
+                originalLightColour;
 
             cloudMaterial.SetFloat(
                 cloudsAlphaProperty,
                 originalCloudAlpha);
 
-            ScheduleNextStorm(gameTime);
+            ScheduleNextStorm(
+                gameTime);
 
-            currentState = WeatherState.Waiting;
+            currentState =
+                WeatherState.Waiting;
         }
     }
 
-    private void ScheduleNextStorm(DateTime gameTime)
+    private void ScheduleNextStorm(
+        DateTime gameTime)
     {
         float minimumCooldown =
-            Mathf.Max(24f, minimumCooldownAfterStormHours);
+            Mathf.Max(
+                24f,
+                minimumCooldownAfterStormHours);
 
         float minimumExtra =
-            Mathf.Max(0f, additionalMinimumWaitHours);
+            Mathf.Max(
+                0f,
+                additionalMinimumWaitHours);
 
         float maximumExtra =
-            Mathf.Max(minimumExtra, additionalMaximumWaitHours);
+            Mathf.Max(
+                minimumExtra,
+                additionalMaximumWaitHours);
 
         float randomExtraWait =
-            UnityEngine.Random.Range(minimumExtra, maximumExtra);
+            UnityEngine.Random.Range(
+                minimumExtra,
+                maximumExtra);
 
         float totalWait =
-            minimumCooldown + randomExtraWait;
+            minimumCooldown +
+            randomExtraWait;
 
-        nextStormTime = gameTime.AddHours(totalWait);
+        nextStormTime =
+            gameTime.AddHours(
+                totalWait);
 
         Log(
             "Weather cleared. Next storm scheduled after "
             + totalWait.ToString("F1")
             + " in-game hours. Earliest next storm: "
-            + nextStormTime.ToString("yyyy-MM-dd HH:mm"));
+            + nextStormTime.ToString(
+                "yyyy-MM-dd HH:mm"));
     }
 
-    private void Log(string message)
+    private void Log(
+        string message)
     {
         if (showDebugMessages)
         {
-            Debug.Log("[Rain Weather] " + message);
+            Debug.Log(
+                "[Rain Weather] " +
+                message);
         }
     }
 
@@ -426,20 +545,24 @@ public class RainWeatherController : MonoBehaviour
         {
             rainParticleSystem.Stop(
                 true,
-                ParticleSystemStopBehavior.StopEmitting);
+                ParticleSystemStopBehavior
+                    .StopEmitting);
         }
     }
 
     private void OnDestroy()
     {
-        if (originalLightColourCaptured && directionalLight != null)
+        if (originalLightColourCaptured &&
+            directionalLight != null)
         {
-            directionalLight.color = originalLightColour;
+            directionalLight.color =
+                originalLightColour;
         }
 
         if (originalCloudAlphaCaptured &&
             cloudMaterial != null &&
-            cloudMaterial.HasProperty(cloudsAlphaProperty))
+            cloudMaterial.HasProperty(
+                cloudsAlphaProperty))
         {
             cloudMaterial.SetFloat(
                 cloudsAlphaProperty,

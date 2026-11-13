@@ -6,6 +6,7 @@ public class Monster : MonoBehaviour
 {
     [SerializeField] private Transform Player;
     [SerializeField] private TimeController timeController;
+    [SerializeField] private RainWeatherController rainWeatherController;
 
     [Header("Spawner Control")]
     [SerializeField] private bool controlledBySpawner = false;
@@ -26,7 +27,6 @@ public class Monster : MonoBehaviour
     [Header("Monster Separation")]
     [SerializeField] private float separationRadius = 2f;
     [SerializeField] private float separationStrength = 1.5f;
-
 
     private Vector3 patrolCenter;
     private Vector3 patrolTarget;
@@ -75,6 +75,10 @@ public class Monster : MonoBehaviour
         if (timeController == null)
             timeController = TimeController.instance;
 
+        if (rainWeatherController == null)
+            rainWeatherController =
+                FindFirstObjectByType<RainWeatherController>();
+
         currentHealth = maxHealth;
 
         patrolCenter = transform.position;
@@ -97,7 +101,6 @@ public class Monster : MonoBehaviour
             return;
         }
 
-        // The spawner controls this monster until its emergence is complete.
         if (controlledBySpawner)
             return;
 
@@ -149,9 +152,16 @@ public class Monster : MonoBehaviour
         float currentHour =
             (float)timeController.CurrentTime.TimeOfDay.TotalHours;
 
-        bool shouldMonsterBeActive =
+        bool isNight =
             currentHour >= monsterStartHour ||
             currentHour < monsterDisappearHour;
+
+        bool isStormActive =
+            rainWeatherController != null &&
+            rainWeatherController.IsStormActive;
+
+        bool shouldMonsterBeActive =
+            isNight || isStormActive;
 
         if (shouldMonsterBeActive != monsterAwake)
         {
@@ -201,47 +211,58 @@ public class Monster : MonoBehaviour
 
         direction.Normalize();
 
-        // Calculate da separation from othr monsters
         Vector3 separation = GetSeparationDirection();
 
-        // Combines the player movement with monster avoidance
-        direction = (direction + separation * separationStrength).normalized;
+        direction =
+            (direction +
+             separation * separationStrength).normalized;
 
         SetWalking(true);
 
-        // Move towards player while avoiding other monsters so dey dont merge together
-        transform.position += direction * moveSpeed * Time.deltaTime;
+        transform.position +=
+            direction *
+            moveSpeed *
+            Time.deltaTime;
 
-        transform.rotation = Quaternion.LookRotation(direction);
+        transform.rotation =
+            Quaternion.LookRotation(direction);
     }
 
     private Vector3 GetSeparationDirection()
     {
         Vector3 separation = Vector3.zero;
 
-        Collider[] nearbyColliders = Physics.OverlapSphere(
-            transform.position,
-            separationRadius
-        );
+        Collider[] nearbyColliders =
+            Physics.OverlapSphere(
+                transform.position,
+                separationRadius
+            );
 
         foreach (Collider col in nearbyColliders)
         {
-            Monster otherMonster = col.GetComponentInParent<Monster>();
+            Monster otherMonster =
+                col.GetComponentInParent<Monster>();
 
-            if (otherMonster == null || otherMonster == this)
+            if (otherMonster == null ||
+                otherMonster == this)
                 continue;
 
             Vector3 awayDirection =
-                transform.position - otherMonster.transform.position;
+                transform.position -
+                otherMonster.transform.position;
 
             awayDirection.y = 0f;
 
-            float distance = awayDirection.magnitude;
+            float distance =
+                awayDirection.magnitude;
 
             if (distance > 0.01f)
             {
-                separation += awayDirection.normalized *
-                    (1f - distance / separationRadius);
+                separation +=
+                    awayDirection.normalized *
+                    (1f -
+                     distance /
+                     separationRadius);
             }
         }
 
@@ -252,7 +273,8 @@ public class Monster : MonoBehaviour
     {
         if (monsterAnimator != null)
         {
-            monsterAnimator.speed = walking ? 0.1f : 0f;
+            monsterAnimator.speed =
+                walking ? 0.1f : 0f;
         }
     }
 
@@ -260,12 +282,13 @@ public class Monster : MonoBehaviour
     {
         if (waitingAtPatrolPoint)
         {
-            // Stop the walking anim when still
             SetWalking(false);
 
-            patrolWaitTimer += Time.deltaTime;
+            patrolWaitTimer +=
+                Time.deltaTime;
 
-            if (patrolWaitTimer >= patrolWaitTime)
+            if (patrolWaitTimer >=
+                patrolWaitTime)
             {
                 waitingAtPatrolPoint = false;
                 patrolWaitTimer = 0f;
@@ -275,58 +298,84 @@ public class Monster : MonoBehaviour
             return;
         }
 
-        Vector3 direction = patrolTarget - transform.position;
+        Vector3 direction =
+            patrolTarget -
+            transform.position;
+
         direction.y = 0f;
 
         if (direction.magnitude <= 0.5f)
         {
-            // Stop walking anim
             SetWalking(false);
 
             waitingAtPatrolPoint = true;
             patrolWaitTimer = 0f;
+
             return;
         }
 
         direction.Normalize();
 
-        // Play walking anim when moving
         SetWalking(true);
 
-        transform.position += direction * patrolSpeed * Time.deltaTime;
-        transform.rotation = Quaternion.LookRotation(direction);
+        transform.position +=
+            direction *
+            patrolSpeed *
+            Time.deltaTime;
+
+        transform.rotation =
+            Quaternion.LookRotation(direction);
     }
 
     private void ChooseNewPatrolTarget()
     {
-        Vector2 randomPoint = Random.insideUnitCircle * patrolRadius;
+        Vector2 randomPoint =
+            Random.insideUnitCircle *
+            patrolRadius;
 
-        patrolTarget = patrolCenter +
-            new Vector3(randomPoint.x, 0f, randomPoint.y);
+        patrolTarget =
+            patrolCenter +
+            new Vector3(
+                randomPoint.x,
+                0f,
+                randomPoint.y
+            );
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, detectionRange);
+
+        Gizmos.DrawWireSphere(
+            transform.position,
+            detectionRange
+        );
 
         Gizmos.color = Color.blue;
 
-        Vector3 center = Application.isPlaying
-            ? patrolCenter
-            : transform.position;
+        Vector3 center =
+            Application.isPlaying
+                ? patrolCenter
+                : transform.position;
 
-        Gizmos.DrawWireSphere(center, patrolRadius);
+        Gizmos.DrawWireSphere(
+            center,
+            patrolRadius
+        );
     }
 
     private void StartExplosionTimer()
     {
         if (isCountingDown)
         {
-            explosionTimer += Time.deltaTime;
+            explosionTimer +=
+                Time.deltaTime;
 
-            if (explosionTimer >= explosionTime)
+            if (explosionTimer >=
+                explosionTime)
+            {
                 Explode();
+            }
 
             return;
         }
@@ -355,15 +404,21 @@ public class Monster : MonoBehaviour
         if (Player != null)
         {
             float distance =
-                Vector3.Distance(transform.position, Player.position);
+                Vector3.Distance(
+                    transform.position,
+                    Player.position
+                );
 
-            if (distance <= explosionRadius)
+            if (distance <=
+                explosionRadius)
             {
                 HealthScript playerHealth =
                     Player.GetComponent<HealthScript>();
 
                 if (playerHealth != null)
-                    playerHealth.TakeDamage(explosionDamage);
+                    playerHealth.TakeDamage(
+                        explosionDamage
+                    );
             }
         }
     }
@@ -392,7 +447,9 @@ public class Monster : MonoBehaviour
         if (maxHealth <= 0f)
             return;
 
-        healthBar.fillAmount = currentHealth / maxHealth;
+        healthBar.fillAmount =
+            currentHealth /
+            maxHealth;
     }
 
     private void Die()
@@ -407,7 +464,10 @@ public class Monster : MonoBehaviour
 
         if (stunCoroutine != null)
         {
-            StopCoroutine(stunCoroutine);
+            StopCoroutine(
+                stunCoroutine
+            );
+
             stunCoroutine = null;
         }
 
@@ -429,21 +489,29 @@ public class Monster : MonoBehaviour
             return;
 
         if (stunCoroutine != null)
-            StopCoroutine(stunCoroutine);
+            StopCoroutine(
+                stunCoroutine
+            );
 
         ResetExplosionTimer();
 
-        stunCoroutine = StartCoroutine(StunCoroutine(duration));
+        stunCoroutine =
+            StartCoroutine(
+                StunCoroutine(duration)
+            );
     }
 
-    private IEnumerator StunCoroutine(float duration)
+    private IEnumerator StunCoroutine(
+        float duration)
     {
         isStunned = true;
 
         if (attackHitbox != null)
             attackHitbox.SetActive(false);
 
-        yield return new WaitForSeconds(duration);
+        yield return new WaitForSeconds(
+            duration
+        );
 
         if (isDead)
             yield break;
@@ -461,12 +529,14 @@ public class Monster : MonoBehaviour
         stunCoroutine = null;
     }
 
-    public void SetPlayerProtected(bool protectedByFire)
+    public void SetPlayerProtected(
+        bool protectedByFire)
     {
         if (isDead)
             return;
 
-        playerIsProtected = protectedByFire;
+        playerIsProtected =
+            protectedByFire;
 
         if (playerIsProtected)
         {
@@ -475,17 +545,22 @@ public class Monster : MonoBehaviour
         }
         else
         {
-            if (monsterAwake && !IsDialoguePaused)
+            if (monsterAwake &&
+                !IsDialoguePaused)
+            {
                 ShowMonster();
+            }
         }
     }
 
-    public void SetPlayerSleeping(bool sleeping)
+    public void SetPlayerSleeping(
+        bool sleeping)
     {
         if (isDead)
             return;
 
-        playerIsSleeping = sleeping;
+        playerIsSleeping =
+            sleeping;
 
         if (playerIsSleeping)
         {
@@ -510,14 +585,18 @@ public class Monster : MonoBehaviour
 
     private void ShowMonster()
     {
-        if (isDead || IsDialoguePaused)
+        if (isDead ||
+            IsDialoguePaused)
             return;
 
         if (monsterVisual != null)
             monsterVisual.SetActive(true);
 
-        if (attackHitbox != null && !isStunned)
+        if (attackHitbox != null &&
+            !isStunned)
+        {
             attackHitbox.SetActive(true);
+        }
 
         if (healthBar != null)
         {
@@ -538,15 +617,23 @@ public class Monster : MonoBehaviour
             healthBar.gameObject.SetActive(false);
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(
+        Collider other)
     {
-        if (other.CompareTag("ProtectionZone"))
+        if (other.CompareTag(
+            "ProtectionZone"))
+        {
             SetPlayerProtected(true);
+        }
     }
 
-    private void OnTriggerExit(Collider other)
+    private void OnTriggerExit(
+        Collider other)
     {
-        if (other.CompareTag("ProtectionZone"))
+        if (other.CompareTag(
+            "ProtectionZone"))
+        {
             SetPlayerProtected(false);
+        }
     }
 }

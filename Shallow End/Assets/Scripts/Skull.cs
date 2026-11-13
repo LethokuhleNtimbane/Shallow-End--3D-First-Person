@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class NightObjectController : MonoBehaviour
@@ -20,7 +19,10 @@ public class NightObjectController : MonoBehaviour
 
     private MaterialPropertyBlock[] propertyBlocks;
     private Color[] originalColours;
+
+    private bool wasNight;
     private bool hasMonsters;
+
     private float transitionProgress;
     private Color transitionStartColour;
     private Color transitionTargetColour;
@@ -60,10 +62,43 @@ public class NightObjectController : MonoBehaviour
         if (nightParticleEffect != null)
             nightParticleEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
+        TimeController timeController = TimeController.instance;
+
+        if (timeController != null)
+            wasNight = timeController.IsNight;
+        else
+            wasNight = false;
+
+        ApplyColour(wasNight ? nightColour : dayColour);
+
         hasMonsters = false;
     }
 
     private void Update()
+    {
+        TimeController timeController = TimeController.instance;
+
+        if (timeController != null)
+        {
+            bool isNight = timeController.IsNight;
+
+            if (isNight != wasNight)
+            {
+                wasNight = isNight;
+
+                StartColourTransition(
+                    isNight ? nightColour : dayColour
+                );
+            }
+        }
+
+        UpdateMonsterParticle();
+
+        if (transitioning)
+            UpdateColourTransition();
+    }
+
+    private void UpdateMonsterParticle()
     {
         if (monsterSpawner == null)
             return;
@@ -74,8 +109,6 @@ public class NightObjectController : MonoBehaviour
         {
             hasMonsters = monstersPresent;
 
-            StartColourTransition(hasMonsters ? nightColour : dayColour);
-
             if (nightParticleEffect != null)
             {
                 if (hasMonsters)
@@ -85,30 +118,18 @@ public class NightObjectController : MonoBehaviour
                 }
                 else
                 {
-                    nightParticleEffect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                    nightParticleEffect.Stop(
+                        true,
+                        ParticleSystemStopBehavior.StopEmittingAndClear
+                    );
                 }
             }
         }
-
-        if (transitioning)
-            UpdateColourTransition();
     }
 
     private void StartColourTransition(Color targetColour)
     {
-        transitionStartColour = transitionProgress > 0f && transitioning
-            ? Color.Lerp(transitionStartColour, transitionTargetColour, transitionProgress)
-            : hasMonsters ? dayColour : nightColour;
-
-        if (objectsToChange != null && objectsToChange.Length > 0)
-        {
-            Material material = objectsToChange[0] != null
-                ? objectsToChange[0].sharedMaterial
-                : null;
-
-            if (material != null && material.HasProperty(colourPropertyID))
-                transitionStartColour = material.GetColor(colourPropertyID);
-        }
+        transitionStartColour = GetCurrentColour();
 
         transitionTargetColour = targetColour;
         transitionProgress = 0f;
@@ -121,11 +142,37 @@ public class NightObjectController : MonoBehaviour
         }
     }
 
+    private Color GetCurrentColour()
+    {
+        if (objectsToChange != null)
+        {
+            for (int i = 0; i < objectsToChange.Length; i++)
+            {
+                if (objectsToChange[i] == null)
+                    continue;
+
+                Material material = objectsToChange[i].sharedMaterial;
+
+                if (material != null && material.HasProperty(colourPropertyID))
+                    return material.GetColor(colourPropertyID);
+            }
+        }
+
+        return wasNight ? nightColour : dayColour;
+    }
+
     private void UpdateColourTransition()
     {
+        if (colourTransitionDuration <= 0f)
+            return;
+
         transitionProgress += Time.deltaTime / colourTransitionDuration;
 
-        float progress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(transitionProgress));
+        float progress = Mathf.SmoothStep(
+            0f,
+            1f,
+            Mathf.Clamp01(transitionProgress)
+        );
 
         Color currentColour = Color.Lerp(
             transitionStartColour,
@@ -164,9 +211,14 @@ public class NightObjectController : MonoBehaviour
 
         objectsToChange[index].GetPropertyBlock(propertyBlocks[index]);
 
-        propertyBlocks[index].SetColor(colourPropertyID, colour);
+        propertyBlocks[index].SetColor(
+            colourPropertyID,
+            colour
+        );
 
-        objectsToChange[index].SetPropertyBlock(propertyBlocks[index]);
+        objectsToChange[index].SetPropertyBlock(
+            propertyBlocks[index]
+        );
     }
 
     private void OnDestroy()

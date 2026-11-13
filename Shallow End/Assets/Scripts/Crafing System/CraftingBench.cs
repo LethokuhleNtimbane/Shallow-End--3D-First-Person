@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -17,6 +16,7 @@ public class CraftingBench : MonoBehaviour
     [SerializeField] private GameObject playerHUD;
 
     [Header("Player Scripts")]
+    [SerializeField] private FoodScript foodScript;
     [SerializeField] private PlayerController playerController;
     [SerializeField] private DashScript dash;
     [SerializeField] private HealthScript healthScript;
@@ -119,7 +119,9 @@ public class CraftingBench : MonoBehaviour
         if (craftText != null)
             craftText.gameObject.SetActive(false);
 
-        // Disable player-related scripts.
+        if (foodScript != null)
+            foodScript.enabled = false;
+
         if (timeController != null)
             timeController.enabled = false;
 
@@ -132,18 +134,15 @@ public class CraftingBench : MonoBehaviour
         if (playerController != null)
             playerController.enabled = false;
 
-        // Disable PauseScript and BookManager.
         if (Pause != null)
             Pause.enabled = false;
 
         if (Book != null)
             Book.enabled = false;
 
-        // Stop every monster, including newly spawned monsters.
         Monster.SetDialoguePaused(true);
         MonsterAttack.SetDialoguePaused(true);
 
-        // Show crafting UI.
         if (craftingSystem != null)
             craftingSystem.SetActive(true);
 
@@ -153,7 +152,6 @@ public class CraftingBench : MonoBehaviour
         if (playerHUD != null)
             playerHUD.SetActive(false);
 
-        // Play crafting sound.
         if (audioManager != null)
         {
             audioManager.PlaySfx(audioManager.FlintLight);
@@ -171,14 +169,15 @@ public class CraftingBench : MonoBehaviour
         craftingOpen = false;
         IsCraftingOpen = false;
 
-        // Hide crafting UI.
         if (craftingSystem != null)
             craftingSystem.SetActive(false);
 
         if (background != null)
             background.SetActive(false);
 
-        // Re-enable player-related scripts.
+        if (foodScript != null)
+            foodScript.enabled = true;
+
         if (playerController != null)
             playerController.enabled = true;
 
@@ -191,14 +190,12 @@ public class CraftingBench : MonoBehaviour
         if (healthScript != null)
             healthScript.enabled = true;
 
-        // Re-enable PauseScript and BookManager.
         if (Pause != null)
             Pause.enabled = true;
 
         if (Book != null)
             Book.enabled = true;
 
-        // Resume monsters.
         Monster.SetDialoguePaused(false);
         MonsterAttack.SetDialoguePaused(false);
 

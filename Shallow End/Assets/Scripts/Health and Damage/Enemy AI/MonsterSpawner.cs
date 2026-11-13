@@ -86,7 +86,10 @@ public class MonsterSpawner : MonoBehaviour
     {
         get
         {
-            for (int i = spawnedMonsters.Count - 1; i >= 0; i--)
+            for (int i =
+                 spawnedMonsters.Count - 1;
+                 i >= 0;
+                 i--)
             {
                 if (spawnedMonsters[i] == null)
                 {
@@ -107,7 +110,9 @@ public class MonsterSpawner : MonoBehaviour
         nextSpawnTimer = 0f;
 
         transitionPropertyID =
-            Shader.PropertyToID(transitionProperty);
+            Shader.PropertyToID(
+                transitionProperty
+            );
 
         if (portalEffects != null)
             portalEffects.SetActive(false);
@@ -115,12 +120,15 @@ public class MonsterSpawner : MonoBehaviour
         if (rainWeatherController == null)
         {
             rainWeatherController =
-                FindFirstObjectByType<RainWeatherController>();
+                FindFirstObjectByType<
+                    RainWeatherController
+                >();
         }
 
         if (TimeController.instance != null)
         {
-            float hour = GetCurrentHour();
+            float hour =
+                GetCurrentHour();
 
             bool isNight =
                 hour >= firstSpawnTime ||
@@ -129,7 +137,6 @@ public class MonsterSpawner : MonoBehaviour
             if (isNight)
             {
                 StartNight();
-
                 wasNight = true;
             }
         }
@@ -152,7 +159,8 @@ public class MonsterSpawner : MonoBehaviour
         if (TimeController.instance == null)
             return;
 
-        float hour = GetCurrentHour();
+        float hour =
+            GetCurrentHour();
 
         bool isNight =
             hour >= firstSpawnTime ||
@@ -180,7 +188,10 @@ public class MonsterSpawner : MonoBehaviour
         if (!isNight && !isRaining)
             return;
 
-        HandleSpawning(isNight, isRaining);
+        HandleSpawning(
+            isNight,
+            isRaining
+        );
     }
 
     private float GetCurrentHour()
@@ -199,13 +210,25 @@ public class MonsterSpawner : MonoBehaviour
             TimeController.instance.CurrentTime;
 
         int gameDay =
-            (currentTime.Date -
-             new System.DateTime(2000, 1, 1)).Days + 1;
+            (
+                currentTime.Date -
+                new System.DateTime(
+                    2000,
+                    1,
+                    1
+                )
+            ).Days + 1;
 
-        if (GetCurrentHour() < lastSpawnTime)
+        if (GetCurrentHour() <
+            lastSpawnTime)
+        {
             gameDay--;
+        }
 
-        return Mathf.Max(1, gameDay);
+        return Mathf.Max(
+            1,
+            gameDay
+        );
     }
 
     private void StartNight()
@@ -213,7 +236,8 @@ public class MonsterSpawner : MonoBehaviour
         currentNight =
             GetCurrentNightNumber();
 
-        if (currentNight < firstMonsterSpawnNight)
+        if (currentNight <
+            firstMonsterSpawnNight)
         {
             monstersToSpawn = 0;
         }
@@ -221,7 +245,9 @@ public class MonsterSpawner : MonoBehaviour
         {
             monstersToSpawn =
                 startingMonsterCount +
-                (currentNight - 1) *
+                (
+                    currentNight - 1
+                ) *
                 monsterIncreasePerNight;
         }
 
@@ -241,8 +267,11 @@ public class MonsterSpawner : MonoBehaviour
 
         RemoveNightMonsters();
 
-        if (rainWeatherController == null ||
-            !rainWeatherController.IsRaining)
+        bool stormActive =
+            rainWeatherController != null &&
+            rainWeatherController.IsStormActive;
+
+        if (!stormActive)
         {
             RestoreWaterAndObjects();
         }
@@ -263,10 +292,10 @@ public class MonsterSpawner : MonoBehaviour
         waterEffectStarted = false;
 
         Debug.Log(
-            "[Monster Spawner] Storm "
-            + currentStormNumber
-            + " started. Rain monsters: "
-            + rainMonstersToSpawn
+            "[Monster Spawner] Storm " +
+            currentStormNumber +
+            " started. Rain monsters: " +
+            rainMonstersToSpawn
         );
     }
 
@@ -294,7 +323,8 @@ public class MonsterSpawner : MonoBehaviour
     {
         bool canSpawnNightMonster =
             isNight &&
-            monstersSpawned < monstersToSpawn;
+            monstersSpawned <
+            monstersToSpawn;
 
         bool canSpawnRainMonster =
             isRaining &&
@@ -329,17 +359,14 @@ public class MonsterSpawner : MonoBehaviour
         }
         else
         {
-            /*
-             * Both systems can spawn at the same time.
-             * Alternate between the two systems so that
-             * rain monsters and night monsters remain separate.
-             */
             spawnRainMonster =
                 rainMonstersSpawned <=
                 monstersSpawned;
         }
 
-        SpawnMonster(spawnRainMonster);
+        SpawnMonster(
+            spawnRainMonster
+        );
 
         if (spawnRainMonster)
         {
@@ -584,8 +611,7 @@ public class MonsterSpawner : MonoBehaviour
                     continue;
 
                 originalObjectStates[i] =
-                    objectsToHide[i]
-                        .activeSelf;
+                    objectsToHide[i].activeSelf;
 
                 objectsToHide[i]
                     .SetActive(false);
@@ -780,17 +806,25 @@ public class MonsterSpawner : MonoBehaviour
              i >= 0;
              i--)
         {
-            if (spawnedMonsters[i] != null)
+            GameObject monster =
+                spawnedMonsters[i];
+
+            if (monster == null)
             {
-                Destroy(
-                    spawnedMonsters[i]
-                );
+                spawnedMonsters.RemoveAt(i);
+                continue;
             }
+
+            if (rainSpawnedMonsters.Contains(
+                monster))
+            {
+                continue;
+            }
+
+            Destroy(monster);
+
+            spawnedMonsters.RemoveAt(i);
         }
-
-        spawnedMonsters.Clear();
-
-        rainSpawnedMonsters.Clear();
     }
 
     private void RemoveRainMonsters()
@@ -835,8 +869,10 @@ public class MonsterSpawner : MonoBehaviour
                     .GetComponent<Monster>();
 
             if (monster != null)
+            {
                 monster.enabled =
                     !stopped;
+            }
         }
     }
 }

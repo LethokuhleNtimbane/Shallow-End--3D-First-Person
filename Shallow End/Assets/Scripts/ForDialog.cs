@@ -311,14 +311,20 @@ public class ForDialog : MonoBehaviour
             new DialogueLine
             {
                 speakerName = "Player",
-                dialogueText = "I collected all the resources. how do i use these?",
+                dialogueText = "I collected all the resources. Now how do I use these?",
                 isThomas = false
             },
 
             new DialogueLine
             {
                 speakerName = "Thomas",
-                dialogueText = "Good Job. head to the crafting table to create a hammer that you can use to break open the coconuts good for your thirst, or maybe create a spear to hunt down those annoying little crabsand",
+                dialogueText = "Good Job. Head to the crafting table to create a hammer that you can use to break open the coconuts good for your thirst",
+                isThomas = true
+            },
+             new DialogueLine
+            {
+                speakerName = "Thomas",
+                dialogueText = "or maybe create a spear to hunt down those annoying little crabs",
                 isThomas = true
             }
         };
@@ -338,7 +344,7 @@ public class ForDialog : MonoBehaviour
             new DialogueLine
             {
                 speakerName = "Thomas",
-                dialogueText = "A long day full of hard work eh? it only gets worse from here",
+                dialogueText = "A long day full of hard work eh? It only gets worse from here",
                 isThomas = true
             },
 
@@ -352,7 +358,7 @@ public class ForDialog : MonoBehaviour
             new DialogueLine
             {
                 speakerName = "Thomas",
-                dialogueText = "At nightfall there are creatures that roam this island. deadly monsters that you have to run away from,",
+                dialogueText = "At nightfall there are creatures that roam this island. Deadly monsters that you have to run away from,",
                 isThomas = true
             },
 
@@ -366,7 +372,7 @@ public class ForDialog : MonoBehaviour
             new DialogueLine
             {
                 speakerName = "Player",
-                dialogueText = "How do i protect myself from them",
+                dialogueText = "How do I protect myself from them",
                 isThomas = false
             },
 
@@ -380,7 +386,7 @@ public class ForDialog : MonoBehaviour
             new DialogueLine
             {
                 speakerName = "Player",
-                dialogueText = "Is that it? just run away?",
+                dialogueText = "Is that it? Just run away?",
                 isThomas = false
             },
 
@@ -414,7 +420,7 @@ public class ForDialog : MonoBehaviour
             new DialogueLine
             {
                 speakerName = "Player",
-                dialogueText = "Thank you thomas, i wouldn’t have survived this long without you",
+                dialogueText = "Thank you thomas, I wouldn’t have survived this long without you",
                 isThomas = false
             },
 

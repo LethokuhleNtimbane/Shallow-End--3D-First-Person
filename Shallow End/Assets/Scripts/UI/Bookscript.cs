@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,6 +23,7 @@ public class Bookscript : MonoBehaviour
     [SerializeField] private Sprite page13;
     [SerializeField] private Sprite page14;
     [SerializeField] private Sprite page15;
+    [SerializeField] private Sprite page16;
 
     [Header("Navigation")]
     [SerializeField] private Button nextButton;
@@ -65,20 +65,41 @@ public class Bookscript : MonoBehaviour
 
     private void UpdatePages()
     {
-        // Update the left page.
         switch (currentPage)
         {
-            case 1: leftPage.sprite = page1; break;
-            case 3: leftPage.sprite = page3; break;
-            case 5: leftPage.sprite = page5; break;
-            case 7: leftPage.sprite = page7; break;
-            case 9: leftPage.sprite = page9; break;
-            case 11: leftPage.sprite = page11; break;
-            case 13: leftPage.sprite = page13; break;
-            case 15: leftPage.sprite = page15; break;
+            case 1:
+                leftPage.sprite = page1;
+                break;
+
+            case 3:
+                leftPage.sprite = page3;
+                break;
+
+            case 5:
+                leftPage.sprite = page5;
+                break;
+
+            case 7:
+                leftPage.sprite = page7;
+                break;
+
+            case 9:
+                leftPage.sprite = page9;
+                break;
+
+            case 11:
+                leftPage.sprite = page11;
+                break;
+
+            case 13:
+                leftPage.sprite = page13;
+                break;
+
+            case 15:
+                leftPage.sprite = page15;
+                break;
         }
 
-        // Update the right page.
         switch (currentPage)
         {
             case 1:
@@ -117,11 +138,11 @@ public class Bookscript : MonoBehaviour
                 break;
 
             case 15:
-                rightPage.gameObject.SetActive(false);
+                rightPage.sprite = page16;
+                rightPage.gameObject.SetActive(true);
                 break;
         }
 
-        // Update navigation buttons.
         if (backButton != null)
             backButton.interactable = currentPage > 1;
 

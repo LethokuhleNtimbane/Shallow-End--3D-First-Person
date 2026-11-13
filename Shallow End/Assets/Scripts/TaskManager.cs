@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,7 +17,8 @@ public class TaskManager : MonoBehaviour
         SurviveNight,
         CraftTent,
         BuildRaft,
-        SpeakToThomasEnding
+        SpeakToThomasEnding,
+        SailAway
     }
 
     [System.Serializable]
@@ -50,10 +50,6 @@ public class TaskManager : MonoBehaviour
     [SerializeField] private BuildItems tentBuildItem;
     [SerializeField] private BuildItems raftBuildItem;
 
-    [Header("Game Ending")]
-    [SerializeField] private CanvasGroup endingCanvasGroup;
-    [SerializeField] private float endingFadeDuration = 4f;
-
     private TaskData[] tasks;
     private int currentTaskIndex;
 
@@ -63,8 +59,6 @@ public class TaskManager : MonoBehaviour
     private bool journalOpenRequested;
     private bool journalWasOpen;
     private bool journalFinished;
-
-    private bool gameEndingTriggered;
 
     private readonly HashSet<TaskID> completedTasks =
         new HashSet<TaskID>();
@@ -80,13 +74,6 @@ public class TaskManager : MonoBehaviour
         CreateTasks();
 
         currentTaskIndex = 0;
-
-        if (endingCanvasGroup != null)
-        {
-            endingCanvasGroup.alpha = 0f;
-            endingCanvasGroup.interactable = false;
-            endingCanvasGroup.blocksRaycasts = false;
-        }
 
         UpdateTaskUI();
         TryCompleteCurrentTask();
@@ -160,6 +147,11 @@ public class TaskManager : MonoBehaviour
             new TaskData(
                 TaskID.SpeakToThomasEnding,
                 "Say goodbye to Thomas"
+            ),
+
+            new TaskData(
+                TaskID.SailAway,
+                "Sail away"
             )
         };
     }
@@ -265,6 +257,11 @@ public class TaskManager : MonoBehaviour
         CompleteTask(TaskID.SpeakToThomasEnding);
     }
 
+    public void RegisterSailAway()
+    {
+        CompleteTask(TaskID.SailAway);
+    }
+
     private void TryCompleteCurrentTask()
     {
         if (tasks == null || showingCompletedTask)
@@ -304,64 +301,7 @@ public class TaskManager : MonoBehaviour
 
         UpdateTaskUI();
 
-        if (currentTaskIndex >= tasks.Length)
-        {
-            TriggerGameEnding();
-            yield break;
-        }
-
         TryCompleteCurrentTask();
-    }
-
-    private void TriggerGameEnding()
-    {
-        if (gameEndingTriggered)
-            return;
-
-        gameEndingTriggered = true;
-
-        if (endingCanvasGroup == null)
-            return;
-
-        endingCanvasGroup.gameObject.SetActive(true);
-
-        StartCoroutine(FadeInEndingCanvas());
-    }
-
-    private IEnumerator FadeInEndingCanvas()
-    {
-        endingCanvasGroup.alpha = 0f;
-
-        endingCanvasGroup.interactable = false;
-        endingCanvasGroup.blocksRaycasts = false;
-
-        if (endingFadeDuration <= 0f)
-        {
-            endingCanvasGroup.alpha = 1f;
-        }
-        else
-        {
-            float elapsed = 0f;
-
-            while (elapsed < endingFadeDuration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-
-                float progress = Mathf.Clamp01(
-                    elapsed / endingFadeDuration
-                );
-
-                endingCanvasGroup.alpha =
-                    Mathf.SmoothStep(0f, 1f, progress);
-
-                yield return null;
-            }
-
-            endingCanvasGroup.alpha = 1f;
-        }
-
-        endingCanvasGroup.interactable = true;
-        endingCanvasGroup.blocksRaycasts = true;
     }
 
     private void UpdateTaskUI()
@@ -441,7 +381,7 @@ public class TaskManager : MonoBehaviour
     public TaskID GetCurrentTaskID()
     {
         if (tasks == null || currentTaskIndex >= tasks.Length)
-            return TaskID.SpeakToThomasEnding;
+            return TaskID.SailAway;
 
         return tasks[currentTaskIndex].taskID;
     }

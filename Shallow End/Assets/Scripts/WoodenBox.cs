@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -17,13 +16,9 @@ public class WoodenBox : MonoBehaviour
 
     public bool IsOpen => isOpen;
 
-    // Tracks rewards during the current playthrough.
     private static bool rewardsClaimedThisPlaythrough = false;
-
-    // Tracks whether the journal has been unlocked.
     private static bool journalUnlockedThisPlaythrough = false;
 
-    // Call this when starting a completely new game.
     public static void StartNewGame()
     {
         rewardsClaimedThisPlaythrough = false;
@@ -67,6 +62,7 @@ public class WoodenBox : MonoBehaviour
     [SerializeField] private float warningDuration = 2f;
 
     [Header("Gameplay Scripts")]
+    [SerializeField] private FoodScript foodScript;
     [SerializeField] private PlayerController playerController;
     [SerializeField] private DashScript dash;
     [SerializeField] private HealthScript healthScript;
@@ -106,6 +102,24 @@ public class WoodenBox : MonoBehaviour
 
         if (taskManager == null)
             taskManager = FindFirstObjectByType<TaskManager>();
+
+        if (foodScript == null)
+            foodScript = FindFirstObjectByType<FoodScript>();
+
+        if (playerController == null)
+            playerController = FindFirstObjectByType<PlayerController>();
+
+        if (dash == null)
+            dash = FindFirstObjectByType<DashScript>();
+
+        if (healthScript == null)
+            healthScript = FindFirstObjectByType<HealthScript>();
+
+        if (timeController == null)
+            timeController = FindFirstObjectByType<TimeController>();
+
+        if (Pause == null)
+            Pause = FindFirstObjectByType<PauseScript>();
     }
 
     private void OnEnable()
@@ -146,11 +160,9 @@ public class WoodenBox : MonoBehaviour
         if (warningText != null)
             warningText.gameObject.SetActive(false);
 
-        // Keep the hotbar visible.
         if (gameUI != null)
             gameUI.SetActive(true);
 
-        // Restore the journal if it was already unlocked.
         if (journalUnlockedThisPlaythrough)
         {
             UnlockJournal();
@@ -184,7 +196,6 @@ public class WoodenBox : MonoBehaviour
         if (isOpen)
             return;
 
-        // The player must speak to Thomas first.
         if (taskManager != null &&
             !taskManager.IsTaskCompleted(
                 TaskManager.TaskID.SpeakToThomasFirst))
@@ -193,7 +204,6 @@ public class WoodenBox : MonoBehaviour
             return;
         }
 
-        // Only check reward space if rewards have not been claimed.
         if (!rewardsClaimedThisPlaythrough &&
             !CanFitAllRewards())
         {
@@ -235,13 +245,11 @@ public class WoodenBox : MonoBehaviour
             }
         }
 
-        // Disable gameplay and menu scripts.
         DisableGameplay();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Give first-time rewards only once per playthrough.
         if (!rewardsClaimedThisPlaythrough)
         {
             GiveFirstOpenRewards();
@@ -256,11 +264,9 @@ public class WoodenBox : MonoBehaviour
             }
         }
 
-        // Unlock the journal separately from the rewards.
         UnlockJournal();
     }
 
-    // Unlocks and remembers the journal.
     private void UnlockJournal()
     {
         journalUnlockedThisPlaythrough = true;
@@ -294,7 +300,6 @@ public class WoodenBox : MonoBehaviour
         if (chestBackground != null)
             chestBackground.SetActive(false);
 
-        // Keep the hotbar visible.
         if (gameUI != null)
             gameUI.SetActive(true);
 
@@ -307,7 +312,6 @@ public class WoodenBox : MonoBehaviour
             }
         }
 
-        // Restore gameplay scripts when appropriate.
         EnableGameplay();
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -319,6 +323,9 @@ public class WoodenBox : MonoBehaviour
 
     private void DisableGameplay()
     {
+        if (foodScript != null)
+            foodScript.enabled = false;
+
         if (playerController != null)
             playerController.enabled = false;
 
@@ -331,14 +338,12 @@ public class WoodenBox : MonoBehaviour
         if (timeController != null)
             timeController.enabled = false;
 
-        // Disable PauseScript and BookManager.
         if (Pause != null)
             Pause.enabled = false;
 
         if (Book != null)
             Book.enabled = false;
 
-        // Stop monster behaviour.
         if (monster != null)
             monster.enabled = false;
 
@@ -348,9 +353,11 @@ public class WoodenBox : MonoBehaviour
 
     private void EnableGameplay()
     {
-        // Don't resume gameplay if another menu is open.
         if (CraftingBench.IsCraftingOpen || BookManager.IsBookOpen)
             return;
+
+        if (foodScript != null)
+            foodScript.enabled = true;
 
         if (playerController != null)
             playerController.enabled = true;
@@ -364,14 +371,12 @@ public class WoodenBox : MonoBehaviour
         if (timeController != null)
             timeController.enabled = true;
 
-        // Re-enable PauseScript and BookManager.
         if (Pause != null)
             Pause.enabled = true;
 
         if (Book != null)
             Book.enabled = true;
 
-        // Resume monster behaviour.
         if (monster != null)
             monster.enabled = true;
 
