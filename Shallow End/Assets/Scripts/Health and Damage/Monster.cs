@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
@@ -48,6 +47,9 @@ public class Monster : MonoBehaviour
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private Image healthBar;
     [SerializeField] private float knifeDamage;
+
+    [Header("Animation")]
+    [SerializeField] private Animator monsterAnimator;
 
     private float currentHealth;
 
@@ -187,6 +189,7 @@ public class Monster : MonoBehaviour
 
         if (distance <= attackDistance)
         {
+            SetWalking(false);
             StartExplosionTimer();
             return;
         }
@@ -203,6 +206,8 @@ public class Monster : MonoBehaviour
 
         // Combines the player movement with monster avoidance
         direction = (direction + separation * separationStrength).normalized;
+
+        SetWalking(true);
 
         // Move towards player while avoiding other monsters so dey dont merge together
         transform.position += direction * moveSpeed * Time.deltaTime;
@@ -243,10 +248,21 @@ public class Monster : MonoBehaviour
         return separation;
     }
 
+    private void SetWalking(bool walking)
+    {
+        if (monsterAnimator != null)
+        {
+            monsterAnimator.speed = walking ? 0.1f : 0f;
+        }
+    }
+
     private void Patrol()
     {
         if (waitingAtPatrolPoint)
         {
+            // Stop the walking anim when still
+            SetWalking(false);
+
             patrolWaitTimer += Time.deltaTime;
 
             if (patrolWaitTimer >= patrolWaitTime)
@@ -264,12 +280,18 @@ public class Monster : MonoBehaviour
 
         if (direction.magnitude <= 0.5f)
         {
+            // Stop walking anim
+            SetWalking(false);
+
             waitingAtPatrolPoint = true;
             patrolWaitTimer = 0f;
             return;
         }
 
         direction.Normalize();
+
+        // Play walking anim when moving
+        SetWalking(true);
 
         transform.position += direction * patrolSpeed * Time.deltaTime;
         transform.rotation = Quaternion.LookRotation(direction);
